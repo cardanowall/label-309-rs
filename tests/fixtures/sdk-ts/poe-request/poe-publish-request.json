@@ -1,0 +1,9 @@
+{
+  "_comment": "Canonical HTTP request shape both SDKs (TS + Py) must produce for client.poe.publish({record: <16 bytes>, quoteId}) against base_url 'http://test.example' with API key 'sk-cw-live-b<52 chars>'. Parity is asserted in packages/sdk-ts/src/client/poe.test.ts and packages/sdk-py/tests/test_client_poe.py. The body field is the canonical compact JSON form (no whitespace); structural equality after key-sort is the contract — the Py SDK currently emits a whitespace-padded equivalent and both compare canonicalised. URL / method / authorization / content-type are byte-identical across both SDKs.",
+  "method": "POST",
+  "url": "http://test.example/api/v1/poe/publish",
+  "authorization": "Bearer sk-cw-live-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "content_type": "application/json",
+  "accept": "application/json",
+  "body": "{\"record\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"quote_id\":\"01956b41-7c00-7000-8000-000000000001\"}"
+}

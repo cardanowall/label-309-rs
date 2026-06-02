@@ -1,0 +1,7 @@
+{
+  "_comment": "Canonical HTTP request shape both SDKs (TS + Py) must produce for client.records.get('a'.repeat(64)) against base_url 'http://test.example' with API key 'sk-cw-live-b<52 chars>'. Parity is asserted in packages/sdk-ts/src/client/records.test.ts and packages/sdk-py/tests/test_client_records.py. A divergence between the two languages on URL, method, or auth header surfaces as a test failure on one side.",
+  "method": "GET",
+  "url": "http://test.example/api/v1/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "authorization": "Bearer sk-cw-live-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "accept": "application/json"
+}

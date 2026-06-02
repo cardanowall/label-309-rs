@@ -1,0 +1,374 @@
+// Off-host signing helper KAT + round-trip + hashed-mode + negative tests,
+// byte-pinned against the shared `cose/sign1-build.json` corpus. The helpers
+// reuse `crate::cose` for the Sig_structure / COSE_Sign1 construction; here we
+// prove the resulting bytes match the cross-language fixture exactly and the
+// completed record round-trips through the verifier.
+
+use cardanowall::cbor::{decode_canonical_cbor, CborValue};
+use cardanowall::client::{
+    assemble_cose_sign1, assemble_cose_sign1_hashed, build_to_sign, prepare_sig_structure,
+    prepare_sig_structure_hashed, OffHostSignError,
+};
+use cardanowall::poe_standard::{
+    encode_record_body_for_signing, EncryptionEnvelope, ItemEntry, MerkleCommit, PoeRecord, Slot,
+};
+use cardanowall::verifier::{verify_record_signatures, VerifyTxInput};
+
+const DOMAIN_PREFIX_HEX: &str = "63617264616e6f2d706f652d7265636f72642d7369672d7631";
+
+/// Load the cardano-PoE build vectors from the canonical fixture tree.
+fn cardano_poe_vectors() -> Vec<serde_json::Value> {
+    let path = common::crypto_core_fixtures()
+        .join("cose")
+        .join("sign1-build.json");
+    let corpus = common::read_fixture_json(&path);
+    corpus["cardano_poe_vectors"]
+        .as_array()
+        .expect("cardano_poe_vectors is an array")
+        .clone()
+}
+
+// A faithful raw record decoder for the build vectors. The fixture bodies carry
+// placeholder `ar://` URIs that the structural validator rejects, so the KAT
+// reconstructs the record straight from the canonical CBOR (as the TS/Py twins
+// do via their raw `decodeCanonicalCbor`) rather than through the validator.
+
+fn map_get<'a>(pairs: &'a [(CborValue, CborValue)], key: &str) -> Option<&'a CborValue> {
+    pairs
+        .iter()
+        .find(|(k, _)| matches!(k, CborValue::Text(t) if t == key))
+        .map(|(_, v)| v)
+}
+
+fn as_u64(value: &CborValue) -> u64 {
+    match value {
+        CborValue::Unsigned(n) => *n,
+        other => panic!("expected unsigned, got {other:?}"),
+    }
+}
+
+fn as_bytes(value: &CborValue) -> Vec<u8> {
+    match value {
+        CborValue::Bytes(b) => b.clone(),
+        other => panic!("expected bytes, got {other:?}"),
+    }
+}
+
+fn as_text(value: &CborValue) -> String {
+    match value {
+        CborValue::Text(t) => t.clone(),
+        other => panic!("expected text, got {other:?}"),
+    }
+}
+
+/// Decode a chunked-bytes array (`[ bstr .size (1..64) ]`).
+fn chunked_bytes(value: &CborValue) -> Vec<Vec<u8>> {
+    match value {
+        CborValue::Array(items) => items.iter().map(as_bytes).collect(),
+        other => panic!("expected chunked-bytes array, got {other:?}"),
+    }
+}
+
+/// Decode a chunked-URI array (`[ tstr .size (1..64) ]`).
+fn chunked_uri(value: &CborValue) -> Vec<String> {
+    match value {
+        CborValue::Array(items) => items.iter().map(as_text).collect(),
+        other => panic!("expected chunked-uri array, got {other:?}"),
+    }
+}
+
+fn slot_from_cbor(value: &CborValue) -> Slot {
+    let pairs = match value {
+        CborValue::Map(pairs) => pairs,
+        other => panic!("expected slot map, got {other:?}"),
+    };
+    Slot {
+        epk: map_get(pairs, "epk").map(as_bytes),
+        kem_ct: map_get(pairs, "kem_ct").map(chunked_bytes),
+        wrap: map_get(pairs, "wrap").map(as_bytes),
+    }
+}
+
+fn envelope_from_cbor(value: &CborValue) -> EncryptionEnvelope {
+    let pairs = match value {
+        CborValue::Map(pairs) => pairs,
+        other => panic!("expected enc map, got {other:?}"),
+    };
+    let slots = map_get(pairs, "slots").map(|s| match s {
+        CborValue::Array(items) => items.iter().map(slot_from_cbor).collect(),
+        other => panic!("expected slots array, got {other:?}"),
+    });
+    EncryptionEnvelope {
+        scheme: as_u64(map_get(pairs, "scheme").unwrap()),
+        aead: as_text(map_get(pairs, "aead").unwrap()),
+        nonce: as_bytes(map_get(pairs, "nonce").unwrap()),
+        kem: map_get(pairs, "kem").map(as_text),
+        slots,
+        slots_mac: map_get(pairs, "slots_mac").map(as_bytes),
+        passphrase: None,
+    }
+}
+
+fn item_from_cbor(value: &CborValue) -> ItemEntry {
+    let pairs = match value {
+        CborValue::Map(pairs) => pairs,
+        other => panic!("expected item map, got {other:?}"),
+    };
+    let hashes = match map_get(pairs, "hashes").unwrap() {
+        CborValue::Map(hash_pairs) => hash_pairs
+            .iter()
+            .map(|(k, v)| (as_text(k), as_bytes(v)))
+            .collect(),
+        other => panic!("expected hashes map, got {other:?}"),
+    };
+    let uris = map_get(pairs, "uris").map(|u| match u {
+        CborValue::Array(items) => items.iter().map(chunked_uri).collect(),
+        other => panic!("expected uris array, got {other:?}"),
+    });
+    ItemEntry {
+        hashes,
+        uris,
+        enc: map_get(pairs, "enc").map(envelope_from_cbor),
+    }
+}
+
+fn merkle_from_cbor(value: &CborValue) -> MerkleCommit {
+    let pairs = match value {
+        CborValue::Map(pairs) => pairs,
+        other => panic!("expected merkle map, got {other:?}"),
+    };
+    let uris = map_get(pairs, "uris").map(|u| match u {
+        CborValue::Array(items) => items.iter().map(chunked_uri).collect(),
+        other => panic!("expected uris array, got {other:?}"),
+    });
+    MerkleCommit {
+        alg: as_text(map_get(pairs, "alg").unwrap()),
+        root: as_bytes(map_get(pairs, "root").unwrap()),
+        leaf_count: as_u64(map_get(pairs, "leaf_count").unwrap()),
+        uris,
+    }
+}
+
+/// Reconstruct the `PoeRecord` from a vector's `record_body_cbor_hex`, then
+/// assert the reconstruction re-encodes to the exact same body bytes.
+fn record_from_vector(vector: &serde_json::Value) -> PoeRecord {
+    let body = hex::decode(vector["record_body_cbor_hex"].as_str().unwrap()).unwrap();
+    let decoded = decode_canonical_cbor(&body).expect("record body decodes");
+    let pairs = match &decoded {
+        CborValue::Map(pairs) => pairs,
+        other => panic!("record body is not a map: {other:?}"),
+    };
+    let record = PoeRecord {
+        v: as_u64(map_get(pairs, "v").unwrap()),
+        items: map_get(pairs, "items").map(|i| match i {
+            CborValue::Array(items) => items.iter().map(item_from_cbor).collect(),
+            other => panic!("expected items array, got {other:?}"),
+        }),
+        merkle: map_get(pairs, "merkle").map(|m| match m {
+            CborValue::Array(items) => items.iter().map(merkle_from_cbor).collect(),
+            other => panic!("expected merkle array, got {other:?}"),
+        }),
+        supersedes: map_get(pairs, "supersedes").map(as_bytes),
+        sigs: None,
+        crit: map_get(pairs, "crit").map(|c| match c {
+            CborValue::Array(items) => items.iter().map(as_text).collect(),
+            other => panic!("expected crit array, got {other:?}"),
+        }),
+        extensions: Vec::new(),
+    };
+    // The reconstruction must be faithful: its signing body equals the fixture
+    // body byte for byte.
+    assert_eq!(
+        encode_record_body_for_signing(&record).unwrap(),
+        body,
+        "reconstructed record re-encodes to the fixture body"
+    );
+    record
+}
+
+fn hexs(value: &serde_json::Value, key: &str) -> Vec<u8> {
+    hex::decode(value[key].as_str().unwrap()).unwrap()
+}
+
+#[test]
+fn off_host_sign_corpus_is_non_empty() {
+    // Guards against a silently-empty corpus making every parametrised case a
+    // no-op.
+    assert_eq!(cardano_poe_vectors().len(), 4);
+}
+
+#[test]
+fn build_to_sign_emits_prefix_then_record_body() {
+    for vector in cardano_poe_vectors() {
+        let record = record_from_vector(&vector);
+        let to_sign = build_to_sign(&record).unwrap();
+        let expected = format!(
+            "{DOMAIN_PREFIX_HEX}{}",
+            vector["record_body_cbor_hex"].as_str().unwrap()
+        );
+        assert_eq!(hex::encode(&to_sign), expected);
+        assert_eq!(hex::encode(&to_sign[..25]), DOMAIN_PREFIX_HEX);
+    }
+}
+
+#[test]
+fn prepare_sig_structure_is_byte_pinned() {
+    for vector in cardano_poe_vectors() {
+        let record = record_from_vector(&vector);
+        let pubkey = hexs(&vector, "signer_public_key_hex");
+        let prepared = prepare_sig_structure(&record, &pubkey).unwrap();
+        assert_eq!(
+            hex::encode(&prepared.sig_structure_bytes),
+            vector["expected_sig_structure_hex"].as_str().unwrap()
+        );
+        // The canonical path-1 protected header is always 38 bytes.
+        let expected_protected = format!(
+            "a201270458 20{}",
+            vector["signer_public_key_hex"].as_str().unwrap()
+        )
+        .replace(' ', "");
+        assert_eq!(hex::encode(&prepared.protected_header_bytes), expected_protected);
+        assert_eq!(prepared.protected_header_bytes.len(), 38);
+    }
+}
+
+#[test]
+fn signing_the_sig_structure_matches_the_kat_signature() {
+    use ed25519_dalek::Signer as _;
+    for vector in cardano_poe_vectors() {
+        let record = record_from_vector(&vector);
+        let pubkey = hexs(&vector, "signer_public_key_hex");
+        let seed: [u8; 32] = hexs(&vector, "signer_secret_key_hex").try_into().unwrap();
+        let prepared = prepare_sig_structure(&record, &pubkey).unwrap();
+        let signing = ed25519_dalek::SigningKey::from_bytes(&seed);
+        let sig = signing.sign(&prepared.sig_structure_bytes).to_bytes();
+        assert_eq!(
+            hex::encode(sig),
+            vector["expected_signature_hex"].as_str().unwrap()
+        );
+    }
+}
+
+#[test]
+fn assemble_cose_sign1_is_byte_pinned() {
+    use ed25519_dalek::Signer as _;
+    for vector in cardano_poe_vectors() {
+        let record = record_from_vector(&vector);
+        let pubkey = hexs(&vector, "signer_public_key_hex");
+        let seed: [u8; 32] = hexs(&vector, "signer_secret_key_hex").try_into().unwrap();
+        let prepared = prepare_sig_structure(&record, &pubkey).unwrap();
+        let signing = ed25519_dalek::SigningKey::from_bytes(&seed);
+        let sig = signing.sign(&prepared.sig_structure_bytes).to_bytes();
+        let assembled = assemble_cose_sign1(&record, &pubkey, &sig).unwrap();
+        assert_eq!(
+            hex::encode(&assembled.cose_sign1_bytes),
+            vector["expected_cose_sign1_hex"].as_str().unwrap()
+        );
+        // The reassembled chunked COSE_Sign1 round-trips to the same bytes.
+        let rejoined: Vec<u8> = assembled.sig_entry.cose_sign1.concat();
+        assert_eq!(rejoined, assembled.cose_sign1_bytes);
+    }
+}
+
+#[test]
+fn assembled_signature_round_trips_through_the_verifier() {
+    use ed25519_dalek::Signer as _;
+    for vector in cardano_poe_vectors() {
+        let record = record_from_vector(&vector);
+        let pubkey = hexs(&vector, "signer_public_key_hex");
+        let seed: [u8; 32] = hexs(&vector, "signer_secret_key_hex").try_into().unwrap();
+        let prepared = prepare_sig_structure(&record, &pubkey).unwrap();
+        let signing = ed25519_dalek::SigningKey::from_bytes(&seed);
+        let sig = signing.sign(&prepared.sig_structure_bytes).to_bytes();
+        let assembled = assemble_cose_sign1(&record, &pubkey, &sig).unwrap();
+
+        let mut completed = record.clone();
+        completed.sigs = Some(vec![assembled.sig_entry]);
+        let checks = verify_record_signatures(&completed, &VerifyTxInput::new("0".repeat(64)));
+        assert_eq!(checks.len(), 1);
+        assert!(checks[0].valid, "signature should verify for {}", vector["name"]);
+        assert_eq!(
+            checks[0].signer_pub.as_deref(),
+            Some(vector["signer_public_key_hex"].as_str().unwrap())
+        );
+    }
+}
+
+#[test]
+fn hashed_mode_substitutes_blake2b224_and_round_trips() {
+    use blake2::digest::consts::U28;
+    use blake2::digest::Digest;
+    use blake2::Blake2b;
+    use ed25519_dalek::Signer as _;
+
+    for vector in cardano_poe_vectors() {
+        let record = record_from_vector(&vector);
+        let pubkey = hexs(&vector, "signer_public_key_hex");
+        let seed: [u8; 32] = hexs(&vector, "signer_secret_key_hex").try_into().unwrap();
+
+        let to_sign = build_to_sign(&record).unwrap();
+        let expected_hash: [u8; 28] = Blake2b::<U28>::digest(&to_sign).into();
+        let prepared = prepare_sig_structure_hashed(&record, &pubkey).unwrap();
+        assert_eq!(prepared.to_sign_hash_bytes, expected_hash.to_vec());
+        assert_eq!(prepared.to_sign_hash_bytes.len(), 28);
+
+        // The non-hashed and hashed protected headers are byte-identical.
+        let non_hashed = prepare_sig_structure(&record, &pubkey).unwrap();
+        assert_eq!(prepared.protected_header_bytes, non_hashed.protected_header_bytes);
+
+        let signing = ed25519_dalek::SigningKey::from_bytes(&seed);
+        let sig_hashed = signing.sign(&prepared.sig_structure_bytes).to_bytes();
+        let sig_non_hashed = signing.sign(&non_hashed.sig_structure_bytes).to_bytes();
+        // Hashed signature differs from the non-hashed one; the non-hashed one
+        // matches the KAT.
+        assert_ne!(sig_hashed, sig_non_hashed);
+        assert_eq!(
+            hex::encode(sig_non_hashed),
+            vector["expected_signature_hex"].as_str().unwrap()
+        );
+
+        let assembled = assemble_cose_sign1_hashed(&record, &pubkey, &sig_hashed).unwrap();
+        let mut completed = record.clone();
+        completed.sigs = Some(vec![assembled.sig_entry]);
+        let checks = verify_record_signatures(&completed, &VerifyTxInput::new("0".repeat(64)));
+        assert!(checks[0].valid, "hashed-mode signature should verify");
+        assert_eq!(
+            checks[0].signer_pub.as_deref(),
+            Some(vector["signer_public_key_hex"].as_str().unwrap())
+        );
+    }
+}
+
+#[test]
+fn invalid_pubkey_and_signature_lengths_are_rejected() {
+    let vector = &cardano_poe_vectors()[0];
+    let record = record_from_vector(vector);
+    let pubkey = hexs(vector, "signer_public_key_hex");
+
+    assert_eq!(
+        prepare_sig_structure(&record, &[0u8; 31]).unwrap_err(),
+        OffHostSignError::InvalidPubkeyLength
+    );
+    assert_eq!(
+        assemble_cose_sign1(&record, &[0u8; 31], &[0u8; 64]).unwrap_err(),
+        OffHostSignError::InvalidPubkeyLength
+    );
+    assert_eq!(
+        assemble_cose_sign1(&record, &pubkey, &[0u8; 63]).unwrap_err(),
+        OffHostSignError::InvalidSignatureLength
+    );
+    assert_eq!(
+        prepare_sig_structure_hashed(&record, &[0u8; 31]).unwrap_err(),
+        OffHostSignError::InvalidPubkeyLength
+    );
+    assert_eq!(
+        assemble_cose_sign1_hashed(&record, &pubkey, &[0u8; 63]).unwrap_err(),
+        OffHostSignError::InvalidSignatureLength
+    );
+    // The discriminator code surface.
+    assert_eq!(OffHostSignError::InvalidPubkeyLength.code(), "INVALID_PUBKEY_LENGTH");
+    assert_eq!(
+        OffHostSignError::InvalidSignatureLength.code(),
+        "INVALID_SIGNATURE_LENGTH"
+    );
+}

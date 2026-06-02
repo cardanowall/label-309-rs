@@ -1,0 +1,38 @@
+[
+  {
+    "id": "nil-uuid-acct",
+    "prefix": "acct",
+    "uuid": "00000000-0000-0000-0000-000000000000",
+    "encoded": "acct_00000000000000000000000000"
+  },
+  {
+    "id": "max-uuid-inv",
+    "prefix": "inv",
+    "uuid": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+    "encoded": "inv_zzzzzzzzzzzzzzzzzzzzzzzzzw"
+  },
+  {
+    "id": "sample-uuidv7-poe",
+    "prefix": "poe",
+    "uuid": "01977c4a-0066-7777-aaaa-bbbbbbbbbbbb",
+    "encoded": "poe_06bqrjg0csvqfanaqexvqexvqc"
+  },
+  {
+    "id": "sample-uuidv7-apikey",
+    "prefix": "apikey",
+    "uuid": "01977c4a-0066-7777-aaaa-bbbbbbbbbbbb",
+    "encoded": "apikey_06bqrjg0csvqfanaqexvqexvqc"
+  },
+  {
+    "id": "reject-is-prefixed-id-trailing-newline",
+    "kind": "reject_is_prefixed_id",
+    "prefix": "poe",
+    "candidate": "poe_06bqrjg0csvqfanaqexvqexvqc\n"
+  },
+  {
+    "id": "reject-is-prefixed-id-acct-trailing-newline",
+    "kind": "reject_is_prefixed_id",
+    "prefix": "acct",
+    "candidate": "acct_00000000000000000000000000\n"
+  }
+]

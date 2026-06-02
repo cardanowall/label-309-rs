@@ -1,0 +1,112 @@
+name: release
+
+# ONE-TIME registry setup before the FIRST real publish:
+#
+#   1. Bootstrap (token): crates.io has no "pending publisher" concept and
+#      trusted publishing can only be attached to a crate that ALREADY exists, so
+#      the very first publish of `cardanowall` must use a token. Set the
+#      CARGO_REGISTRY_TOKEN repository secret to a crates.io API token with
+#      publish-new + publish-update scopes; the publish step prefers it when set.
+#
+#   2. Trusted Publisher (OIDC): once the crate exists, add a Trusted Publisher on
+#      the `cardanowall` crate (crates.io → crate → Settings → Trusted Publishing)
+#      with these EXACT fields:
+#         Owner             : cardanowall
+#         Repository        : cip309-rs
+#         Workflow filename : release.yml
+#      crates.io has NO organizations — ownership is per-crate. Then clear the
+#      CARGO_REGISTRY_TOKEN secret; the crates-io-auth-action step below mints a
+#      short-lived token from this job's OIDC identity instead.
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run (cargo publish --dry-run; skip the real publish and the GitHub Release)'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  # id-token is required for crates.io Trusted-Publisher OIDC.
+  id-token: write
+
+env:
+  CARGO_TERM_COLOR: always
+  # The `secrets` context cannot be referenced from an `if:` condition, so the
+  # optional bootstrap token is surfaced as env (empty unless the secret is set).
+  BOOTSTRAP_CARGO_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install stable toolchain
+        run: rustup toolchain install stable --profile minimal --component clippy,rustfmt
+
+      # ---- Gates: the standalone CI suite, re-run as release-blockers ----------
+      - name: Format check
+        run: cargo fmt --check
+
+      - name: Clippy (warnings as errors)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test (full suite)
+        run: cargo test --all-features
+
+      # ---- Publish to crates.io (OIDC trusted-publishing; token bootstrap) ------
+      # Mint a short-lived (30-minute) registry token from this job's OIDC
+      # identity via the official action. Skipped (a) during the bootstrap phase
+      # when a CARGO_REGISTRY_TOKEN secret is set (the crate must exist before a
+      # Trusted Publisher can be configured), and (b) on a dry-run, since
+      # `cargo publish --dry-run` uploads nothing and needs no token — so a
+      # dry-run works before any crates.io Trusted Publisher exists.
+      - name: Exchange OIDC for a crates.io token
+        id: auth
+        if: ${{ env.BOOTSTRAP_CARGO_TOKEN == '' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true') }}
+        uses: rust-lang/crates-io-auth-action@v1.0.4
+
+      - name: Publish `cardanowall` to crates.io (dry-run on workflow_dispatch)
+        env:
+          # Prefer the bootstrap secret when present; otherwise use the OIDC token
+          # minted above. Exactly one is non-empty.
+          CARGO_REGISTRY_TOKEN: ${{ env.BOOTSTRAP_CARGO_TOKEN || steps.auth.outputs.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Dry-run: cargo publish --dry-run"
+            cargo publish --dry-run
+          else
+            cargo publish
+          fi
+
+      # ---- GitHub Release ------------------------------------------------------
+      - name: Detect pre-release tag
+        id: prerelease
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          if [[ "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 'CIP-309 Rust SDK ${{ github.ref_name }}'
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ steps.prerelease.outputs.is_prerelease }}

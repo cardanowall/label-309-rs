@@ -1,0 +1,91 @@
+{
+  "block_slot": 100006240,
+  "block_time": 1700006240,
+  "confirmation_depth_threshold": 15,
+  "exit_code": 0,
+  "http_calls": [
+    {
+      "bytes": 872,
+      "duration_ms": 1,
+      "method": "POST",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tx_cbor"
+    },
+    {
+      "bytes": 156,
+      "duration_ms": 1,
+      "method": "POST",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tx_info"
+    },
+    {
+      "bytes": 27,
+      "duration_ms": 1,
+      "method": "GET",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tip"
+    }
+  ],
+  "metadata_labels": [
+    309
+  ],
+  "metadata_present": true,
+  "network": "cardano:mainnet",
+  "num_confirmations": 20,
+  "profile": "recipient-sealed",
+  "record": {
+    "items": [
+      {
+        "hashes": {
+          "sha2-256": "a006ffe18e60a1fcd487dc3722fc79b81439575479a5310d686bf5930047c044"
+        }
+      }
+    ],
+    "sigs": [
+      {
+        "cose_sign1": [
+          "845826a20127045820824aed85df37c3217ccd5c31b310234e0002a706644e6b22b665b37ea5a02e6ba0f658401e1edd4de3e1e151adb51734881ab360a6159b",
+          "7617c860990a51e3d246a4fe6ccb3a668f37f575258cd9b9264b6fa3557ffa1c887507ef2757c8f3898e4d5704"
+        ]
+      }
+    ],
+    "v": 1
+  },
+  "record_signatures": [
+    {
+      "index": 0,
+      "signer_pub": "824aed85df37c3217ccd5c31b310234e0002a706644e6b22b665b37ea5a02e6b",
+      "signer_type": "in-signature-kid",
+      "verdict": "valid"
+    }
+  ],
+  "tx_hash": "6dba7d62ca9277c08410d511385dee25ca34f80138892d09f9309e50e34f33b6",
+  "tx_summary": {
+    "fee_lovelace": "174785",
+    "input_count": 1,
+    "output_count": 1,
+    "outputs": [
+      {
+        "address": "addr1v83uwj6qhuyz8kus35c0qu50ye75r7ev4n5xzx9q8egjlmqgnuyv6",
+        "lovelace": "2000000"
+      }
+    ],
+    "script_witness_count": 0,
+    "total_output_lovelace": "2000000"
+  },
+  "tx_witnesses": [
+    {
+      "key_hash": "e3c74b40bf0823db908d30f0728f267d41fb2cace86118a03e512fec",
+      "signature_valid": true,
+      "type": "vkey",
+      "vkey": "5fafdd9e6a6b4ca34947a524a5e51bf0e5397d724c853a1c587c9a573073cbb4"
+    }
+  ],
+  "validation": {
+    "valid": true
+  },
+  "verdict": "valid"
+}

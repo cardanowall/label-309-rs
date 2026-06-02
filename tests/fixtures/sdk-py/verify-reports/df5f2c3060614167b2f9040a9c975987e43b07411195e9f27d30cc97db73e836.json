@@ -1,0 +1,94 @@
+{
+  "block_slot": 100006300,
+  "block_time": 1700006300,
+  "confirmation_depth_threshold": 15,
+  "exit_code": 0,
+  "http_calls": [
+    {
+      "bytes": 988,
+      "duration_ms": 1,
+      "method": "POST",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tx_cbor"
+    },
+    {
+      "bytes": 156,
+      "duration_ms": 1,
+      "method": "POST",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tx_info"
+    },
+    {
+      "bytes": 27,
+      "duration_ms": 1,
+      "method": "GET",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tip"
+    }
+  ],
+  "metadata_labels": [
+    309
+  ],
+  "metadata_present": true,
+  "network": "cardano:mainnet",
+  "num_confirmations": 21,
+  "profile": "recipient-sealed",
+  "record": {
+    "items": [
+      {
+        "hashes": {
+          "sha2-256": "77730ab2510a3bba4ee6c3b7032338a28ef08f845ed62c248bbac1bd3ee8bf2b"
+        }
+      }
+    ],
+    "sigs": [
+      {
+        "cose_key": [
+          "a40101032720062158208c9b1ca2e1260dcbaf71a289ac9efe0e6f7db0c4ca5827801029aafb24d4a02f"
+        ],
+        "cose_sign1": [
+          "84582aa201276761646472657373581de1a63ef5577ea60ce9c9be48d2b2e75cb61f5ef8c531d7580e8445c9dba0f6584073ba9b61835b52d7473add0b1b0f67",
+          "d2918ecf0819b91f4aa2b14a16fe411d3e3321623f29427f940f874ab73605720d27c72031a01c7d5d2cc1f4378ec0580d"
+        ]
+      }
+    ],
+    "v": 1
+  },
+  "record_signatures": [
+    {
+      "index": 0,
+      "signer_pub": "8c9b1ca2e1260dcbaf71a289ac9efe0e6f7db0c4ca5827801029aafb24d4a02f",
+      "signer_type": "wallet-inline-key",
+      "verdict": "valid"
+    }
+  ],
+  "tx_hash": "df5f2c3060614167b2f9040a9c975987e43b07411195e9f27d30cc97db73e836",
+  "tx_summary": {
+    "fee_lovelace": "181234",
+    "input_count": 1,
+    "output_count": 1,
+    "outputs": [
+      {
+        "address": "addr1vyj5mu2eu8pvw6kykd0vsun68vjgqn4yc4rlyy5a3skxzlsy5nrgl",
+        "lovelace": "2000000"
+      }
+    ],
+    "script_witness_count": 0,
+    "total_output_lovelace": "2000000"
+  },
+  "tx_witnesses": [
+    {
+      "key_hash": "254df159e1c2c76ac4b35ec8727a3b24804ea4c547f2129d8c2c617e",
+      "signature_valid": true,
+      "type": "vkey",
+      "vkey": "2c8ea6b3748584dc7165445e140836116a6073c6b86e0f6b1fe7ba5ebe8a7f63"
+    }
+  ],
+  "validation": {
+    "valid": true
+  },
+  "verdict": "valid"
+}

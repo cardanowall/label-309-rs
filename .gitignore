@@ -1,0 +1,9 @@
+# Rust build output
+/target
+
+# Local cargo config overrides
+.cargo/config.toml
+
+# Editor / OS
+*.swp
+.DS_Store

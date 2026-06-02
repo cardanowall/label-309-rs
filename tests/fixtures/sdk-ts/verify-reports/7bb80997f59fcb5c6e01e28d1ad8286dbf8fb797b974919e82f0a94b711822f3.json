@@ -1,0 +1,56 @@
+{
+  "block_slot": 100006180,
+  "block_time": 1700006180,
+  "confirmation_depth_threshold": 15,
+  "exit_code": 0,
+  "http_calls": [
+    {
+      "bytes": 380,
+      "duration_ms": 1,
+      "method": "POST",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tx_cbor"
+    },
+    {
+      "bytes": 156,
+      "duration_ms": 1,
+      "method": "POST",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tx_info"
+    },
+    {
+      "bytes": 27,
+      "duration_ms": 1,
+      "method": "GET",
+      "purpose": "cardano",
+      "status": 200,
+      "url": "https://api.koios.rest/api/v1/tip"
+    }
+  ],
+  "metadata_labels": [
+    309
+  ],
+  "metadata_present": true,
+  "network": "cardano:mainnet",
+  "num_confirmations": 19,
+  "profile": "recipient-sealed",
+  "record": {
+    "items": [
+      {
+        "hashes": {
+          "blake2b-256": "ff9403264468ad7a44660b56a0b561d5a4b969b77e2288b935f4b232bc51aea4",
+          "sha2-256": "eaa4e1a241e11b480a3df211faa6872902d73a47191c4b0a71854215f587e0c1"
+        }
+      }
+    ],
+    "v": 1
+  },
+  "tx_hash": "7bb80997f59fcb5c6e01e28d1ad8286dbf8fb797b974919e82f0a94b711822f3",
+  "tx_witnesses": [],
+  "validation": {
+    "valid": true
+  },
+  "verdict": "valid"
+}
