@@ -1,9 +1,9 @@
 [package]
 name = "cardanowall"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-authors = ["Cardanowall <hello@cardanowall.com>"]
+authors = ["CardanoWall <hello@cardanowall.com>"]
 description = "Rust SDK for the CIP-309 Proof-of-Existence standard."
 repository = "https://github.com/cardanowall/cip309-rs"
 homepage = "https://github.com/cardanowall/cip309-rs"

@@ -28,7 +28,7 @@ SDK.
     signatures.
   - **Recipient verifier** — the public verifier plus an X25519 private key:
     decrypts a sealed PoE and recomputes plaintext hashes.
-- **A gateway-agnostic client** (`client::CardanowallClient`) for any CIP-309
+- **A gateway-agnostic client** (`client::Cip309Client`) for any CIP-309
   gateway: you pass an explicit base URL and an optional opaque bearer key.
 - **The cryptographic building blocks** — hash, KDF, COSE, sealed-PoE,
   recipient encoding, Merkle, and seed-derived identity helpers.
@@ -163,9 +163,9 @@ The client targets no default host. You name the gateway with an explicit
 anonymous and read-only.
 
 ```rust
-use cardanowall::client::{CardanowallClient, CardanowallClientConfig};
+use cardanowall::client::{Cip309Client, Cip309ClientConfig};
 
-let client = CardanowallClient::new(CardanowallClientConfig {
+let client = Cip309Client::new(Cip309ClientConfig {
     base_url: Some("https://gateway.example".to_string()),
     api_key: Some("opaque-bearer-token".to_string()),
 })?;
@@ -181,18 +181,18 @@ illegal config and raises `InvalidClientConfigError` from the constructor.
 
 ## API overview
 
-| Module | Surface |
-| --- | --- |
-| `hash` | `sha256`, `blake2b256`, `dual_hash`, `dual_hash_stream`; `SHA2_256_ID`, `BLAKE2B_256_ID` |
-| `poe_standard` | `validate_poe_record`, `encode_poe_record`, `encode_record_body_for_signing`, `chunk_bytes` / `bytes_chunk_array_concat`, `chunk_uri` / `reconstruct_chunked_uri`; `PoeRecord`, `ValidateResult`, `ErrorCode` |
-| `verifier` | `verify_tx`, `VerifyTxInput`, `VerifyReport`, `Verdict`, `ExitCode`, `Profile`, `Decryption`; `verify_record_signatures`, `extract_label_309_metadata`, `resolve_cardano_tx`, `verify_report_to_dict` |
-| `client` | `CardanowallClient`, `CardanowallClientConfig`; namespaces `poe()` / `records()` / `inbox()` / `account()`; `Signer`, off-host signing helpers, `HttpError`, `ProblemDetails` |
-| `seed_derive` | `signer_from_seed`, `derive_ed25519_keypair`, `derive_x25519_keypair`, `derive_mlkem768x25519_keypair`, `derive_bookmark_key` |
-| `sealed_poe` | `ecies_sealed_poe_wrap_secure`, `ecies_sealed_poe_unwrap`, `ecies_sealed_poe_trial_decrypt`, envelope/slots/kem/aead |
-| `recipient` | `encode_age_x25519_recipient`, `encode_age_xwing_recipient`, `parse_age_recipient`, bech32 helpers |
-| `merkle` | `merkle_root`, `merkle_inclusion_proof`, `verify_inclusion`, `encode_leaves_list` / `decode_leaves_list` |
-| `kdf` | `hkdf_sha256` |
-| `cbor`, `cose`, `hex`, `ids`, `webhooks` | canonical CBOR, COSE_Sign1, hex, wire identifiers, webhook signature verification |
+| Module                                   | Surface                                                                                                                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hash`                                   | `sha256`, `blake2b256`, `dual_hash`, `dual_hash_stream`; `SHA2_256_ID`, `BLAKE2B_256_ID`                                                                                                                      |
+| `poe_standard`                           | `validate_poe_record`, `encode_poe_record`, `encode_record_body_for_signing`, `chunk_bytes` / `bytes_chunk_array_concat`, `chunk_uri` / `reconstruct_chunked_uri`; `PoeRecord`, `ValidateResult`, `ErrorCode` |
+| `verifier`                               | `verify_tx`, `VerifyTxInput`, `VerifyReport`, `Verdict`, `ExitCode`, `Profile`, `Decryption`; `verify_record_signatures`, `extract_label_309_metadata`, `resolve_cardano_tx`, `verify_report_to_dict`         |
+| `client`                                 | `Cip309Client`, `Cip309ClientConfig`; namespaces `poe()` / `records()` / `inbox()` / `account()`; `Signer`, off-host signing helpers, `HttpError`, `ProblemDetails`                                           |
+| `seed_derive`                            | `signer_from_seed`, `derive_ed25519_keypair`, `derive_x25519_keypair`, `derive_mlkem768x25519_keypair`, `derive_bookmark_key`                                                                                 |
+| `sealed_poe`                             | `ecies_sealed_poe_wrap_secure`, `ecies_sealed_poe_unwrap`, `ecies_sealed_poe_trial_decrypt`, envelope/slots/kem/aead                                                                                          |
+| `recipient`                              | `encode_age_x25519_recipient`, `encode_age_xwing_recipient`, `parse_age_recipient`, bech32 helpers                                                                                                            |
+| `merkle`                                 | `merkle_root`, `merkle_inclusion_proof`, `verify_inclusion`, `encode_leaves_list` / `decode_leaves_list`                                                                                                      |
+| `kdf`                                    | `hkdf_sha256`                                                                                                                                                                                                 |
+| `cbor`, `cose`, `hex`, `ids`, `webhooks` | canonical CBOR, COSE_Sign1, hex, wire identifiers, webhook signature verification                                                                                                                             |
 
 The crate denies `unsafe_code` and missing docs; `cargo doc` is the exhaustive,
 always-current reference.

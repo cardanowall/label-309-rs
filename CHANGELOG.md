@@ -9,13 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > release. Pre-1.0 versions do not carry the stability guarantees of
 > [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.0] - 2026-06-02
 
 ### Added
 
-- Initial public release of the CIP-309 Rust SDK: structural validator, public
-  verifier, recipient verifier with sealed-PoE decryption, gateway-agnostic
-  blocking HTTP client, seed-derived identity helpers, and the cryptographic
-  building blocks (hash, KDF, COSE, sealed-PoE, Merkle, recipient encoding).
-- Byte-parity with the TypeScript and Python SDKs, proven against the shared
-  cross-implementation conformance vectors.
+- Initial public release of the CIP-309 Rust SDK (crate `cardanowall`).
+- Byte-parity with the TypeScript and Python SDKs against the shared conformance vectors.
