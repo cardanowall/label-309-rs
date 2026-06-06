@@ -1340,6 +1340,109 @@ fn hybrid_slot_with_oversized_kem_ct_is_sole_length_mismatch() {
 }
 
 // ---------------------------------------------------------------------------
+// Enc resource bounds (slot-count cap + decoded-envelope size)
+// ---------------------------------------------------------------------------
+//
+// Built programmatically (over-bound slot arrays are too large to freeze in the
+// shared corpus). Constants mirror the sealed-PoE unwrap layer
+// (MAX_SLOTS = 1024, decoded-envelope bound 65536 bytes).
+
+const TEST_MAX_SLOTS: usize = 1024;
+const TEST_MAX_DECODED_ENVELOPE_BYTES: usize = 65536;
+const TEST_NONCE_LEN: usize = 24;
+const TEST_SLOTS_MAC_LEN: usize = 32;
+
+/// `n` x25519 slots, each with a distinct epk so the slot-count / byte cap is
+/// what trips, not the duplicate check.
+fn distinct_x25519_slots(n: usize) -> CborValue {
+    let slots = (0..n)
+        .map(|i| {
+            let mut epk = vec![0u8; 32];
+            epk[31] = (i & 0xff) as u8;
+            epk[30] = ((i >> 8) & 0xff) as u8;
+            CborValue::Map(vec![
+                (CborValue::text("epk"), CborValue::Bytes(epk)),
+                (
+                    CborValue::text("wrap"),
+                    CborValue::Bytes(repeat_byte(48, 0x06)),
+                ),
+            ])
+        })
+        .collect();
+    CborValue::Array(slots)
+}
+
+#[test]
+fn enc_slots_too_many_is_sole_code() {
+    // MAX_SLOTS + 1 trips the slot-count cap, which short-circuits the byte
+    // backstop, so ENC_SLOTS_TOO_MANY is the sole emitted code even though the
+    // x25519 array would also exceed the byte bound at that count.
+    let mut enc = sealed_base_pairs();
+    map_set(&mut enc, "slots", distinct_x25519_slots(TEST_MAX_SLOTS + 1));
+    assert_sole_code(
+        &record_with_enc(CborValue::Map(enc)),
+        ErrorCode::EncSlotsTooMany,
+    );
+}
+
+#[test]
+fn enc_envelope_too_large_x25519_byte_backstop() {
+    // x25519 per-slot bytes = 32 + 48 = 80. The byte backstop is the tighter
+    // guard at this width (it trips below MAX_SLOTS); one slot over the floor
+    // emits ENC_ENVELOPE_TOO_LARGE, the floor itself validates.
+    let per_slot = 32 + 48;
+    let just_under =
+        (TEST_MAX_DECODED_ENVELOPE_BYTES - TEST_NONCE_LEN - TEST_SLOTS_MAC_LEN) / per_slot;
+    assert!(just_under < TEST_MAX_SLOTS);
+
+    let mut ok = sealed_base_pairs();
+    map_set(&mut ok, "slots", distinct_x25519_slots(just_under));
+    assert!(validate_poe_record(&record_with_enc(CborValue::Map(ok))).is_ok());
+
+    let mut over = sealed_base_pairs();
+    map_set(&mut over, "slots", distinct_x25519_slots(just_under + 1));
+    assert_sole_code(
+        &record_with_enc(CborValue::Map(over)),
+        ErrorCode::EncEnvelopeTooLarge,
+    );
+}
+
+#[test]
+fn enc_envelope_too_large_hybrid_byte_backstop() {
+    // Hybrid per-slot bytes = 1120 + 48 = 1168; the smallest over-bound slot
+    // count is below MAX_SLOTS, so the byte backstop (not the slot cap) fires.
+    let per_slot = MLKEM768X25519_ENC_LENGTH + 48;
+    let over =
+        (TEST_MAX_DECODED_ENVELOPE_BYTES - TEST_NONCE_LEN - TEST_SLOTS_MAC_LEN) / per_slot + 1;
+    assert!(over <= TEST_MAX_SLOTS);
+
+    // Distinct kem_ct per slot so the duplicate check does not fire instead.
+    let slots = (0..over)
+        .map(|i| {
+            let mut body = repeat_byte(MLKEM768X25519_ENC_LENGTH, 0x11);
+            body[0] = (i & 0xff) as u8;
+            body[1] = ((i >> 8) & 0xff) as u8;
+            CborValue::Map(vec![
+                (
+                    CborValue::text("kem_ct"),
+                    CborValue::Array(chunk64(&body).into_iter().map(CborValue::Bytes).collect()),
+                ),
+                (
+                    CborValue::text("wrap"),
+                    CborValue::Bytes(repeat_byte(48, 0x09)),
+                ),
+            ])
+        })
+        .collect();
+    let mut enc = sealed_hybrid_pairs();
+    map_set(&mut enc, "slots", CborValue::Array(slots));
+    assert_sole_code(
+        &record_with_enc(CborValue::Map(enc)),
+        ErrorCode::EncEnvelopeTooLarge,
+    );
+}
+
+// ---------------------------------------------------------------------------
 // CBOR decode mapping to MALFORMED_CBOR
 // ---------------------------------------------------------------------------
 
@@ -1370,8 +1473,8 @@ fn structural_codes_are_unique() {
     let len = codes.len();
     codes.dedup();
     assert_eq!(codes.len(), len, "STRUCTURAL_ERROR_CODES must be unique");
-    // Pins the catalogue size (41 structural validator codes).
-    assert_eq!(STRUCTURAL_ERROR_CODES.len(), 41);
+    // Pins the catalogue size (44 structural validator codes).
+    assert_eq!(STRUCTURAL_ERROR_CODES.len(), 44);
 }
 
 #[test]

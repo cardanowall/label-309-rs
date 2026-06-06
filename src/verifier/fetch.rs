@@ -32,10 +32,12 @@
 //! deterministic in tests.
 
 use std::net::{Ipv4Addr, Ipv6Addr};
-use std::sync::Arc;
 use std::time::Duration;
 
+#[cfg(feature = "client")]
 use reqwest::dns::{Addrs, Resolve, Resolving};
+#[cfg(feature = "client")]
+use std::sync::Arc;
 
 /// Canonical deny-host list a service-independent verifier rejects so a record
 /// can never be made to "verify" only because it reached the operator's own host
@@ -386,13 +388,13 @@ pub fn matches_deny_list<S: AsRef<str>>(host: &str, deny_hosts: &[S]) -> bool {
 /// Extract the lowercase scheme (with trailing colon) from a URL string, or
 /// `None` if the URL cannot be parsed.
 fn parse_protocol(url: &str) -> Option<String> {
-    let parsed = reqwest::Url::parse(url).ok()?;
+    let parsed = url::Url::parse(url).ok()?;
     Some(format!("{}:", parsed.scheme().to_lowercase()))
 }
 
 /// Extract the hostname from a URL string, or `None` if it cannot be parsed.
 fn parse_hostname(url: &str) -> Option<String> {
-    let parsed = reqwest::Url::parse(url).ok()?;
+    let parsed = url::Url::parse(url).ok()?;
     parsed.host_str().map(str::to_string)
 }
 
@@ -467,9 +469,10 @@ fn backoff_jittered_ms(attempt_index: usize, jitter: &dyn Jitter) -> f64 {
 
 /// A network transport: performs one fetch and returns the bounded result.
 ///
-/// The default implementation is [`ReqwestTransport`]; tests inject a stub so the
-/// wrapper's pure control flow (allowlists, deny-host, retry, audit) is exercised
-/// without real I/O.
+/// The production implementation, `ReqwestTransport`, ships behind the `client`
+/// feature; with that feature off a caller supplies its own implementation.
+/// Tests inject a stub so the wrapper's pure control flow (allowlists,
+/// deny-host, retry, audit) is exercised without real I/O.
 pub trait FetchTransport: Send + Sync {
     /// Perform one fetch. The size cap in `opts.max_bytes` must be honoured.
     fn fetch(
@@ -652,11 +655,13 @@ pub fn parse_http_method(method: &str, url: &str) -> Result<HttpMethod, Outbound
 /// guard already range-checked, closing the DNS-rebinding window. The original
 /// hostname still drives the `Host:` header, TLS SNI, and certificate
 /// verification.
+#[cfg(feature = "client")]
 struct PinnedResolver {
     host: String,
     addr: std::net::IpAddr,
 }
 
+#[cfg(feature = "client")]
 impl Resolve for PinnedResolver {
     fn resolve(&self, name: reqwest::dns::Name) -> Resolving {
         let want = self.host.to_lowercase();
@@ -683,11 +688,13 @@ impl Resolve for PinnedResolver {
 /// IP and refuses every other name — the DNS-rebinding mitigation for the webhook
 /// path. The generic gateway path leaves `pinned` unset and uses the system
 /// resolver.
+#[cfg(feature = "client")]
 #[derive(Default)]
 pub struct ReqwestTransport {
     pinned: Option<(String, std::net::IpAddr)>,
 }
 
+#[cfg(feature = "client")]
 impl ReqwestTransport {
     /// A transport using the system DNS resolver.
     #[must_use]
@@ -728,6 +735,7 @@ impl ReqwestTransport {
     }
 }
 
+#[cfg(feature = "client")]
 impl FetchTransport for ReqwestTransport {
     fn fetch(
         &self,
@@ -780,6 +788,7 @@ impl FetchTransport for ReqwestTransport {
 /// Stream the response body, stopping the instant the running byte count exceeds
 /// `max_bytes`. This is the real OOM guard: a gateway that withholds or lies about
 /// `Content-Length` still cannot make us buffer more than the cap.
+#[cfg(feature = "client")]
 fn read_body_capped(
     resp: &mut reqwest::blocking::Response,
     url: &str,
@@ -811,6 +820,7 @@ fn read_body_capped(
 ///
 /// Records one audit row on success (or a pre-flight row on rejection) and uses
 /// the production clock and jitter sources.
+#[cfg(feature = "client")]
 pub fn fetch_outbound(
     url: &str,
     opts: &FetchOutboundOptions,
@@ -962,17 +972,18 @@ fn looks_like_ip_literal(host: &str) -> bool {
 /// Assert `url` is safe for outbound webhook delivery.
 ///
 /// On success returns the resolved IP and family; the caller is REQUIRED to pin
-/// the TCP connection to that IP (see [`ReqwestTransport::pinned`]) so a
-/// DNS-rebind between check time and use time cannot redirect the request to a
-/// private address. The guard is HTTPS-only by default; resolves A + AAAA;
-/// rejects the whole check if ANY resolved address is in a blocked range.
+/// the TCP connection to that IP (the `client`-feature `ReqwestTransport::pinned`
+/// constructor does this) so a DNS-rebind between check time and use time cannot
+/// redirect the request to a private address. The guard is HTTPS-only by
+/// default; resolves A + AAAA; rejects the whole check if ANY resolved address
+/// is in a blocked range.
 pub fn assert_webhook_url_safe(
     url: &str,
     opts: &AssertWebhookUrlSafeOptions<'_>,
 ) -> Result<AssertWebhookUrlSafeResult, WebhookUrlUnsafeError> {
     let allow_private = opts.allow_private_for_tests;
 
-    let parsed = reqwest::Url::parse(url).map_err(|_| WebhookUrlUnsafeError {
+    let parsed = url::Url::parse(url).map_err(|_| WebhookUrlUnsafeError {
         reason: WebhookUrlUnsafeReason::InvalidUrl,
         url: url.to_string(),
         hostname: String::new(),

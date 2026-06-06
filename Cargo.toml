@@ -1,6 +1,6 @@
 [package]
 name = "cardanowall"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = ["CardanoWall <hello@cardanowall.com>"]
@@ -17,6 +17,23 @@ categories = ["cryptography", "api-bindings"]
 # root so cargo never walks upward looking for one.
 [workspace]
 
+[features]
+# The `client` feature gates the gateway HTTP client namespace and the only
+# pieces that need an HTTP stack: the blocking-reqwest production transport, the
+# default-transport wiring, and the seed-backed `Signer` impl the client's
+# publish path consumes. It is on by default, so the full SDK surface is
+# available out of the box. Build with `--no-default-features` for a transport-
+# free crate that keeps the entire structural validator, the pure verifier
+# pipeline, the SSRF / deny-host guards, and the cryptographic primitives — a
+# caller injects its own `FetchTransport` for any network I/O.
+default = ["client"]
+client = ["dep:reqwest"]
+
+[package.metadata.docs.rs]
+# Document the full surface, including the default-on `client` namespace, on
+# docs.rs.
+all-features = true
+
 [dependencies]
 argon2 = "0.5.3"
 blake2 = "0.10.6"
@@ -30,7 +47,11 @@ hex = "0.4.3"
 hkdf = "0.13.0"
 hmac = "0.13.0"
 ml-kem = "0.3.2"
-reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "json", "blocking"] }
+# Gated behind the `client` feature: the HTTP stack is only needed for the
+# gateway client namespace and the production blocking transport. The pure
+# verifier (deny-host + SSRF guards) parses URLs with the `url` crate instead,
+# so the no-default-features build stays HTTP-free.
+reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "json", "blocking"], optional = true }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 sha2 = "0.11.0"
@@ -42,6 +63,12 @@ thiserror = "2.0.18"
 # unicode-rs crate; its `tinyvec` transitive is already resolved via the HTTP
 # client stack.
 unicode-normalization = "0.1"
+# RFC 3986 URL parsing for the verifier's pure deny-host and SSRF guards. Kept
+# out of the `client` feature so scheme/host extraction (and therefore the full
+# egress-policy validation) is available in the transport-free build. Already
+# resolved transitively via the HTTP stack, so it adds no new crate when
+# `client` is enabled.
+url = "2.5"
 x25519-dalek = "2"
 zeroize = { version = "1.8.2", features = ["derive"] }
 
@@ -50,3 +77,9 @@ zeroize = { version = "1.8.2", features = ["derive"] }
 # encoder against an independent decoder. The library itself never parses CBOR
 # with this crate, so it stays out of the published runtime dependency set.
 ciborium = "0.2.2"
+# HMAC-SHA256 + SHA-256 for the test harness to compute the reference slots_mac
+# when crafting the CEK-conflict behavioural vector. Both are already runtime
+# dependencies of the crate, so this adds no new supply-chain surface; the
+# dev-dep entry just makes them reachable from the integration-test crates.
+hmac = "0.13.0"
+sha2 = "0.11.0"

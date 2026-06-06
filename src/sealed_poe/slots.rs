@@ -3,15 +3,15 @@
 //!
 //! 1. How the 1120-byte X-Wing `enc` is split into the ≤ 64-byte byte-string
 //!    chunks the Cardano ledger requires (`kem_ct`), and the inverse join.
-//! 2. The canonical-CBOR serialization of the slot array that feeds
-//!    `slots_mac`.
+//! 2. The canonical slot-array structure the slots transcript commits to
+//!    ([`canonicalize_slots`]).
 //!
 //! Keeping both here means wrap, unwrap, and the downstream record encoder
-//! cannot diverge on the bytes the MAC commits to — the single highest
+//! cannot diverge on the bytes the transcript commits to — the single highest
 //! correctness risk for the hybrid branch, since a divergence would leave the
 //! ML-KEM ciphertext unauthenticated.
 
-use crate::cbor::{encode_canonical_cbor, CborValue};
+use crate::cbor::CborValue;
 
 /// The envelope-level KEM discriminator string for the classical age-style path.
 pub const KEM_X25519: &str = "x25519";
@@ -105,7 +105,8 @@ pub struct SealedEnvelope {
     pub nonce: Vec<u8>,
     /// The per-recipient slots.
     pub slots: SealedSlots,
-    /// The 32-byte HMAC-SHA256 over the canonical-CBOR slot projection.
+    /// The 32-byte HMAC-SHA256 over the slots-transcript hash `slots_hash`,
+    /// keyed by an HKDF expansion of the CEK.
     pub slots_mac: Vec<u8>,
 }
 
@@ -149,7 +150,7 @@ pub fn join_kem_ct(chunks: &[Vec<u8>]) -> Vec<u8> {
     chunks.iter().flatten().copied().collect()
 }
 
-/// Canonical-CBOR projection of the slot array for the `slots_mac` input.
+/// The canonical slot-array structure the slots transcript commits to.
 ///
 /// - `x25519`: each slot → `{ epk: bstr, wrap: bstr }`.
 /// - `mlkem768x25519`: each slot → `{ kem_ct: [ bstr, … ], wrap: bstr }`,
@@ -157,12 +158,22 @@ pub fn join_kem_ct(chunks: &[Vec<u8>]) -> Vec<u8> {
 ///   `wrap` (4-byte key) sorts before `kem_ct` (6-byte key) per RFC 8949
 ///   §4.2.1).
 ///
-/// The hybrid form uses the SAME chunked-array shape as the wire encoder, so
-/// the MAC commits to the ciphertext exactly as it appears on-chain. Returns the
-/// canonical-CBOR bytes ready for HMAC.
+/// The hybrid form re-chunks `kem_ct` into its canonical ≤ 64-byte sequence so
+/// the transcript commits to the ciphertext BYTES, not the wire chunk
+/// boundaries. The on-wire `kem_ct` array is a transport detail (the Cardano
+/// ledger's 64-byte metadatum cap); a hostile or non-canonical chunking
+/// reassembles to the SAME bytes, so the commitment must be invariant to it.
+/// Committing to the verbatim wire chunks would let an attacker re-chunk an
+/// honest envelope and break the slots_mac match for an honest recipient.
+/// Honest (already 64-byte-chunked) records are unchanged; a real byte flip
+/// still changes the reassembled bytes and is still rejected.
+///
+/// Returns the slot-array [`CborValue`] (NOT encoded) so the caller can embed it
+/// under the `slots` key of the larger slots-transcript map before a single
+/// canonical encode.
 #[must_use]
-pub fn slots_to_mac_cbor(slots: &SealedSlots) -> Vec<u8> {
-    let value = match slots {
+pub fn canonicalize_slots(slots: &SealedSlots) -> CborValue {
+    match slots {
         SealedSlots::X25519(slots) => CborValue::Array(
             slots
                 .iter()
@@ -178,12 +189,6 @@ pub fn slots_to_mac_cbor(slots: &SealedSlots) -> Vec<u8> {
             slots
                 .iter()
                 .map(|s| {
-                    // Canonicalize the chunk boundaries before MAC'ing: reassemble
-                    // the logical kem_ct and re-split it into 64-byte chunks. This
-                    // makes the MAC input chunking-invariant — a re-served record
-                    // whose kem_ct carries the same bytes under different chunk
-                    // boundaries still authenticates, while a byte-flip does not.
-                    // Honest (already 64-byte-chunked) records are unaffected.
                     let canonical = chunk_kem_ct(&join_kem_ct(&s.kem_ct));
                     let chunks = CborValue::Array(
                         canonical
@@ -200,14 +205,13 @@ pub fn slots_to_mac_cbor(slots: &SealedSlots) -> Vec<u8> {
                 })
                 .collect(),
         ),
-    };
-    encode_canonical_cbor(&value)
-        .expect("slot byte strings never collide as duplicate map keys, so encoding cannot fail")
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cbor::encode_canonical_cbor;
 
     #[test]
     fn chunk_then_join_is_the_identity_for_1120_bytes() {
@@ -228,14 +232,15 @@ mod tests {
     }
 
     #[test]
-    fn hybrid_mac_cbor_orders_wrap_before_kem_ct() {
+    fn hybrid_slot_encodes_wrap_before_kem_ct() {
         // A single hybrid slot encodes its map as {wrap, kem_ct}: the map header
         // a2, then key "wrap" (64 77 72 61 70) before key "kem_ct".
         let slots = SealedSlots::Mlkem768X25519(vec![Mlkem768X25519Slot {
             kem_ct: vec![vec![0xaa; 4]],
             wrap: vec![0xbb; 48],
         }]);
-        let bytes = slots_to_mac_cbor(&slots);
+        let bytes = encode_canonical_cbor(&canonicalize_slots(&slots))
+            .expect("slot byte strings never collide as duplicate map keys");
         // Outer: array(1) = 0x81, then map(2) = 0xa2, then text(4)="wrap".
         assert_eq!(bytes[0], 0x81);
         assert_eq!(bytes[1], 0xa2);

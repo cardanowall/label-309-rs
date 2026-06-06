@@ -86,6 +86,25 @@ pub enum EciesSealedPoeErrorCode {
     InvalidRecipientKey,
     /// A per-slot `wrap` field was not exactly 48 bytes.
     WrapLengthMismatch,
+    /// Two slots carry identical per-slot KEM material (a duplicate `epk` for
+    /// x25519, or a duplicate reassembled `kem_ct` for the hybrid path). The
+    /// zero-nonce per-slot wrap is sound only under per-slot KEK uniqueness;
+    /// repeated KEM material derives the same KEK and so repeats the (KEK,
+    /// nonce) pair. Rejected on both the producer side (before committing to the
+    /// wire) and the verifier side (before any decapsulation).
+    EncSlotsDuplicateKemMaterial,
+    /// The envelope carried more than `MAX_SLOTS` slots. A resource bound a
+    /// public parser enforces before any KEM/AEAD primitive, so a malformed
+    /// record cannot drive unbounded per-slot work.
+    EncSlotsTooMany,
+    /// The decoded envelope's aggregate byte size exceeded
+    /// `MAX_DECODED_ENVELOPE_BYTES`. A resource backstop enforced before any
+    /// KEM/AEAD primitive.
+    EncEnvelopeTooLarge,
+    /// A payload at or above the XChaCha20-Poly1305 single-shot keystream bound
+    /// (`2^38 - 64` plaintext bytes, `+16` for the ciphertext). Enforced on both
+    /// encrypt and decrypt before the AEAD primitive runs.
+    PayloadTooLarge,
     /// The operating-system CSPRNG could not be read while drawing the CEK,
     /// content nonce, or per-recipient ephemeral material for a secure wrap.
     /// This is reported, never panicked: a wrap with no entropy must fail
@@ -118,6 +137,10 @@ impl EciesSealedPoeErrorCode {
             Self::InvalidEnvelopeShape => "INVALID_ENVELOPE_SHAPE",
             Self::InvalidRecipientKey => "INVALID_RECIPIENT_KEY",
             Self::WrapLengthMismatch => "WRAP_LENGTH_MISMATCH",
+            Self::EncSlotsDuplicateKemMaterial => "ENC_SLOTS_DUPLICATE_KEM_MATERIAL",
+            Self::EncSlotsTooMany => "ENC_SLOTS_TOO_MANY",
+            Self::EncEnvelopeTooLarge => "ENC_ENVELOPE_TOO_LARGE",
+            Self::PayloadTooLarge => "PAYLOAD_TOO_LARGE",
             Self::RngUnavailable => "RNG_UNAVAILABLE",
         }
     }

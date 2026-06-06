@@ -17,7 +17,9 @@ use crate::verifier::cbor_walker::extract_label_309_metadata;
 use crate::verifier::cbor_walker::slice_tx_components;
 use crate::verifier::decrypt::try_decryptions;
 use crate::verifier::egress::GatewayFetcher;
-use crate::verifier::fetch::{HttpCallRecord, ReqwestTransport};
+use crate::verifier::fetch::HttpCallRecord;
+#[cfg(feature = "client")]
+use crate::verifier::fetch::ReqwestTransport;
 use crate::verifier::merkle::check_merkle_commitments;
 use crate::verifier::profile::{out_of_profile_issues, profile_at_least};
 use crate::verifier::resolve::{resolve_cardano_tx, ResolveError, ResolvedTx};
@@ -30,14 +32,42 @@ use crate::verifier::types::{
 
 /// Verify a Cardano transaction's Label 309 record and produce a [`VerifyReport`].
 ///
-/// Routes every outbound call through `input.fetch_outbound` (or the default
-/// reqwest transport when absent), so the report's `http_calls` audit and its
-/// `duration_ms` values are fully determined by the injected transport in tests.
+/// Routes every outbound call through `input.fetch_outbound`. With the `client`
+/// feature (the default), an absent transport falls back to the production
+/// reqwest transport; without it, the caller MUST supply a
+/// [`FetchTransport`](crate::verifier::fetch::FetchTransport), and an absent one
+/// yields a provider-unavailable report rather than reaching the network. Either
+/// way the report's `http_calls` audit and its `duration_ms` values are fully
+/// determined by the injected transport in tests.
 #[must_use]
 pub fn verify_tx(input: &VerifyTxInput<'_>) -> VerifyReport {
+    #[cfg(feature = "client")]
     let default_transport = ReqwestTransport::new();
+
+    #[cfg(feature = "client")]
     let transport: &dyn crate::verifier::fetch::FetchTransport =
         input.fetch_outbound.unwrap_or(&default_transport);
+
+    // Without the `client` feature there is no built-in transport: the caller is
+    // the sole source of outbound I/O. An absent transport cannot reach the
+    // chain, so the verifier reports the gateway as unavailable instead of
+    // attempting (and silently skipping) the fetch.
+    #[cfg(not(feature = "client"))]
+    let transport: &dyn crate::verifier::fetch::FetchTransport = match input.fetch_outbound {
+        Some(t) => t,
+        None => {
+            return resolve_failure_report(
+                input,
+                input.threshold(),
+                &ResolveError::ProviderUnavailable(
+                    "no fetch transport supplied (build with the `client` feature \
+                     or set VerifyTxInput::fetch_outbound)"
+                        .to_string(),
+                ),
+            );
+        }
+    };
+
     let mut fetcher = GatewayFetcher::new(transport, input.deny_hosts.as_deref());
 
     let report = run_pipeline(input, &mut fetcher);

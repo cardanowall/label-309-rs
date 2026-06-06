@@ -83,7 +83,7 @@ function buildCanonicalRoundtripFixture(): void {
     vectors: Array<Record<string, unknown>>;
   };
   const idx = corpus.vectors.findIndex((v) => v['name'] === 'cardano-poe-record-shaped');
-  // Minimal v2 record `{v}` — small enough to hand-verify if needed.
+  // Minimal record `{v}` — small enough to hand-verify if needed.
   const recordMinimal: CanonicalCborValue = { v: 1 };
   const encoded = encodeCanonicalCbor(recordMinimal);
   const newVector = {

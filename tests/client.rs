@@ -7,6 +7,10 @@
 //! byte-pin the off-host signing helper against the shared
 //! `cose/sign1-build.json` corpus. No fixtures are copied — the canonical trees
 //! are path-referenced from the sibling packages.
+//!
+//! The entire binary targets the `client` namespace, so it is compiled only when
+//! the `client` feature is enabled.
+#![cfg(feature = "client")]
 
 mod common;
 

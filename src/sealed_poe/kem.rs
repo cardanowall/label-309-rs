@@ -18,10 +18,10 @@
 use ml_kem::array::sizes::U64;
 use ml_kem::array::Array;
 use ml_kem::kem::Decapsulate;
-use ml_kem::{DecapsulationKey, EncapsulationKey, MlKem768};
+use ml_kem::{DecapsulationKey, EncapsulationKey, KeyExport, MlKem768};
 use sha3::digest::{ExtendableOutput, Update as _, XofReader};
 use sha3::{Digest, Sha3_256, Shake256};
-use subtle::ConstantTimeEq;
+use subtle::{Choice, ConstantTimeEq};
 use thiserror::Error;
 use x25519_dalek::x25519;
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -139,6 +139,35 @@ pub fn x25519_ecdh(secret_key: &[u8], their_public_key: &[u8]) -> Result<[u8; 32
     Ok(shared)
 }
 
+/// Perform an X25519 Diffie-Hellman exchange WITHOUT the RFC 7748 §6.1 all-zero
+/// rejection, returning both the raw shared secret and a constant-time validity
+/// bit (`kem_ok`).
+///
+/// `x25519-dalek` does not throw on a small-order peer point — it returns the
+/// all-zero shared secret — so the trial-decrypt path can fold the validity bit
+/// into the per-slot acceptance branchlessly (a dummy KEK derived from `0^32`
+/// keeps the failed slot's work identical) rather than early-returning an error.
+/// `kem_ok` is `false` exactly when the shared secret is all-zero. The producer
+/// path uses the rejecting [`x25519_ecdh`] instead; this non-rejecting form is
+/// for the verifier's constant-time slot loop.
+///
+/// # Errors
+///
+/// Returns [`KemError::InvalidX25519KeyLength`] for a wrong-length input.
+pub fn x25519_ecdh_unvalidated(
+    secret_key: &[u8],
+    their_public_key: &[u8],
+) -> Result<([u8; 32], Choice), KemError> {
+    let scalar =
+        to_array32(secret_key).ok_or(KemError::InvalidX25519KeyLength(secret_key.len()))?;
+    let point = to_array32(their_public_key)
+        .ok_or(KemError::InvalidX25519KeyLength(their_public_key.len()))?;
+    let shared = x25519(scalar, point);
+    // kem_ok = NOT (shared == 0^32), computed in constant time.
+    let kem_ok = !shared.ct_eq(&[0u8; 32]);
+    Ok((shared, kem_ok))
+}
+
 /// An X-Wing encapsulation result: the ciphertext and the derived shared secret.
 ///
 /// The 32-byte `ss` is the secret the caller wraps the CEK under; it is wiped
@@ -220,6 +249,49 @@ pub fn mlkem768x25519_encapsulate(
     ss_mlkem.zeroize();
     ss_x25519.zeroize();
     Ok(Mlkem768X25519Encapsulation { enc, ss })
+}
+
+/// Recompute the 1216-byte X-Wing (`mlkem768x25519`) public key from a 32-byte
+/// secret seed.
+///
+/// The seed is expanded with SHAKE-256 to 96 bytes, split as the ML-KEM-768
+/// keygen coins `d ‖ z` (the first 64 bytes) and the raw X25519 secret scalar
+/// (the last 32 bytes), per draft-connolly-cfrg-xwing-kem. The result is the
+/// FIPS 203 ML-KEM-768 encapsulation key (1184 bytes) followed by the X25519
+/// public key (32 bytes) — the same `pub_R` the producer bound into every hybrid
+/// slot's KEK salt. The verifier recomputes it ONCE per private key in the
+/// trial-decrypt scan, since the hybrid KEK salt depends on it.
+///
+/// # Errors
+///
+/// Returns [`KemError::InvalidSecretSeedLength`] when `secret_seed` is not
+/// exactly [`MLKEM768X25519_SK_SEED_LENGTH`] bytes.
+pub fn mlkem768x25519_public_key_from_seed(
+    secret_seed: &[u8],
+) -> Result<[u8; MLKEM768X25519_PUBLIC_KEY_LENGTH], KemError> {
+    if secret_seed.len() != MLKEM768X25519_SK_SEED_LENGTH {
+        return Err(KemError::InvalidSecretSeedLength(secret_seed.len()));
+    }
+    let seed = to_array32(secret_seed).expect("secret seed length checked above");
+    let mut expanded = expand_xwing_seed(&seed);
+
+    // ML-KEM-768 deterministic keygen consumes the 64-byte `d ‖ z` prefix.
+    let mlkem_seed: Array<u8, U64> =
+        Array::try_from(&expanded[0..64]).expect("the expansion yields a 64-byte ML-KEM seed");
+    let dk = DecapsulationKey::<MlKem768>::from_seed(mlkem_seed);
+    let ek_bytes = dk.encapsulation_key().to_bytes();
+
+    // The trailing 32 bytes are the raw, unclamped X25519 scalar.
+    let mut x_scalar = to_array32(&expanded[64..96]).expect("the expansion tail is 32 bytes");
+    let pk_x25519 = x25519(x_scalar, x25519_dalek::X25519_BASEPOINT_BYTES);
+
+    let mut public_key = [0u8; MLKEM768X25519_PUBLIC_KEY_LENGTH];
+    public_key[..MLKEM_EK_LENGTH].copy_from_slice(ek_bytes.as_slice());
+    public_key[MLKEM_EK_LENGTH..].copy_from_slice(&pk_x25519);
+
+    expanded.zeroize();
+    x_scalar.zeroize();
+    Ok(public_key)
 }
 
 /// Decapsulate an X-Wing (`mlkem768x25519`) ciphertext.
@@ -325,7 +397,6 @@ fn to_array32(bytes: &[u8]) -> Option<[u8; 32]> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ml_kem::KeyExport;
 
     #[test]
     fn x25519_rejects_the_all_zero_point() {

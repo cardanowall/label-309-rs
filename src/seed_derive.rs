@@ -89,7 +89,7 @@ pub struct DerivedX25519KeyPair {
 
 /// A derived X-Wing (ML-KEM-768 + X25519) hybrid keypair.
 ///
-/// Per draft-connolly-cfrg-xwing-kem-06 the secret key IS the 32-byte root
+/// Per draft-connolly-cfrg-xwing-kem-10 the secret key IS the 32-byte root
 /// seed: the ML-KEM coins and the X25519 scalar are re-expanded from it on
 /// demand at decapsulation. The 1216-byte `public_key` is the ML-KEM-768
 /// encapsulation key (1184 bytes) followed by the X25519 public key (32 bytes).
@@ -191,7 +191,7 @@ fn x25519_public_key(secret_scalar: &[u8; 32]) -> [u8; 32] {
 
 /// Deterministic X-Wing keygen from a 32-byte root seed.
 ///
-/// Per draft-connolly-cfrg-xwing-kem-06, the seed is expanded with SHAKE-256 to
+/// Per draft-connolly-cfrg-xwing-kem-10, the seed is expanded with SHAKE-256 to
 /// 96 bytes, split as the ML-KEM-768 keygen coins `d ‖ z` (the first 64 bytes)
 /// and the X25519 secret scalar (the last 32 bytes). The returned 1216-byte
 /// public key is the FIPS 203 ML-KEM-768 encapsulation key (1184 bytes)
@@ -231,7 +231,7 @@ pub fn xwing_keygen(seed: &[u8; SEED_LENGTH]) -> [u8; MLKEM768X25519_PUBLIC_KEY_
 ///
 /// The 96 output bytes split as the ML-KEM-768 keygen coins `d ‖ z` (the first
 /// 64 bytes) and the raw X25519 secret scalar (the last 32 bytes), per
-/// draft-connolly-cfrg-xwing-kem-06.
+/// draft-connolly-cfrg-xwing-kem-10.
 #[must_use]
 pub fn expand_xwing_seed(seed: &[u8; SEED_LENGTH]) -> [u8; XWING_EXPANDED_SEED_LENGTH] {
     let mut hasher = Shake256::default();
@@ -242,8 +242,7 @@ pub fn expand_xwing_seed(seed: &[u8; SEED_LENGTH]) -> [u8; XWING_EXPANDED_SEED_L
     expanded
 }
 
-/// An in-memory path-1 [`Signer`](crate::client::Signer) backed by the master
-/// seed.
+/// An in-memory path-1 record signer backed by the master seed.
 ///
 /// The seed-derived Ed25519 secret lives only inside this struct; the publish /
 /// off-host-signing path touches just the public key and the 64-byte signature.
@@ -252,6 +251,11 @@ pub fn expand_xwing_seed(seed: &[u8; SEED_LENGTH]) -> [u8; XWING_EXPANDED_SEED_L
 /// / Python `signer_from_seed` helper: it lets the CLI and integrators sign a
 /// record with the same identity key [`derive_ed25519_keypair`] exposes, without
 /// hand-rolling key derivation outside the SDK.
+///
+/// With the `client` feature it implements the gateway client's `Signer` trait,
+/// so it can drive the signed-publish path directly. The struct (and its
+/// [`public_key`](SeedSigner::public_key)) is available without that feature for
+/// callers that only need the derived identity key.
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct SeedSigner {
     /// The 32-byte RFC 8032 Ed25519 private seed.
@@ -286,6 +290,7 @@ fn hex_public(bytes: &[u8; 32]) -> String {
     s
 }
 
+#[cfg(feature = "client")]
 impl crate::client::Signer for SeedSigner {
     fn signer_pubkey(&self) -> Vec<u8> {
         self.public_key.to_vec()
@@ -303,12 +308,14 @@ impl crate::client::Signer for SeedSigner {
 /// The record-signing Ed25519 key is HKDF-derived from the seed (the same key
 /// [`derive_ed25519_keypair`] returns), so a record signed by this signer
 /// verifies under the identity that `recipientsFromSeed`-style derivation
-/// exposes.
+/// exposes. Available with the `client` feature, which also supplies the
+/// `Signer` trait the returned value drives.
 ///
 /// # Errors
 ///
 /// Returns [`SeedDeriveError::InvalidSeedLength`] when `seed` is not exactly
 /// [`SEED_LENGTH`] bytes.
+#[cfg(feature = "client")]
 pub fn signer_from_seed(seed: &[u8]) -> Result<SeedSigner, SeedDeriveError> {
     let pair = derive_ed25519_keypair(seed)?;
     Ok(SeedSigner {
@@ -371,6 +378,7 @@ mod tests {
         assert_eq!(a.public_key, b.public_key);
     }
 
+    #[cfg(feature = "client")]
     #[test]
     fn seed_signer_pubkey_matches_derivation_and_signs() {
         use crate::client::Signer;
@@ -385,6 +393,7 @@ mod tests {
         assert_eq!(sig, sig2);
     }
 
+    #[cfg(feature = "client")]
     #[test]
     fn seed_signer_rejects_wrong_seed_length() {
         assert_eq!(

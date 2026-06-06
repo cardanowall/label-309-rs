@@ -24,6 +24,7 @@ pub mod envelope;
 pub mod errors;
 pub mod kem;
 pub mod slots;
+pub mod transcript;
 pub mod unwrap;
 pub mod wrap;
 
@@ -32,18 +33,26 @@ pub use aead::{
     xchacha20_poly1305_encrypt, AeadError,
 };
 pub use kem::{
-    mlkem768x25519_decapsulate, mlkem768x25519_encapsulate, x25519_ecdh, x25519_public_key,
-    KemError, MLKEM768X25519_ENC_LENGTH, MLKEM768X25519_ESEED_LENGTH,
-    MLKEM768X25519_PUBLIC_KEY_LENGTH, MLKEM768X25519_SHARED_SECRET_LENGTH,
-    MLKEM768X25519_SK_SEED_LENGTH,
+    mlkem768x25519_decapsulate, mlkem768x25519_encapsulate, mlkem768x25519_public_key_from_seed,
+    x25519_ecdh, x25519_ecdh_unvalidated, x25519_public_key, KemError, MLKEM768X25519_ENC_LENGTH,
+    MLKEM768X25519_ESEED_LENGTH, MLKEM768X25519_PUBLIC_KEY_LENGTH,
+    MLKEM768X25519_SHARED_SECRET_LENGTH, MLKEM768X25519_SK_SEED_LENGTH,
 };
 
 pub use envelope::{sealed_envelope_from_parsed, ParsedEnvelope, ParsedSlot};
 pub use errors::{EciesSealedPoeError, EciesSealedPoeErrorCode};
 pub use slots::{
-    chunk_kem_ct, join_kem_ct, slots_to_mac_cbor, Mlkem768X25519Slot, SealedEnvelope,
+    canonicalize_slots, chunk_kem_ct, join_kem_ct, Mlkem768X25519Slot, SealedEnvelope,
     SealedPoeOutput, SealedSlots, X25519Slot, AEAD_XCHACHA20_POLY1305, KEM_MLKEM768X25519,
     KEM_X25519,
+};
+pub use transcript::{
+    ad_content_passphrase, ad_content_slots, assert_ciphertext_within_bound,
+    assert_plaintext_within_bound, compute_slots_hash, passphrase_payload_key, slots_payload_key,
+    xwing_kek_salt, CARDANO_POE_HASH_PREFIX_SLOTS_TRANSCRIPT,
+    CARDANO_POE_HASH_PREFIX_XWING_KEK_SALT, CARDANO_POE_HKDF_INFO_PAYLOAD,
+    CARDANO_POE_HKDF_INFO_PAYLOAD_PASSPHRASE, CARDANO_POE_PW_NORM_PROFILE,
+    MAX_DECODED_ENVELOPE_BYTES, MAX_SEALED_CIPHERTEXT, MAX_SEALED_PLAINTEXT, MAX_SLOTS,
 };
 pub use unwrap::{
     ecies_sealed_poe_trial_decrypt, ecies_sealed_poe_unwrap, PrivsAttempted, RecipientKeyBundle,

@@ -18,17 +18,12 @@
 //! std-only loopback HTTP server backs the network cases; no extra crate is
 //! pulled in.
 
-use std::io::{Read, Write};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::thread;
+use std::net::IpAddr;
 
 use cardanowall::verifier::fetch::{
-    assert_webhook_url_safe, fetch_outbound, is_blocked_ip, matches_deny_list,
-    AssertWebhookUrlSafeOptions, FetchOutboundOptions, HttpMethod, HttpPurpose, OutboundError,
-    ReqwestTransport, ResolveHost, ResolvedRecord, WebhookUrlUnsafeReason, WrapFetchOutboundConfig,
-    BLOCKED_IPV4_RANGES, BLOCKED_IPV6_RANGES, DEFAULT_OUTBOUND_MAX_BYTES, DENY_HOSTS_DEFAULT,
+    assert_webhook_url_safe, is_blocked_ip, matches_deny_list, AssertWebhookUrlSafeOptions,
+    ResolveHost, ResolvedRecord, WebhookUrlUnsafeReason, BLOCKED_IPV4_RANGES, BLOCKED_IPV6_RANGES,
+    DEFAULT_OUTBOUND_MAX_BYTES, DENY_HOSTS_DEFAULT,
 };
 
 // ===========================================================================
@@ -246,252 +241,272 @@ fn ssrf_rebind_style_mixed_records_rejected() {
 
 // ===========================================================================
 // Real-socket cases: a std-only loopback HTTP server.
+//
+// These cases drive bytes over a real socket through the production reqwest
+// transport, so they compile only with the `client` feature. The deny-host and
+// SSRF logic above is pure and runs in every build.
 // ===========================================================================
 
-/// Spawn a one-shot loopback HTTP server. The handler is given the raw request
-/// bytes and returns the full raw response bytes to write back. Returns the bound
-/// `SocketAddr`. The server serves a single connection then exits.
-fn spawn_once<F>(handler: F) -> SocketAddr
-where
-    F: FnOnce(&[u8]) -> Vec<u8> + Send + 'static,
-{
-    let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
-    let addr = listener.local_addr().unwrap();
-    thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 4096];
-            let _ = stream.read(&mut buf);
-            let resp = handler(&buf);
-            let _ = stream.write_all(&resp);
-            let _ = stream.flush();
-        }
-    });
-    addr
-}
+#[cfg(feature = "client")]
+mod real_socket {
+    use std::io::{Read, Write};
+    use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::thread;
 
-/// Build a minimal HTTP/1.1 200 response with the given body and an honest
-/// Content-Length (unless `lie_length` overrides it).
-fn http_200(body: &[u8], lie_length: Option<usize>) -> Vec<u8> {
-    let len = lie_length.unwrap_or(body.len());
-    let mut out = format!("HTTP/1.1 200 OK\r\nContent-Length: {len}\r\nConnection: close\r\n\r\n")
-        .into_bytes();
-    out.extend_from_slice(body);
-    out
-}
-
-fn http_url(addr: SocketAddr, path: &str) -> String {
-    format!("http://{addr}{path}")
-}
-
-#[test]
-fn real_fetch_under_cap_returns_body_and_audit_row() {
-    let addr = spawn_once(|_req| http_200(b"hello-world", None));
-    let mut audit = Vec::new();
-    let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
-    opts.max_bytes = Some(1024);
-    let r = fetch_outbound(
-        &http_url(addr, "/blob"),
-        &opts,
-        &mut audit,
-        &WrapFetchOutboundConfig::default(),
-    )
-    .unwrap();
-    assert_eq!(r.status, 200);
-    assert_eq!(r.bytes, b"hello-world");
-
-    // Audit row shape: one row, all six fields, snake-case purpose token.
-    assert_eq!(audit.len(), 1);
-    let row = &audit[0];
-    assert_eq!(row.status, 200);
-    assert_eq!(row.bytes, "hello-world".len() as u64);
-    assert_eq!(row.method, HttpMethod::Get);
-    assert_eq!(row.purpose.as_str(), "arweave");
-    assert_eq!(row.url, http_url(addr, "/blob"));
-}
-
-#[test]
-fn real_fetch_body_over_cap_is_rejected() {
-    let addr = spawn_once(|_req| http_200(&vec![b'x'; 4096], None));
-    let mut audit = Vec::new();
-    let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
-    opts.max_bytes = Some(1024);
-    let err = fetch_outbound(
-        &http_url(addr, "/big"),
-        &opts,
-        &mut audit,
-        &WrapFetchOutboundConfig::default(),
-    )
-    .unwrap_err();
-    assert_eq!(err.code(), "OUTBOUND_BODY_TOO_LARGE");
-    match err {
-        OutboundError::BodyTooLarge { limit_bytes, .. } => assert_eq!(limit_bytes, 1024),
-        other => panic!("expected BodyTooLarge, got {other:?}"),
-    }
-}
-
-#[test]
-fn real_fetch_lying_content_length_over_cap_is_rejected() {
-    // Declares a huge Content-Length but serves a tiny body. The fast-path
-    // header check must bail before reading the body.
-    let addr = spawn_once(|_req| http_200(b"xx", Some(999_999)));
-    let mut audit = Vec::new();
-    let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
-    opts.max_bytes = Some(1024);
-    let err = fetch_outbound(
-        &http_url(addr, "/liar"),
-        &opts,
-        &mut audit,
-        &WrapFetchOutboundConfig::default(),
-    )
-    .unwrap_err();
-    assert_eq!(err.code(), "OUTBOUND_BODY_TOO_LARGE");
-}
-
-#[test]
-fn real_fetch_exactly_at_cap_is_allowed() {
-    let addr = spawn_once(|_req| http_200(&vec![7u8; 1024], None));
-    let mut audit = Vec::new();
-    let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
-    opts.max_bytes = Some(1024);
-    let r = fetch_outbound(
-        &http_url(addr, "/exact"),
-        &opts,
-        &mut audit,
-        &WrapFetchOutboundConfig::default(),
-    )
-    .unwrap();
-    assert_eq!(r.bytes.len(), 1024);
-}
-
-#[test]
-fn real_fetch_deny_host_short_circuits_before_socket() {
-    // 127.0.0.1 is in the default deny list; the wrapper must reject before any
-    // connection, so the server (which we never spawn) is irrelevant.
-    let config = WrapFetchOutboundConfig {
-        deny_hosts: DENY_HOSTS_DEFAULT.iter().map(|s| s.to_string()).collect(),
-        ..WrapFetchOutboundConfig::default()
+    use cardanowall::verifier::fetch::{
+        fetch_outbound, FetchOutboundOptions, HttpMethod, HttpPurpose, OutboundError,
+        ReqwestTransport, WrapFetchOutboundConfig, DENY_HOSTS_DEFAULT,
     };
-    let mut audit = Vec::new();
-    let err = fetch_outbound(
-        "http://127.0.0.1:9/never",
-        &FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Https),
-        &mut audit,
-        &config,
-    )
-    .unwrap_err();
-    assert_eq!(err.code(), "SERVICE_INDEPENDENCE_VIOLATION");
-    assert_eq!(audit.len(), 1);
-    assert_eq!(audit[0].status, 0);
-}
 
-// ===========================================================================
-// DNS-rebind connection pinning: the pinned transport must connect to the IP
-// the SSRF guard validated, and must refuse to resolve any other host.
-// ===========================================================================
+    /// Spawn a one-shot loopback HTTP server. The handler is given the raw request
+    /// bytes and returns the full raw response bytes to write back. Returns the bound
+    /// `SocketAddr`. The server serves a single connection then exits.
+    fn spawn_once<F>(handler: F) -> SocketAddr
+    where
+        F: FnOnce(&[u8]) -> Vec<u8> + Send + 'static,
+    {
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let addr = listener.local_addr().unwrap();
+        thread::spawn(move || {
+            if let Ok((mut stream, _)) = listener.accept() {
+                let mut buf = [0u8; 4096];
+                let _ = stream.read(&mut buf);
+                let resp = handler(&buf);
+                let _ = stream.write_all(&resp);
+                let _ = stream.flush();
+            }
+        });
+        addr
+    }
 
-#[test]
-fn pinned_transport_connects_to_validated_ip() {
-    use cardanowall::verifier::fetch::FetchTransport;
+    /// Build a minimal HTTP/1.1 200 response with the given body and an honest
+    /// Content-Length (unless `lie_length` overrides it).
+    fn http_200(body: &[u8], lie_length: Option<usize>) -> Vec<u8> {
+        let len = lie_length.unwrap_or(body.len());
+        let mut out =
+            format!("HTTP/1.1 200 OK\r\nContent-Length: {len}\r\nConnection: close\r\n\r\n")
+                .into_bytes();
+        out.extend_from_slice(body);
+        out
+    }
 
-    let served = Arc::new(AtomicBool::new(false));
-    let served_clone = Arc::clone(&served);
-    let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
-    let addr = listener.local_addr().unwrap();
-    thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            served_clone.store(true, Ordering::SeqCst);
-            let mut buf = [0u8; 4096];
-            let _ = stream.read(&mut buf);
-            let _ = stream.write_all(&http_200(b"pinned-ok", None));
-            let _ = stream.flush();
-        }
-    });
+    fn http_url(addr: SocketAddr, path: &str) -> String {
+        format!("http://{addr}{path}")
+    }
 
-    // Use a hostname that does NOT resolve in DNS, but pin it to the loopback IP
-    // the server is on. If pinning works the request still lands on our socket;
-    // without pinning the name resolution would fail.
-    let host = "webhook-target.invalid";
-    let pinned = ReqwestTransport::pinned(host, IpAddr::V4(Ipv4Addr::LOCALHOST));
-    let url = format!("http://{host}:{}/hook", addr.port());
-    let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Webhook);
-    opts.max_bytes = Some(1024);
-    let result = pinned.fetch(&url, &opts).unwrap();
-    assert_eq!(result.status, 200);
-    assert_eq!(result.bytes, b"pinned-ok");
-    assert!(
-        served.load(Ordering::SeqCst),
-        "the pinned IP's server must have been reached"
-    );
-}
+    #[test]
+    fn real_fetch_under_cap_returns_body_and_audit_row() {
+        let addr = spawn_once(|_req| http_200(b"hello-world", None));
+        let mut audit = Vec::new();
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
+        opts.max_bytes = Some(1024);
+        let r = fetch_outbound(
+            &http_url(addr, "/blob"),
+            &opts,
+            &mut audit,
+            &WrapFetchOutboundConfig::default(),
+        )
+        .unwrap();
+        assert_eq!(r.status, 200);
+        assert_eq!(r.bytes, b"hello-world");
 
-#[test]
-fn pinned_transport_refuses_unexpected_host() {
-    use cardanowall::verifier::fetch::FetchTransport;
+        // Audit row shape: one row, all six fields, snake-case purpose token.
+        assert_eq!(audit.len(), 1);
+        let row = &audit[0];
+        assert_eq!(row.status, 200);
+        assert_eq!(row.bytes, "hello-world".len() as u64);
+        assert_eq!(row.method, HttpMethod::Get);
+        assert_eq!(row.purpose.as_str(), "arweave");
+        assert_eq!(row.url, http_url(addr, "/blob"));
+    }
 
-    // Pin host A, then request host B. The custom resolver refuses B, so the
-    // request fails as a transport error rather than silently re-resolving.
-    let pinned = ReqwestTransport::pinned("pinned-host.invalid", IpAddr::V4(Ipv4Addr::LOCALHOST));
-    let opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Webhook);
-    let err = pinned
-        .fetch("http://other-host.invalid/hook", &opts)
+    #[test]
+    fn real_fetch_body_over_cap_is_rejected() {
+        let addr = spawn_once(|_req| http_200(&vec![b'x'; 4096], None));
+        let mut audit = Vec::new();
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
+        opts.max_bytes = Some(1024);
+        let err = fetch_outbound(
+            &http_url(addr, "/big"),
+            &opts,
+            &mut audit,
+            &WrapFetchOutboundConfig::default(),
+        )
         .unwrap_err();
-    assert_eq!(err.code(), "OUTBOUND_TRANSPORT");
-}
+        assert_eq!(err.code(), "OUTBOUND_BODY_TOO_LARGE");
+        match err {
+            OutboundError::BodyTooLarge { limit_bytes, .. } => assert_eq!(limit_bytes, 1024),
+            other => panic!("expected BodyTooLarge, got {other:?}"),
+        }
+    }
 
-// ===========================================================================
-// SSRF: redirects must NOT be followed. The deny-host / SSRF guard validates
-// only the original URL, so an un-rechecked `Location` hop could pivot the
-// fetch into the internal network. A 3xx must surface as a non-200 status.
-// ===========================================================================
+    #[test]
+    fn real_fetch_lying_content_length_over_cap_is_rejected() {
+        // Declares a huge Content-Length but serves a tiny body. The fast-path
+        // header check must bail before reading the body.
+        let addr = spawn_once(|_req| http_200(b"xx", Some(999_999)));
+        let mut audit = Vec::new();
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
+        opts.max_bytes = Some(1024);
+        let err = fetch_outbound(
+            &http_url(addr, "/liar"),
+            &opts,
+            &mut audit,
+            &WrapFetchOutboundConfig::default(),
+        )
+        .unwrap_err();
+        assert_eq!(err.code(), "OUTBOUND_BODY_TOO_LARGE");
+    }
 
-/// Build a minimal HTTP/1.1 3xx redirect response pointing at `location`.
-fn http_redirect(status_line: &str, location: &str) -> Vec<u8> {
-    format!(
+    #[test]
+    fn real_fetch_exactly_at_cap_is_allowed() {
+        let addr = spawn_once(|_req| http_200(&vec![7u8; 1024], None));
+        let mut audit = Vec::new();
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
+        opts.max_bytes = Some(1024);
+        let r = fetch_outbound(
+            &http_url(addr, "/exact"),
+            &opts,
+            &mut audit,
+            &WrapFetchOutboundConfig::default(),
+        )
+        .unwrap();
+        assert_eq!(r.bytes.len(), 1024);
+    }
+
+    #[test]
+    fn real_fetch_deny_host_short_circuits_before_socket() {
+        // 127.0.0.1 is in the default deny list; the wrapper must reject before any
+        // connection, so the server (which we never spawn) is irrelevant.
+        let config = WrapFetchOutboundConfig {
+            deny_hosts: DENY_HOSTS_DEFAULT.iter().map(|s| s.to_string()).collect(),
+            ..WrapFetchOutboundConfig::default()
+        };
+        let mut audit = Vec::new();
+        let err = fetch_outbound(
+            "http://127.0.0.1:9/never",
+            &FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Https),
+            &mut audit,
+            &config,
+        )
+        .unwrap_err();
+        assert_eq!(err.code(), "SERVICE_INDEPENDENCE_VIOLATION");
+        assert_eq!(audit.len(), 1);
+        assert_eq!(audit[0].status, 0);
+    }
+
+    // ===========================================================================
+    // DNS-rebind connection pinning: the pinned transport must connect to the IP
+    // the SSRF guard validated, and must refuse to resolve any other host.
+    // ===========================================================================
+
+    #[test]
+    fn pinned_transport_connects_to_validated_ip() {
+        use cardanowall::verifier::fetch::FetchTransport;
+
+        let served = Arc::new(AtomicBool::new(false));
+        let served_clone = Arc::clone(&served);
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let addr = listener.local_addr().unwrap();
+        thread::spawn(move || {
+            if let Ok((mut stream, _)) = listener.accept() {
+                served_clone.store(true, Ordering::SeqCst);
+                let mut buf = [0u8; 4096];
+                let _ = stream.read(&mut buf);
+                let _ = stream.write_all(&http_200(b"pinned-ok", None));
+                let _ = stream.flush();
+            }
+        });
+
+        // Use a hostname that does NOT resolve in DNS, but pin it to the loopback IP
+        // the server is on. If pinning works the request still lands on our socket;
+        // without pinning the name resolution would fail.
+        let host = "webhook-target.invalid";
+        let pinned = ReqwestTransport::pinned(host, IpAddr::V4(Ipv4Addr::LOCALHOST));
+        let url = format!("http://{host}:{}/hook", addr.port());
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Webhook);
+        opts.max_bytes = Some(1024);
+        let result = pinned.fetch(&url, &opts).unwrap();
+        assert_eq!(result.status, 200);
+        assert_eq!(result.bytes, b"pinned-ok");
+        assert!(
+            served.load(Ordering::SeqCst),
+            "the pinned IP's server must have been reached"
+        );
+    }
+
+    #[test]
+    fn pinned_transport_refuses_unexpected_host() {
+        use cardanowall::verifier::fetch::FetchTransport;
+
+        // Pin host A, then request host B. The custom resolver refuses B, so the
+        // request fails as a transport error rather than silently re-resolving.
+        let pinned =
+            ReqwestTransport::pinned("pinned-host.invalid", IpAddr::V4(Ipv4Addr::LOCALHOST));
+        let opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Webhook);
+        let err = pinned
+            .fetch("http://other-host.invalid/hook", &opts)
+            .unwrap_err();
+        assert_eq!(err.code(), "OUTBOUND_TRANSPORT");
+    }
+
+    // ===========================================================================
+    // SSRF: redirects must NOT be followed. The deny-host / SSRF guard validates
+    // only the original URL, so an un-rechecked `Location` hop could pivot the
+    // fetch into the internal network. A 3xx must surface as a non-200 status.
+    // ===========================================================================
+
+    /// Build a minimal HTTP/1.1 3xx redirect response pointing at `location`.
+    fn http_redirect(status_line: &str, location: &str) -> Vec<u8> {
+        format!(
         "HTTP/1.1 {status_line}\r\nLocation: {location}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
     )
     .into_bytes()
-}
+    }
 
-#[test]
-fn redirect_is_not_followed_to_internal_host() {
-    use cardanowall::verifier::fetch::FetchTransport;
+    #[test]
+    fn redirect_is_not_followed_to_internal_host() {
+        use cardanowall::verifier::fetch::FetchTransport;
 
-    // The "internal" target: a loopback server that, if ever reached, returns a
-    // body that would prove the redirect was followed. We assert it is NEVER hit.
-    let internal_reached = Arc::new(AtomicBool::new(false));
-    let internal_reached_clone = Arc::clone(&internal_reached);
-    let internal = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
-    let internal_addr = internal.local_addr().unwrap();
-    thread::spawn(move || {
-        if let Ok((mut stream, _)) = internal.accept() {
-            internal_reached_clone.store(true, Ordering::SeqCst);
-            let mut buf = [0u8; 4096];
-            let _ = stream.read(&mut buf);
-            let _ = stream.write_all(&http_200(b"INTERNAL-SECRET", None));
-            let _ = stream.flush();
-        }
-    });
+        // The "internal" target: a loopback server that, if ever reached, returns a
+        // body that would prove the redirect was followed. We assert it is NEVER hit.
+        let internal_reached = Arc::new(AtomicBool::new(false));
+        let internal_reached_clone = Arc::clone(&internal_reached);
+        let internal = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let internal_addr = internal.local_addr().unwrap();
+        thread::spawn(move || {
+            if let Ok((mut stream, _)) = internal.accept() {
+                internal_reached_clone.store(true, Ordering::SeqCst);
+                let mut buf = [0u8; 4096];
+                let _ = stream.read(&mut buf);
+                let _ = stream.write_all(&http_200(b"INTERNAL-SECRET", None));
+                let _ = stream.flush();
+            }
+        });
 
-    // The hostile gateway redirects to the internal server.
-    let location = format!("http://127.0.0.1:{}/metadata", internal_addr.port());
-    let gateway_addr = spawn_once(move |_req| http_redirect("302 Found", &location));
+        // The hostile gateway redirects to the internal server.
+        let location = format!("http://127.0.0.1:{}/metadata", internal_addr.port());
+        let gateway_addr = spawn_once(move |_req| http_redirect("302 Found", &location));
 
-    // ReqwestTransport (the production verifier transport) must surface the 302,
-    // not the internal body.
-    let transport = ReqwestTransport::new();
-    let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
-    opts.max_bytes = Some(1024);
-    let result = transport
-        .fetch(&http_url(gateway_addr, "/redirect"), &opts)
-        .unwrap();
+        // ReqwestTransport (the production verifier transport) must surface the 302,
+        // not the internal body.
+        let transport = ReqwestTransport::new();
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
+        opts.max_bytes = Some(1024);
+        let result = transport
+            .fetch(&http_url(gateway_addr, "/redirect"), &opts)
+            .unwrap();
 
-    assert_eq!(result.status, 302, "the 3xx must surface as the status");
-    assert_ne!(
-        result.bytes, b"INTERNAL-SECRET",
-        "the internal body must never be returned"
-    );
-    assert!(
-        !internal_reached.load(Ordering::SeqCst),
-        "the redirect target must never be contacted"
-    );
+        assert_eq!(result.status, 302, "the 3xx must surface as the status");
+        assert_ne!(
+            result.bytes, b"INTERNAL-SECRET",
+            "the internal body must never be returned"
+        );
+        assert!(
+            !internal_reached.load(Ordering::SeqCst),
+            "the redirect target must never be contacted"
+        );
+    }
 }

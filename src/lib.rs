@@ -11,11 +11,27 @@
 //! gateway-agnostic HTTP client. Nothing here trusts a publisher or an issuer
 //! server; a verifier needs only transaction metadata, optionally the content
 //! bytes, and a public blockchain explorer.
+//!
+//! # Cargo features
+//!
+//! - **`client`** (default) — the gateway-agnostic HTTP `client` namespace, the
+//!   production blocking-`reqwest` transport, and the seed-backed record
+//!   `Signer` implementation. This is the only feature that pulls in an HTTP
+//!   stack.
+//!
+//! Building with `--no-default-features` yields a transport-free crate that
+//! keeps the entire structural validator, the pure verifier pipeline, the
+//! SSRF / deny-host egress guards, and the cryptographic primitives. In that
+//! configuration the [`verifier::verify_tx`] entry point has no built-in
+//! transport: a caller injects its own
+//! [`FetchTransport`](crate::verifier::fetch::FetchTransport) via
+//! [`VerifyTxInput::fetch_outbound`](crate::verifier::types::VerifyTxInput).
 
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
 pub mod cbor;
+#[cfg(feature = "client")]
 pub mod client;
 pub mod cose;
 pub mod hash;

@@ -467,6 +467,146 @@ fn unwrap_n32() {
 }
 
 #[test]
+fn unwrap_duplicate_recipient_decrypts() {
+    // A1 positive: the same recipient public key in two slots (fresh distinct
+    // ephemerals, same CEK) MUST decrypt normally — the CEK-conflict check
+    // rejects only DIFFERENT recovered CEKs, never honest recipient padding.
+    check_unwrap_positive("unwrap-duplicate-recipient.json");
+}
+
+#[test]
+fn cek_conflict_is_rejected() {
+    // A1 negative (behavioural): splice an envelope from two single-slot wraps
+    // that address the SAME recipient but carry DIFFERENT CEKs, then re-key the
+    // slots_mac and content ciphertext to the FIRST slot's CEK so slot 0 passes
+    // the MAC and the content opens. The ONLY thing that should reject this is
+    // the CEK-conflict check: slot 1 recovers a different CEK. A verifier that
+    // selected only the first match and skipped the rest would wrongly ACCEPT.
+    use cardanowall::kdf::hkdf_sha256;
+    use cardanowall::sealed_poe::{
+        ad_content_slots, compute_slots_hash, slots_payload_key, x25519_public_key,
+        xchacha20_poly1305_encrypt, CARDANO_POE_HKDF_INFO_SLOTS_MAC, KEM_X25519,
+    };
+    use hmac::{Hmac, KeyInit, Mac};
+    use sha2::Sha256;
+
+    let recipient_priv = make_priv(0xD0);
+    let cek_a = vec![0xAAu8; 32];
+    let cek_b = vec![0xBBu8; 32];
+    let nonce: Vec<u8> = (0..24u16).map(|i| (0xE0u16 + i) as u8).collect();
+
+    let pub_keys = vec![x25519_public_key(&recipient_priv)
+        .expect("derive recipient public key")
+        .to_vec()];
+
+    let out_a = ecies_sealed_poe_wrap_with_rng(
+        WrapArgs {
+            plaintext: b"x",
+            recipient_public_keys: &pub_keys,
+            kem: None,
+            cek: Some(&cek_a),
+            nonce: Some(&nonce),
+            ephemeral_secrets: Some(&[vec![0x01u8; 32]]),
+            eseeds: None,
+            skip_shuffle: true,
+        },
+        &mut no_rng(),
+    )
+    .expect("wrap A");
+    let out_b = ecies_sealed_poe_wrap_with_rng(
+        WrapArgs {
+            plaintext: b"x",
+            recipient_public_keys: &pub_keys,
+            kem: None,
+            cek: Some(&cek_b),
+            nonce: Some(&nonce),
+            ephemeral_secrets: Some(&[vec![0x02u8; 32]]),
+            eseeds: None,
+            skip_shuffle: true,
+        },
+        &mut no_rng(),
+    )
+    .expect("wrap B");
+
+    let slot0 = single_x25519_slot(&out_a);
+    let slot1 = single_x25519_slot(&out_b);
+    // Distinct epks, so the duplicate-KEM-material gate does not pre-empt the
+    // conflict path.
+    assert_ne!(slot0.epk, slot1.epk);
+
+    let slots = SealedSlots::X25519(vec![slot0, slot1]);
+    let slots_hash = compute_slots_hash(KEM_X25519, &nonce, &slots);
+
+    // Reference slots_mac keyed by cek_a over the spliced 2-slot transcript.
+    let hmac_key = hkdf_sha256(&cek_a, &[], CARDANO_POE_HKDF_INFO_SLOTS_MAC, 32).expect("hkdf");
+    let mut mac = <Hmac<Sha256>>::new_from_slice(&hmac_key).expect("hmac key");
+    mac.update(&slots_hash);
+    let slots_mac = mac.finalize().into_bytes().to_vec();
+
+    // Content ciphertext that opens under cek_a's payload_key with the spliced AAD.
+    let payload_key = slots_payload_key(&cek_a, &nonce);
+    let aad = ad_content_slots(KEM_X25519, &nonce, &slots_hash, &slots_mac);
+    let ciphertext = xchacha20_poly1305_encrypt(&payload_key, &nonce, &aad, b"conflict-probe");
+
+    let envelope = SealedEnvelope {
+        scheme: 1,
+        aead: AEAD_XCHACHA20_POLY1305.to_string(),
+        kem: KEM_X25519.to_string(),
+        nonce,
+        slots,
+        slots_mac,
+    };
+
+    // Single-priv path: rejected with the generic TamperedHeader reason.
+    let single = ecies_sealed_poe_unwrap(
+        &envelope,
+        &ciphertext,
+        UnwrapKeys::Single(&recipient_priv),
+        true,
+        None,
+    )
+    .expect("structured non-match, not error");
+    assert_eq!(
+        single,
+        UnwrapResult::NotMatched {
+            reason: UnwrapFailureReason::TamperedHeader
+        }
+    );
+
+    // Multi-priv path: same rejection.
+    let multi_keys = vec![recipient_priv.clone()];
+    let multi = ecies_sealed_poe_unwrap(
+        &envelope,
+        &ciphertext,
+        UnwrapKeys::Multi(&multi_keys),
+        true,
+        None,
+    )
+    .expect("structured non-match, not error");
+    assert_eq!(
+        multi,
+        UnwrapResult::NotMatched {
+            reason: UnwrapFailureReason::TamperedHeader
+        }
+    );
+
+    // Trial-decrypt path: a conflict is the generic AeadPassNoMacMatch, never a
+    // clean match.
+    let trial =
+        ecies_sealed_poe_trial_decrypt(&envelope, TrialDecryptKeys::Multi(&multi_keys), true, None)
+            .expect("trial-decrypt structured result, not error");
+    assert_eq!(trial, TrialDecryptResult::AeadPassNoMacMatch);
+}
+
+/// Extract the single X25519 slot from a one-recipient wrap output.
+fn single_x25519_slot(out: &SealedPoeOutput) -> X25519Slot {
+    match &out.envelope.slots {
+        SealedSlots::X25519(slots) => slots[0].clone(),
+        SealedSlots::Mlkem768X25519(_) => panic!("expected an x25519 wrap output"),
+    }
+}
+
+#[test]
 fn unwrap_negative_matched_false_single_priv() {
     let corpus = fixture("unwrap-negative.json");
     for v in corpus["matched_false_vectors"]
@@ -1113,6 +1253,15 @@ fn wrap_two_recipients(plaintext: &[u8]) -> SealedPoeOutput {
 fn low_order_epk_is_a_non_match_never_a_throw() {
     for epk_hex in LOW_ORDER_EPKS {
         let low_order = hex::decode(epk_hex).unwrap();
+        // Per-slot KEK uniqueness forbids two slots sharing the same epk, so the
+        // two-slot all-low-order envelope pairs `low_order` with a DISTINCT
+        // low-order point. Both still drive the X25519 shared secret to all-zero,
+        // which is the property under test.
+        let partner_hex = LOW_ORDER_EPKS
+            .iter()
+            .find(|&&e| e != *epk_hex)
+            .expect("a distinct low-order epk is always available");
+        let partner_low_order = hex::decode(partner_hex).unwrap();
 
         // All-low-order envelope: no slot can open → clean non-match.
         let r0 = make_priv(0x11);
@@ -1140,8 +1289,13 @@ fn low_order_epk_is_a_non_match_never_a_throw() {
         };
         let all_low: Vec<X25519Slot> = slots
             .iter()
-            .map(|s| X25519Slot {
-                epk: low_order.clone(),
+            .enumerate()
+            .map(|(i, s)| X25519Slot {
+                epk: if i == 0 {
+                    low_order.clone()
+                } else {
+                    partner_low_order.clone()
+                },
                 wrap: s.wrap.clone(),
             })
             .collect();

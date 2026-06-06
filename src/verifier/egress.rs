@@ -11,9 +11,11 @@
 //! reproduces the golden `duration_ms` and audit shape exactly. The default
 //! production path uses the real reqwest transport.
 
+#[cfg(feature = "client")]
+use crate::verifier::fetch::ReqwestTransport;
 use crate::verifier::fetch::{
     wrap_fetch_outbound, Clock, FetchOutboundOptions, FetchOutboundResult, FetchTransport,
-    HttpCallRecord, Jitter, OutboundError, ReqwestTransport, RetryConfig, WrapFetchOutboundConfig,
+    HttpCallRecord, Jitter, OutboundError, RetryConfig, WrapFetchOutboundConfig,
 };
 
 /// A no-op clock used when retries are disabled (the verifier default), so the
@@ -106,12 +108,14 @@ impl<'a> GatewayFetcher<'a> {
     }
 }
 
-/// Build a [`GatewayFetcher`] over the default production reqwest transport.
+/// Build the default production reqwest transport.
 ///
-/// The returned fetcher borrows the supplied transport reference; callers that
-/// want the default must hold a [`ReqwestTransport`] alive for the fetcher's
-/// lifetime. This helper documents the production wiring; tests inject their own
-/// transport via [`GatewayFetcher::new`].
+/// Callers that want the default must hold the returned [`ReqwestTransport`]
+/// alive for the fetcher's lifetime and pass it to [`GatewayFetcher::new`]. This
+/// helper documents the production wiring; tests inject their own transport via
+/// [`GatewayFetcher::new`]. Available only with the `client` feature; without it,
+/// a caller supplies its own [`FetchTransport`].
+#[cfg(feature = "client")]
 #[must_use]
 pub fn default_transport() -> ReqwestTransport {
     ReqwestTransport::new()

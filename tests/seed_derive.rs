@@ -197,7 +197,7 @@ fn xwing_keygen_matches_fixture() {
             field(vector, "expected_pk_hex"),
             "vector {name}: x-wing public key (1216 bytes)"
         );
-        // draft-06: the X-Wing secret key IS the root seed verbatim.
+        // The X-Wing secret key IS the root seed verbatim.
         assert_eq!(
             hex::encode(&seed),
             field(vector, "expected_sk_seed_hex"),

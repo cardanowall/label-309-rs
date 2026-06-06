@@ -25,6 +25,12 @@
 use std::collections::BTreeSet;
 
 use crate::cbor::{decode_canonical_cbor, encode_canonical_cbor, CborValue};
+// The verifier resource bounds the sealed-PoE unwrap layer enforces. Importing
+// the same constants here, rather than re-declaring them, makes the structural
+// validator and the unwrap layer trip the identical thresholds: a divergence is
+// impossible because there is one definition. Both are deployment-pinned
+// reference values, not wire fields.
+use crate::sealed_poe::{MAX_DECODED_ENVELOPE_BYTES, MAX_SLOTS};
 
 // ===========================================================================
 // Error-code catalogue
@@ -84,6 +90,15 @@ pub enum ErrorCode {
     EncSlotsEmpty,
     /// A recipient slot is not the closed 2-key map its KEM requires.
     EncSlotInvalidShape,
+    /// Two slots in one `enc.slots` carry identical encapsulation material (the
+    /// same `epk`, or the same reassembled `kem_ct`), breaking per-slot KEK
+    /// uniqueness.
+    EncSlotsDuplicateKemMaterial,
+    /// `enc.slots` exceeds the slot-count resource bound (`MAX_SLOTS`).
+    EncSlotsTooMany,
+    /// The decoded `enc` envelope exceeds the size resource bound
+    /// (`MAX_DECODED_ENVELOPE_BYTES`).
+    EncEnvelopeTooLarge,
     /// `enc.kem` is not in the v1 KEM registry.
     UnsupportedKemAlg,
     /// `enc.slots` is present but `enc.kem` is absent.
@@ -223,6 +238,9 @@ pub const STRUCTURAL_ERROR_CODES: &[ErrorCode] = &[
     ErrorCode::UnsupportedEnvelopeScheme,
     ErrorCode::EncSlotsEmpty,
     ErrorCode::EncSlotInvalidShape,
+    ErrorCode::EncSlotsDuplicateKemMaterial,
+    ErrorCode::EncSlotsTooMany,
+    ErrorCode::EncEnvelopeTooLarge,
     ErrorCode::UnsupportedKemAlg,
     ErrorCode::EncKemRequired,
     ErrorCode::KemEpkLengthMismatch,
@@ -306,6 +324,9 @@ impl ErrorCode {
             ErrorCode::UnsupportedEnvelopeScheme => "UNSUPPORTED_ENVELOPE_SCHEME",
             ErrorCode::EncSlotsEmpty => "ENC_SLOTS_EMPTY",
             ErrorCode::EncSlotInvalidShape => "ENC_SLOT_INVALID_SHAPE",
+            ErrorCode::EncSlotsDuplicateKemMaterial => "ENC_SLOTS_DUPLICATE_KEM_MATERIAL",
+            ErrorCode::EncSlotsTooMany => "ENC_SLOTS_TOO_MANY",
+            ErrorCode::EncEnvelopeTooLarge => "ENC_ENVELOPE_TOO_LARGE",
             ErrorCode::UnsupportedKemAlg => "UNSUPPORTED_KEM_ALG",
             ErrorCode::EncKemRequired => "ENC_KEM_REQUIRED",
             ErrorCode::KemEpkLengthMismatch => "KEM_EPK_LENGTH_MISMATCH",
@@ -901,6 +922,13 @@ const REGISTERED_MERKLE_COMMIT_KEYS: &[&str] = &["alg", "root", "leaf_count", "u
 
 /// The X-Wing `enc` length carried by the `mlkem768x25519` hybrid KEM.
 const MLKEM768X25519_ENC_LENGTH: usize = 1120;
+
+/// Fixed envelope-field lengths used by the decoded-envelope byte backstop. The
+/// nonce is the XChaCha20-Poly1305 nonce (also the AEAD registry value) and
+/// `slots_mac` is a SHA-256 MAC; both are pinned by the construction, so the
+/// backstop measures the same aggregate the unwrap layer does.
+const NONCE_LENGTH: usize = 24;
+const SLOTS_MAC_LENGTH: usize = 32;
 
 /// Which ciphertext-bearing field a KEM uses, plus its expected length.
 #[derive(Debug, Clone, Copy)]
@@ -1627,9 +1655,64 @@ fn validate_encryption(enc: &CborValue, issues: &mut Vec<ValidationIssue>) {
                         ErrorCode::EncSlotsEmpty,
                         "slots must be a non-empty array".to_string(),
                     ));
+                } else if slots.len() > MAX_SLOTS {
+                    // Slot-count resource bound — reject an over-large slot
+                    // array before walking every slot. This is the slot-count
+                    // half of the partitioning-oracle resource guard; the unwrap
+                    // layer trips the identical threshold first, so the two
+                    // layers agree. Skip the per-slot, duplicate, and byte-size
+                    // passes — the array is rejected outright.
+                    issues.push(issue(
+                        ErrorCode::EncSlotsTooMany,
+                        format!("slots length {} exceeds MAX_SLOTS={MAX_SLOTS}", slots.len()),
+                    ));
                 } else if let Some(kem) = kem_resolved {
+                    let descriptor = kem_slot_descriptor(kem);
+                    // Per-slot KEK uniqueness: the zero-nonce per-slot wrap is
+                    // safe only because each slot draws fresh KEM randomness, so
+                    // two slots sharing the same encapsulation material derive
+                    // the same KEK and repeat a (KEK, zero-nonce) pair. The
+                    // material that fixes the KEK is the `epk` (x25519) or the
+                    // reassembled `kem_ct` (hybrid); a repeat of either across
+                    // slots is rejected here, before any KEM/AEAD primitive — the
+                    // same check the unwrap layer runs.
+                    let mut seen_kem_material: std::collections::HashSet<Vec<u8>> =
+                        std::collections::HashSet::new();
                     for slot in slots {
                         validate_slot(slot, kem, issues);
+                        if let Some(material) = slot_kem_material(slot, kem) {
+                            if !seen_kem_material.insert(material) {
+                                issues.push(issue(
+                                    ErrorCode::EncSlotsDuplicateKemMaterial,
+                                    "slot encapsulation material duplicates an earlier slot \
+                                     — per-slot KEK uniqueness is violated"
+                                        .to_string(),
+                                ));
+                            }
+                        }
+                    }
+
+                    // Decoded-envelope byte backstop. Every per-slot field is
+                    // fixed-length (the descriptor pins them; a wrong length
+                    // already emitted its own code), so the decoded envelope's
+                    // aggregate size is determined by the slot count: nonce +
+                    // slots_mac + count * (ct-field + wrap). This is the
+                    // identical measure the unwrap layer computes, so the two
+                    // layers trip ENC_ENVELOPE_TOO_LARGE on the same envelopes. A
+                    // tighter cap than MAX_SLOTS for honest records.
+                    if let Some(d) = descriptor {
+                        let per_slot_bytes = d.field_length + d.wrap_length;
+                        let decoded_envelope_bytes =
+                            NONCE_LENGTH + SLOTS_MAC_LENGTH + slots.len() * per_slot_bytes;
+                        if decoded_envelope_bytes > MAX_DECODED_ENVELOPE_BYTES {
+                            issues.push(issue(
+                                ErrorCode::EncEnvelopeTooLarge,
+                                format!(
+                                    "decoded envelope size {decoded_envelope_bytes} exceeds \
+                                     MAX_DECODED_ENVELOPE_BYTES={MAX_DECODED_ENVELOPE_BYTES}"
+                                ),
+                            ));
+                        }
                     }
                 }
             }
@@ -1796,6 +1879,36 @@ fn validate_slot(slot: &CborValue, kem: &str, issues: &mut Vec<ValidationIssue>)
             ErrorCode::EncSlotInvalidShape,
             "slot wrap must be bytes".to_string(),
         )),
+    }
+}
+
+/// The encapsulation material that fixes a slot's per-slot KEK, used for the
+/// within-record duplicate check: the `epk` (x25519) or the reassembled
+/// `kem_ct` (hybrid). Returns `None` when the required field is absent or the
+/// wrong type — the shape defect already emitted `ENC_SLOT_INVALID_SHAPE`, so
+/// the duplicate pass simply skips that slot.
+fn slot_kem_material(slot: &CborValue, kem: &str) -> Option<Vec<u8>> {
+    let slot_map = as_map(slot)?;
+    let descriptor = kem_slot_descriptor(kem)?;
+    if descriptor.field == "epk" {
+        match map_get(slot_map, "epk") {
+            Some(CborValue::Bytes(epk)) => Some(epk.clone()),
+            _ => None,
+        }
+    } else {
+        match map_get(slot_map, "kem_ct") {
+            Some(CborValue::Array(chunks)) if !chunks.is_empty() => {
+                let mut out = Vec::new();
+                for chunk in chunks {
+                    match chunk {
+                        CborValue::Bytes(b) => out.extend_from_slice(b),
+                        _ => return None,
+                    }
+                }
+                Some(out)
+            }
+            _ => None,
+        }
     }
 }
 

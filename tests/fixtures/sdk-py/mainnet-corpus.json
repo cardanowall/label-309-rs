@@ -1,15 +1,15 @@
 {
-  "$schema": "cip-309-mainnet-corpus",
+  "$schema": "label-309-mainnet-corpus/v1",
   "generated": "2026-05-14T00:00:00.000Z",
-  "generator": "cip-309 corpus-bootstrap tool (synthetic — deterministic; no live mainnet)",
+  "generator": "synthetic-mainnet-corpus (deterministic; no live mainnet)",
   "records": [
     {
-      "tx_hash": "3fa9b81373b62367c102193c79bb120f599faafa3b6f5d78d07af21d8c1d1d06",
+      "tx_hash": "4baddcbaa3bcb67fbe8b7cdec446c6b5130d5be0a4686eab039f1a7f22e1c48b",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "3fa9b81373b62367c102193c79bb120f599faafa3b6f5d78d07af21d8c1d1d06",
+            "tx_hash": "4baddcbaa3bcb67fbe8b7cdec446c6b5130d5be0a4686eab039f1a7f22e1c48b",
             "block_height": 10000000,
             "tx_timestamp": 1700000060,
             "absolute_slot": 100000060
@@ -22,20 +22,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "3fa9b81373b62367c102193c79bb120f599faafa3b6f5d78d07af21d8c1d1d06",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582004e7bcafd18f1b023713f70946de6faacc52221b1106427c7164401be7268fc7"
+            "tx_hash": "4baddcbaa3bcb67fbe8b7cdec446c6b5130d5be0a4686eab039f1a7f22e1c48b",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820ca8decd8b8c698fd8ec0aad6cd4b1808aa6b79eadf24f1f6c58ad93ec726a587"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 1 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 1 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "d5adc05d5ee08e19ca1b8811fbb523576ef79769fa6aab092605e535cc56a5c2",
+      "tx_hash": "b6d57adfd2b06f47e84f97d3f02ed8722840bf6a36d34c0d9a1ff84bfa3f3ece",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "d5adc05d5ee08e19ca1b8811fbb523576ef79769fa6aab092605e535cc56a5c2",
+            "tx_hash": "b6d57adfd2b06f47e84f97d3f02ed8722840bf6a36d34c0d9a1ff84bfa3f3ece",
             "block_height": 10000001,
             "tx_timestamp": 1700000120,
             "absolute_slot": 100000120
@@ -48,20 +48,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "d5adc05d5ee08e19ca1b8811fbb523576ef79769fa6aab092605e535cc56a5c2",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658203830717ed259bac53902f307155075cec3849dac13194e039e8c1a0fa8aa162d"
+            "tx_hash": "b6d57adfd2b06f47e84f97d3f02ed8722840bf6a36d34c0d9a1ff84bfa3f3ece",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658207313857d9c39ab922c3189c7c429e942083d98ade602925eeaf986642866bb08"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 2 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 2 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "aade2b0231136bc321981f6aabc9a7998a5b94f8e5f7ba1d3b0961fe1bd7d2e6",
+      "tx_hash": "63a9a52797b2c5dfcca337b5705faf6d4565307cbe7796f5d99a9bb0f930aa57",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "aade2b0231136bc321981f6aabc9a7998a5b94f8e5f7ba1d3b0961fe1bd7d2e6",
+            "tx_hash": "63a9a52797b2c5dfcca337b5705faf6d4565307cbe7796f5d99a9bb0f930aa57",
             "block_height": 10000002,
             "tx_timestamp": 1700000180,
             "absolute_slot": 100000180
@@ -74,20 +74,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "aade2b0231136bc321981f6aabc9a7998a5b94f8e5f7ba1d3b0961fe1bd7d2e6",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820a35a6b2a1a597ff55d7ad4870a064ae3ce7a6bdc11992c3eb4920867bc496bbb"
+            "tx_hash": "63a9a52797b2c5dfcca337b5705faf6d4565307cbe7796f5d99a9bb0f930aa57",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820f90696eb3f60fb3ab9e622165e772cce4f162eb01a5596a7250bf1b82b460858"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 3 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 3 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "39f907d63f12612b5350c12c3a476c9dc3dc483984d1721a2f0445eaf38b8172",
+      "tx_hash": "e267c3663a183979aeb8e1f8c3277b24c45122de77ba23ebc97488a06a8a8feb",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "39f907d63f12612b5350c12c3a476c9dc3dc483984d1721a2f0445eaf38b8172",
+            "tx_hash": "e267c3663a183979aeb8e1f8c3277b24c45122de77ba23ebc97488a06a8a8feb",
             "block_height": 10000003,
             "tx_timestamp": 1700000240,
             "absolute_slot": 100000240
@@ -100,20 +100,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "39f907d63f12612b5350c12c3a476c9dc3dc483984d1721a2f0445eaf38b8172",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820b8c04162b0247c9eb3986255d428d019fac237e9e36a10123aff8f096f660aad"
+            "tx_hash": "e267c3663a183979aeb8e1f8c3277b24c45122de77ba23ebc97488a06a8a8feb",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820d4c19be225ebe0ebe2469ff0ce3b28fb473453e3ce9d7eac258231935d62927b"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 4 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 4 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "54c61f3471b8fc6c18c2fbba44110cd9e344d2ba592ba4e5427d978d73e27485",
+      "tx_hash": "17851a5f1e83cfe0e6528f5d873fca9cabf62ffb5e66f8757faf8fd11e2fa4d8",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "54c61f3471b8fc6c18c2fbba44110cd9e344d2ba592ba4e5427d978d73e27485",
+            "tx_hash": "17851a5f1e83cfe0e6528f5d873fca9cabf62ffb5e66f8757faf8fd11e2fa4d8",
             "block_height": 10000004,
             "tx_timestamp": 1700000300,
             "absolute_slot": 100000300
@@ -126,20 +126,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "54c61f3471b8fc6c18c2fbba44110cd9e344d2ba592ba4e5427d978d73e27485",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820aa57655b8b6e511d178c6b9d73f964f68ce572df6d4cac3ae2238617af980a75"
+            "tx_hash": "17851a5f1e83cfe0e6528f5d873fca9cabf62ffb5e66f8757faf8fd11e2fa4d8",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658203834c061b7945ce2fea81b3c24f6132068d117bf814cb6cee1ca2f619854a2fa"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 5 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 5 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "f9e2e6f4a7237b41a7f20ee36b59c3540774294a1257f2be0ea936010172d57e",
+      "tx_hash": "35983984fcc7a093f7dac9f5aeaddb1119aa79c4446b5a95e516782ef697c3ed",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "f9e2e6f4a7237b41a7f20ee36b59c3540774294a1257f2be0ea936010172d57e",
+            "tx_hash": "35983984fcc7a093f7dac9f5aeaddb1119aa79c4446b5a95e516782ef697c3ed",
             "block_height": 10000005,
             "tx_timestamp": 1700000360,
             "absolute_slot": 100000360
@@ -152,20 +152,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "f9e2e6f4a7237b41a7f20ee36b59c3540774294a1257f2be0ea936010172d57e",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820cb38c2918ea803da6e8c0b34d079221a49d038050905d453ec815b5bad7b07c1"
+            "tx_hash": "35983984fcc7a093f7dac9f5aeaddb1119aa79c4446b5a95e516782ef697c3ed",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582086e21261c95e42f6786597f8206b40ddefbc84bdea503a4b228599ac684b24c6"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 6 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 6 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "3c7bf9d7da18a4c3c07078ce7a09f0d694de9753d3343d6e016c48c033d202dd",
+      "tx_hash": "267605d9622cbc86ae8336e9394aa8d265002a48e594a7366a52ebd5e7097f03",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "3c7bf9d7da18a4c3c07078ce7a09f0d694de9753d3343d6e016c48c033d202dd",
+            "tx_hash": "267605d9622cbc86ae8336e9394aa8d265002a48e594a7366a52ebd5e7097f03",
             "block_height": 10000006,
             "tx_timestamp": 1700000420,
             "absolute_slot": 100000420
@@ -178,20 +178,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "3c7bf9d7da18a4c3c07078ce7a09f0d694de9753d3343d6e016c48c033d202dd",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820c8bcba46f06f7176a2f43382c0b71c14bc834181a8f156809f07309374dddd67"
+            "tx_hash": "267605d9622cbc86ae8336e9394aa8d265002a48e594a7366a52ebd5e7097f03",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820dc6e588e6f6a9ed19d1a6e36f8e1635e4e795165423bb3c265b6ce8c05b49beb"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 7 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 7 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "1005d17e9be14e62c67e536fa1a0bbc7fdcc79f25950e6258dc55cccc09717d8",
+      "tx_hash": "29bd4b7d253033e241deb3ed8d632ea5f9be1b266bfb9fed0893d02328c6f9c0",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "1005d17e9be14e62c67e536fa1a0bbc7fdcc79f25950e6258dc55cccc09717d8",
+            "tx_hash": "29bd4b7d253033e241deb3ed8d632ea5f9be1b266bfb9fed0893d02328c6f9c0",
             "block_height": 10000007,
             "tx_timestamp": 1700000480,
             "absolute_slot": 100000480
@@ -204,20 +204,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "1005d17e9be14e62c67e536fa1a0bbc7fdcc79f25950e6258dc55cccc09717d8",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820b14130283e7dfda5db6bfa16ea131b1bd4d6096089fbef35d128e8aa8b32fa76"
+            "tx_hash": "29bd4b7d253033e241deb3ed8d632ea5f9be1b266bfb9fed0893d02328c6f9c0",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658204a0d0bd026226be73c85756a7afdd8ecefa821e03d4307af22d42ef1a28c00a3"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 8 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 8 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a2f8acfb4f9e900b612300b1f9e2787cafd9a97f8abadd9980ff0da41f3a90ef",
+      "tx_hash": "4e74e6d551b0aa065bed342f5ce1a6021b8cdae35b303dcb7dc2c2ea2f13c648",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a2f8acfb4f9e900b612300b1f9e2787cafd9a97f8abadd9980ff0da41f3a90ef",
+            "tx_hash": "4e74e6d551b0aa065bed342f5ce1a6021b8cdae35b303dcb7dc2c2ea2f13c648",
             "block_height": 10000008,
             "tx_timestamp": 1700000540,
             "absolute_slot": 100000540
@@ -230,20 +230,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a2f8acfb4f9e900b612300b1f9e2787cafd9a97f8abadd9980ff0da41f3a90ef",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820dc5577ba6a08d2308c8ec92cc7de3fe52220edf263e93c0e0b7dbe27e4f2ae58"
+            "tx_hash": "4e74e6d551b0aa065bed342f5ce1a6021b8cdae35b303dcb7dc2c2ea2f13c648",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582031305635872bba455eb2126c1dedb1992ef6432b025c3a8c346c3db0f5d644e9"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 9 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 9 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "691c3f36f699b7905759dd03acdcd66436c2fc1ba372396ff48b10315537cbcb",
+      "tx_hash": "645cfa11a3a435168735e56ea51b1e0906c89de687751a3dc0f8a88a1b2a141d",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "691c3f36f699b7905759dd03acdcd66436c2fc1ba372396ff48b10315537cbcb",
+            "tx_hash": "645cfa11a3a435168735e56ea51b1e0906c89de687751a3dc0f8a88a1b2a141d",
             "block_height": 10000009,
             "tx_timestamp": 1700000600,
             "absolute_slot": 100000600
@@ -256,20 +256,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "691c3f36f699b7905759dd03acdcd66436c2fc1ba372396ff48b10315537cbcb",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820adb85fbf413bf84aec099b5d4ff0b3e57f3578b4d6996ff1b69e0784270d054f"
+            "tx_hash": "645cfa11a3a435168735e56ea51b1e0906c89de687751a3dc0f8a88a1b2a141d",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582070e3a57a166949cc96316d6759f2148a2d4e20af4571da545307b20bdedd2a2a"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 10 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 10 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "b00f8fde6f3ce73db621c5e4769565b06fb4541ecb626397672d9bcfa431db77",
+      "tx_hash": "cb759d679a466fad8128b975bce5b5fa273617363968159374fd2f0f540acb94",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "b00f8fde6f3ce73db621c5e4769565b06fb4541ecb626397672d9bcfa431db77",
+            "tx_hash": "cb759d679a466fad8128b975bce5b5fa273617363968159374fd2f0f540acb94",
             "block_height": 10000010,
             "tx_timestamp": 1700000660,
             "absolute_slot": 100000660
@@ -282,20 +282,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "b00f8fde6f3ce73db621c5e4769565b06fb4541ecb626397672d9bcfa431db77",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820f734f01e017e2b8d6495e4b722377b04600c02096bae57831da608ea040de0f5"
+            "tx_hash": "cb759d679a466fad8128b975bce5b5fa273617363968159374fd2f0f540acb94",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582013157bf437376bc2667f78ac81fd716fce0e49b1f9473a1195738dbc092a10a4"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 11 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 11 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "52233b6df68b4a8796ac3a5cce1ad621d2b87250ddd7adb5a4ad6161c9b007a4",
+      "tx_hash": "f278ede0303d520e6db18c20f10bd04d91440ef3008132c73c0c8bf08a9649ff",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "52233b6df68b4a8796ac3a5cce1ad621d2b87250ddd7adb5a4ad6161c9b007a4",
+            "tx_hash": "f278ede0303d520e6db18c20f10bd04d91440ef3008132c73c0c8bf08a9649ff",
             "block_height": 10000011,
             "tx_timestamp": 1700000720,
             "absolute_slot": 100000720
@@ -308,20 +308,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "52233b6df68b4a8796ac3a5cce1ad621d2b87250ddd7adb5a4ad6161c9b007a4",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582093f2d054ecac1595abcb7d07f073fbb160d174eeb104d8bf24fc5ac12c1679a5"
+            "tx_hash": "f278ede0303d520e6db18c20f10bd04d91440ef3008132c73c0c8bf08a9649ff",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820bb98a14939dafa8b6421a59a731198064bd38f324ed9ebb8b7f61438cf111197"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 12 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 12 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "834b56c82c106d04e5f05c87e54a2e7240eb8e69ee254294eb6bca8e053b3df9",
+      "tx_hash": "1f0243ef1e2fa1285788f071cef157275f5349ff1716c148c272f834e85e2420",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "834b56c82c106d04e5f05c87e54a2e7240eb8e69ee254294eb6bca8e053b3df9",
+            "tx_hash": "1f0243ef1e2fa1285788f071cef157275f5349ff1716c148c272f834e85e2420",
             "block_height": 10000012,
             "tx_timestamp": 1700000780,
             "absolute_slot": 100000780
@@ -334,20 +334,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "834b56c82c106d04e5f05c87e54a2e7240eb8e69ee254294eb6bca8e053b3df9",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582078f927ae58ab139dd2f82b734cceb6b7cb19fb046519466db4e4e172e86d74e4"
+            "tx_hash": "1f0243ef1e2fa1285788f071cef157275f5349ff1716c148c272f834e85e2420",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820901330843a643315672495063f0889668015fe2c793dc0866cad08f0052e8011"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 13 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 13 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "7923c1ac33c79137792ade1154c034177a529b45b03651cbc7210f94983a0103",
+      "tx_hash": "9f0d110ea3da515add6919496767322a5fa31f4886e90c4013b71dd5616467a8",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "7923c1ac33c79137792ade1154c034177a529b45b03651cbc7210f94983a0103",
+            "tx_hash": "9f0d110ea3da515add6919496767322a5fa31f4886e90c4013b71dd5616467a8",
             "block_height": 10000013,
             "tx_timestamp": 1700000840,
             "absolute_slot": 100000840
@@ -360,20 +360,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "7923c1ac33c79137792ade1154c034177a529b45b03651cbc7210f94983a0103",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820b3153a06ea57d8202b545e08ae3706dc12c0075fd24e14bec8dded3db6f62800"
+            "tx_hash": "9f0d110ea3da515add6919496767322a5fa31f4886e90c4013b71dd5616467a8",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658203bd1b23753a3473560f942c62482e723bdfa3dee2156b434bd4696a405c91613"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 14 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 14 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "e54a037fb0f63aa67c5791ed3d16101a68b64315579fe336b5d6f59847234697",
+      "tx_hash": "387c155a4df53a27f49a6cac1fd0cd32fdc62382a2664601f54af76e9d6ce512",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "e54a037fb0f63aa67c5791ed3d16101a68b64315579fe336b5d6f59847234697",
+            "tx_hash": "387c155a4df53a27f49a6cac1fd0cd32fdc62382a2664601f54af76e9d6ce512",
             "block_height": 10000014,
             "tx_timestamp": 1700000900,
             "absolute_slot": 100000900
@@ -386,20 +386,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "e54a037fb0f63aa67c5791ed3d16101a68b64315579fe336b5d6f59847234697",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820500b8527efa41fe0b76c8f723ac497c341d714a0243f082a5775aab8c54b68c2"
+            "tx_hash": "387c155a4df53a27f49a6cac1fd0cd32fdc62382a2664601f54af76e9d6ce512",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582038ad53d279ea13c9864ed919925dc24101185bed33f546ff366a2d015cef5774"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 15 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 15 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "2a22c5edaec907a1e001dd3af7ee1d136742f4323f6b692aac573870c605a05b",
+      "tx_hash": "71cddd602ba0dad250c4e2f61f200e07eb003500004b3bf03babb2826d1983ee",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "2a22c5edaec907a1e001dd3af7ee1d136742f4323f6b692aac573870c605a05b",
+            "tx_hash": "71cddd602ba0dad250c4e2f61f200e07eb003500004b3bf03babb2826d1983ee",
             "block_height": 10000015,
             "tx_timestamp": 1700000960,
             "absolute_slot": 100000960
@@ -412,20 +412,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "2a22c5edaec907a1e001dd3af7ee1d136742f4323f6b692aac573870c605a05b",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658207f68c3e21384d2f892f4f644e09f166681aaf17ab0512cd21718b6e5e4734549"
+            "tx_hash": "71cddd602ba0dad250c4e2f61f200e07eb003500004b3bf03babb2826d1983ee",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820e26269d7f8d409e133faba1d917a507bd2cec477412a72e77d91eda96b0e4a85"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 16 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 16 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "c50c5c49e8354ae0b9fb9948179b28cfd49c45f5f3207df48627a640e50e92ae",
+      "tx_hash": "4b3c0cf75ae8eb60f08479c9e5bb49d3139556b4ae53f2443c8ad35354453977",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "c50c5c49e8354ae0b9fb9948179b28cfd49c45f5f3207df48627a640e50e92ae",
+            "tx_hash": "4b3c0cf75ae8eb60f08479c9e5bb49d3139556b4ae53f2443c8ad35354453977",
             "block_height": 10000016,
             "tx_timestamp": 1700001020,
             "absolute_slot": 100001020
@@ -438,20 +438,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "c50c5c49e8354ae0b9fb9948179b28cfd49c45f5f3207df48627a640e50e92ae",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820f7526d37f0c3cf9f411aa426a898829962a49453c67d1d1317e0cb0f1fa6cf85"
+            "tx_hash": "4b3c0cf75ae8eb60f08479c9e5bb49d3139556b4ae53f2443c8ad35354453977",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582057a75035c91a3cba97e63948578645e2d90c276ace2383c78dfa90fdd4eca664"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 17 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 17 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "7647021413aa5ec4e67ca515953ad8dd4bc64eae0b6a7af066c19768179d48b1",
+      "tx_hash": "c35b729ddbfadba98f614a7d0668b8dd256165793b80122a2596ab22359fff20",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "7647021413aa5ec4e67ca515953ad8dd4bc64eae0b6a7af066c19768179d48b1",
+            "tx_hash": "c35b729ddbfadba98f614a7d0668b8dd256165793b80122a2596ab22359fff20",
             "block_height": 10000017,
             "tx_timestamp": 1700001080,
             "absolute_slot": 100001080
@@ -464,20 +464,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "7647021413aa5ec4e67ca515953ad8dd4bc64eae0b6a7af066c19768179d48b1",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658209d63cabdb20f43529f3ca1b2581f1dd58623be725573ddb04679227bce7fab76"
+            "tx_hash": "c35b729ddbfadba98f614a7d0668b8dd256165793b80122a2596ab22359fff20",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658208dc12259d790c84c37fe7a2ec22edcf1b8e66ec7910e778a8b6fe8f4a275a6e5"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 18 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 18 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "9fbb9596dcf90c03cc3149854a771b624a11f56e39ef0a97b4964b83e9806562",
+      "tx_hash": "e8d90c1dcbadde2e76f92da7c9db606cc32db25c6a8aec3afa68755c23761a18",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9fbb9596dcf90c03cc3149854a771b624a11f56e39ef0a97b4964b83e9806562",
+            "tx_hash": "e8d90c1dcbadde2e76f92da7c9db606cc32db25c6a8aec3afa68755c23761a18",
             "block_height": 10000018,
             "tx_timestamp": 1700001140,
             "absolute_slot": 100001140
@@ -490,20 +490,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9fbb9596dcf90c03cc3149854a771b624a11f56e39ef0a97b4964b83e9806562",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582000e74d4b0844725dd5e98385ec3b7a7657992825bec6251c1342952a4a774e7f"
+            "tx_hash": "e8d90c1dcbadde2e76f92da7c9db606cc32db25c6a8aec3afa68755c23761a18",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820c1d036315e5d009790386eee1d0ab4150a84aa1391c2e161ac1f31994dddde9d"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 19 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 19 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "4e5828c54985bfff38cfeafcabd94ac6c6562f5c1fa116c9be95d914388bb501",
+      "tx_hash": "95641b7d6de65a405873aee1243b75b769f9b8ae17b67296b447e56723162613",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "4e5828c54985bfff38cfeafcabd94ac6c6562f5c1fa116c9be95d914388bb501",
+            "tx_hash": "95641b7d6de65a405873aee1243b75b769f9b8ae17b67296b447e56723162613",
             "block_height": 10000019,
             "tx_timestamp": 1700001200,
             "absolute_slot": 100001200
@@ -516,20 +516,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "4e5828c54985bfff38cfeafcabd94ac6c6562f5c1fa116c9be95d914388bb501",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582092b8e8415f47424937d9bc17c9af0d51bee6040ed695d36631ae100e63d97570"
+            "tx_hash": "95641b7d6de65a405873aee1243b75b769f9b8ae17b67296b447e56723162613",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820aca6109ceadf600351934a6eaa5bc11f343b595c162adc3478ee517f5b14be42"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 20 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 20 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "da90a70266aa2c9487d0644a452c31f9190790904e1b68927e940dcc2725acb3",
+      "tx_hash": "528ae894a2239a34b6d030e7f5e0107caaf5d2af218ebfee36297148dcecb0cf",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "da90a70266aa2c9487d0644a452c31f9190790904e1b68927e940dcc2725acb3",
+            "tx_hash": "528ae894a2239a34b6d030e7f5e0107caaf5d2af218ebfee36297148dcecb0cf",
             "block_height": 10000020,
             "tx_timestamp": 1700001260,
             "absolute_slot": 100001260
@@ -542,20 +542,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "da90a70266aa2c9487d0644a452c31f9190790904e1b68927e940dcc2725acb3",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582037d6c69dad49b5d64ac48455177e21743e0ee32bf8328e04502c1e1921f71787"
+            "tx_hash": "528ae894a2239a34b6d030e7f5e0107caaf5d2af218ebfee36297148dcecb0cf",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658207ec13093cd5e3a3b8d9b269d63098d52a74c5d318d05653a0fde5be66eafa9fa"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 21 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 21 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "cd5e954439954fe37e5a4124a1e8e8b2314b32f50586eef50e379e9afc13c868",
+      "tx_hash": "9a4f954ea1ac37c98a047d35253d46862b60b78608685aa7471293e4032b42f7",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "cd5e954439954fe37e5a4124a1e8e8b2314b32f50586eef50e379e9afc13c868",
+            "tx_hash": "9a4f954ea1ac37c98a047d35253d46862b60b78608685aa7471293e4032b42f7",
             "block_height": 10000021,
             "tx_timestamp": 1700001320,
             "absolute_slot": 100001320
@@ -568,20 +568,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "cd5e954439954fe37e5a4124a1e8e8b2314b32f50586eef50e379e9afc13c868",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820c8320ef77db9c242ca32e0645588b0f77146726d51fed80b77114a80b1132c6d"
+            "tx_hash": "9a4f954ea1ac37c98a047d35253d46862b60b78608685aa7471293e4032b42f7",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658209324a89d5b98a75ec0b6a831898848a1e179d4d4e6337de8a13ee5541c3ca743"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 22 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 22 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "311a60ddc5a3ccb48942b0c5c5b19b24147a539d6287f80159b93e04a699fc07",
+      "tx_hash": "215470d9597cf9ad73de530647547d2e90ef498bc4b74c869a7e1aecde6b6ead",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "311a60ddc5a3ccb48942b0c5c5b19b24147a539d6287f80159b93e04a699fc07",
+            "tx_hash": "215470d9597cf9ad73de530647547d2e90ef498bc4b74c869a7e1aecde6b6ead",
             "block_height": 10000022,
             "tx_timestamp": 1700001380,
             "absolute_slot": 100001380
@@ -594,20 +594,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "311a60ddc5a3ccb48942b0c5c5b19b24147a539d6287f80159b93e04a699fc07",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658208f148488012b5ef47a1598e348f4632ae70cc341cb0a5b3a649ff39fcd10f8ba"
+            "tx_hash": "215470d9597cf9ad73de530647547d2e90ef498bc4b74c869a7e1aecde6b6ead",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658209105a5084d4dea273b06442bd1d9320498c0c5880c4f4cc68df8019f2b7f34d4"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 23 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 23 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "746769c024df795a72935b59f77e6ac264450748adaa11d6f39488dce155e0f2",
+      "tx_hash": "e9e363607ef174f763f4c60d680b60aeab69b888da874d58a43eabbc05e4f349",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "746769c024df795a72935b59f77e6ac264450748adaa11d6f39488dce155e0f2",
+            "tx_hash": "e9e363607ef174f763f4c60d680b60aeab69b888da874d58a43eabbc05e4f349",
             "block_height": 10000023,
             "tx_timestamp": 1700001440,
             "absolute_slot": 100001440
@@ -620,20 +620,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "746769c024df795a72935b59f77e6ac264450748adaa11d6f39488dce155e0f2",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820fb654a5bbafeb6bd8cfad719265df6f10441b9db26f46a4d436e4ab3f5583e31"
+            "tx_hash": "e9e363607ef174f763f4c60d680b60aeab69b888da874d58a43eabbc05e4f349",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820123eb382a7d9815a4ed86749a6573b9c1a1926dec8bc24c82d06cf4b0c3bad15"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 24 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 24 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "863a0ec4252dbddf3979c22e2193ab2f17ec1a235310a700c6c8462bcc8cc623",
+      "tx_hash": "08b78e2a7516b10acc804721949aa8c85c1f2a75fc8fb7cc60e834101a913145",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "863a0ec4252dbddf3979c22e2193ab2f17ec1a235310a700c6c8462bcc8cc623",
+            "tx_hash": "08b78e2a7516b10acc804721949aa8c85c1f2a75fc8fb7cc60e834101a913145",
             "block_height": 10000024,
             "tx_timestamp": 1700001500,
             "absolute_slot": 100001500
@@ -646,20 +646,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "863a0ec4252dbddf3979c22e2193ab2f17ec1a235310a700c6c8462bcc8cc623",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658201b7bc1e36868d7c88667db3786fe8c6260704186230a1f2185aba90528e3f14c"
+            "tx_hash": "08b78e2a7516b10acc804721949aa8c85c1f2a75fc8fb7cc60e834101a913145",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820c80bfd1d98cdd4de330d26cfb7c1bb5e810fd22477b9680ce13aea5e9a2e667d"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 25 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 25 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "16732a9dceede96ea8fac724ead2e771ba92057ab96ec4b346d5395559335317",
+      "tx_hash": "490d17077326d3a44ab50088273ed4792691ce9729580a294dda1bbf158c988d",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "16732a9dceede96ea8fac724ead2e771ba92057ab96ec4b346d5395559335317",
+            "tx_hash": "490d17077326d3a44ab50088273ed4792691ce9729580a294dda1bbf158c988d",
             "block_height": 10000025,
             "tx_timestamp": 1700001560,
             "absolute_slot": 100001560
@@ -672,20 +672,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "16732a9dceede96ea8fac724ead2e771ba92057ab96ec4b346d5395559335317",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820b743b206369526013234a92b2d768a27374edabbfc6601198a658ae862eaf9f0"
+            "tx_hash": "490d17077326d3a44ab50088273ed4792691ce9729580a294dda1bbf158c988d",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820867a7d06e248b017c936192b3271f618796b91390dd897fa293f381854862019"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 26 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 26 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "0186ab9defcd7da096f0a83e9a443a8c54bbaaf0c4d6763ed9d28bb2c59331f9",
+      "tx_hash": "359b9beb462866e240fa423f5639a87c34ac1fd5a97c98e64f2fe4ba40c59924",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "0186ab9defcd7da096f0a83e9a443a8c54bbaaf0c4d6763ed9d28bb2c59331f9",
+            "tx_hash": "359b9beb462866e240fa423f5639a87c34ac1fd5a97c98e64f2fe4ba40c59924",
             "block_height": 10000026,
             "tx_timestamp": 1700001620,
             "absolute_slot": 100001620
@@ -698,20 +698,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "0186ab9defcd7da096f0a83e9a443a8c54bbaaf0c4d6763ed9d28bb2c59331f9",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820d46cfd9009729cfdc205c2d497ebf5b35156f87c3d6a05ef4b18d9b0ca6c999f"
+            "tx_hash": "359b9beb462866e240fa423f5639a87c34ac1fd5a97c98e64f2fe4ba40c59924",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658203a2715cfca6f2d5289f05465ab04cdfdcad780143e1f338f035624bb09546b2b"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 27 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 27 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "34f3e1372b1bb953d03360238f3a9bef20a72eb1567942568f0f6f03eb65729c",
+      "tx_hash": "04650557300dd9a4e481619a9d2e2c0cd6466b35ec966a294d4102c96434e26e",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "34f3e1372b1bb953d03360238f3a9bef20a72eb1567942568f0f6f03eb65729c",
+            "tx_hash": "04650557300dd9a4e481619a9d2e2c0cd6466b35ec966a294d4102c96434e26e",
             "block_height": 10000027,
             "tx_timestamp": 1700001680,
             "absolute_slot": 100001680
@@ -724,20 +724,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "34f3e1372b1bb953d03360238f3a9bef20a72eb1567942568f0f6f03eb65729c",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820453d26892f3627f8d7ef0a06aa6db16b220ade600301ad834ffedcc8efd5a777"
+            "tx_hash": "04650557300dd9a4e481619a9d2e2c0cd6466b35ec966a294d4102c96434e26e",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820ea8e7db527b3d2daff544c2f16488db7bfeb0446995661c0b5c9d54751b21e79"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 28 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 28 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "d922aeb13199b5e0f9730e30eb49668aef77a7aefbd447e9f93b633d0cda1802",
+      "tx_hash": "59f50ce9e6311d4563415328ecb184f34985ecf9f7156f0532d97bdfe6a1ba9a",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "d922aeb13199b5e0f9730e30eb49668aef77a7aefbd447e9f93b633d0cda1802",
+            "tx_hash": "59f50ce9e6311d4563415328ecb184f34985ecf9f7156f0532d97bdfe6a1ba9a",
             "block_height": 10000028,
             "tx_timestamp": 1700001740,
             "absolute_slot": 100001740
@@ -750,20 +750,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "d922aeb13199b5e0f9730e30eb49668aef77a7aefbd447e9f93b633d0cda1802",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658201a5991a82a47f994aef629323544bcc061b2f591574aa24c6352c5a6d37395bd"
+            "tx_hash": "59f50ce9e6311d4563415328ecb184f34985ecf9f7156f0532d97bdfe6a1ba9a",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658208f3bc411133c04a2c4b0da01461fe7c19dd6e4e0e22eec6446b5fc4b5e2f175b"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 29 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 29 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "da198b5fc93387f6e2b3a27fee56a2a6cdd9c0182020dbb7bfbd0f992d9800f9",
+      "tx_hash": "0ceee87f7bed0a6b2abc0d316a57bc96045c64c7f2f7fcbdc8ed8fe9faed1f8e",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "da198b5fc93387f6e2b3a27fee56a2a6cdd9c0182020dbb7bfbd0f992d9800f9",
+            "tx_hash": "0ceee87f7bed0a6b2abc0d316a57bc96045c64c7f2f7fcbdc8ed8fe9faed1f8e",
             "block_height": 10000029,
             "tx_timestamp": 1700001800,
             "absolute_slot": 100001800
@@ -776,20 +776,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "da198b5fc93387f6e2b3a27fee56a2a6cdd9c0182020dbb7bfbd0f992d9800f9",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658205dbbc23fc0de6b239e9dfb23eb09014a9268cfc4b0c385b19af93839db3be223"
+            "tx_hash": "0ceee87f7bed0a6b2abc0d316a57bc96045c64c7f2f7fcbdc8ed8fe9faed1f8e",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658202b6dfeea882b0c3df4003129f248f2ec1dc516f95929521a8c763a36eea4ea5c"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 30 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 30 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "aa172efec89b04d40519c31c94d3acf41aa9aa1eff2fc85171dcd4925b1693ee",
+      "tx_hash": "efdda55bdb1babe7b38bdc0c56b149db7554b36a62cdcabc68a364068e20fa62",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "aa172efec89b04d40519c31c94d3acf41aa9aa1eff2fc85171dcd4925b1693ee",
+            "tx_hash": "efdda55bdb1babe7b38bdc0c56b149db7554b36a62cdcabc68a364068e20fa62",
             "block_height": 10000030,
             "tx_timestamp": 1700001860,
             "absolute_slot": 100001860
@@ -802,20 +802,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "aa172efec89b04d40519c31c94d3acf41aa9aa1eff2fc85171dcd4925b1693ee",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658207901fef2032822a2b6eaa39653ab39f4001c38d9af04abfd5b2e9da1176c2546"
+            "tx_hash": "efdda55bdb1babe7b38bdc0c56b149db7554b36a62cdcabc68a364068e20fa62",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820b55b9c629829657b2271cea94b90233746a50dfa9124e1100dd3d9f5a391d1a0"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 31 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 31 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "f196556a32e56790cfc50ec67a5f980580eed0dbc07cbf080002d5f40033f0ed",
+      "tx_hash": "62efc7b45697466198e5a311e7adb09eacc454f0e37c349e5a499a420559858f",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "f196556a32e56790cfc50ec67a5f980580eed0dbc07cbf080002d5f40033f0ed",
+            "tx_hash": "62efc7b45697466198e5a311e7adb09eacc454f0e37c349e5a499a420559858f",
             "block_height": 10000031,
             "tx_timestamp": 1700001920,
             "absolute_slot": 100001920
@@ -828,20 +828,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "f196556a32e56790cfc50ec67a5f980580eed0dbc07cbf080002d5f40033f0ed",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582048d02d53e7db19dc6dbfe36efb94e0b85bb27a57eb4c81b637f4fcfcbff2027a"
+            "tx_hash": "62efc7b45697466198e5a311e7adb09eacc454f0e37c349e5a499a420559858f",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658205c844b457279e0cdb9f14142bbe47a3428890dab9485e41507e1e6519d82dea4"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 32 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 32 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "5b255ee1a0e9e2e6c1f2a69ecdcce9a5a74cd8c35ef2119945d73cb39813571c",
+      "tx_hash": "2c8097d63d8773751b0168ff4901c1e9440c8b3e7b700491ce654a150bb23e84",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "5b255ee1a0e9e2e6c1f2a69ecdcce9a5a74cd8c35ef2119945d73cb39813571c",
+            "tx_hash": "2c8097d63d8773751b0168ff4901c1e9440c8b3e7b700491ce654a150bb23e84",
             "block_height": 10000032,
             "tx_timestamp": 1700001980,
             "absolute_slot": 100001980
@@ -854,20 +854,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "5b255ee1a0e9e2e6c1f2a69ecdcce9a5a74cd8c35ef2119945d73cb39813571c",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582016f9b2168ae2fb75d3514a1b4cf9d8e7e7026dc27b24e9c8ff3a9f7b9b4f1cd6"
+            "tx_hash": "2c8097d63d8773751b0168ff4901c1e9440c8b3e7b700491ce654a150bb23e84",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582091556435e0097685f25b2ac8968731beafa4452830d8ae70c92825d96dde6524"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 33 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 33 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "f9843e7fd6cb4a952bcf4d87a203638937786cd865630869c022b48def5022cf",
+      "tx_hash": "55698f49cb116d671a11fe6a080572adfbfd276e0fbfb5e8668f8d1ff1f9d654",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "f9843e7fd6cb4a952bcf4d87a203638937786cd865630869c022b48def5022cf",
+            "tx_hash": "55698f49cb116d671a11fe6a080572adfbfd276e0fbfb5e8668f8d1ff1f9d654",
             "block_height": 10000033,
             "tx_timestamp": 1700002040,
             "absolute_slot": 100002040
@@ -880,20 +880,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "f9843e7fd6cb4a952bcf4d87a203638937786cd865630869c022b48def5022cf",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820ccf080567502b6879f3927650dfc9951894010ec677ec883517181c2a189afb2"
+            "tx_hash": "55698f49cb116d671a11fe6a080572adfbfd276e0fbfb5e8668f8d1ff1f9d654",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658205eaee4ba40bd75fae66f2ab27c1570cc8357c3f9ac54b447b82342aad78a9a24"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 34 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 34 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "0e540cebf6c8f2cd88c1b6d95260f168bd9850801942bc11f35a9089ec137bd7",
+      "tx_hash": "fee1aa66e85917de58a0a25de260e86e22b97fb98b98237478ad99bd19050ea7",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "0e540cebf6c8f2cd88c1b6d95260f168bd9850801942bc11f35a9089ec137bd7",
+            "tx_hash": "fee1aa66e85917de58a0a25de260e86e22b97fb98b98237478ad99bd19050ea7",
             "block_height": 10000034,
             "tx_timestamp": 1700002100,
             "absolute_slot": 100002100
@@ -906,20 +906,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "0e540cebf6c8f2cd88c1b6d95260f168bd9850801942bc11f35a9089ec137bd7",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658204eb6bfb37fb2e2661693030a40c2ab1ba1fb602142167e845b394d935f9bc05c"
+            "tx_hash": "fee1aa66e85917de58a0a25de260e86e22b97fb98b98237478ad99bd19050ea7",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582084395ed160bc68a2a935c1edd2af003c4a4031d7a7eb9759df69396081e8bcbc"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 35 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 35 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "34849cb3cb12d8ca627f4898d4b210b4c8a16be339fb550f02aeed2bf92d8c5f",
+      "tx_hash": "d338381a546e7fbfd50bf66f9034220ca5441ca9868780b13c63acdb5b4a2afc",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "34849cb3cb12d8ca627f4898d4b210b4c8a16be339fb550f02aeed2bf92d8c5f",
+            "tx_hash": "d338381a546e7fbfd50bf66f9034220ca5441ca9868780b13c63acdb5b4a2afc",
             "block_height": 10000035,
             "tx_timestamp": 1700002160,
             "absolute_slot": 100002160
@@ -932,20 +932,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "34849cb3cb12d8ca627f4898d4b210b4c8a16be339fb550f02aeed2bf92d8c5f",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658208d4cec33a92a9490c21a958db7c7192fddf4d10f5d3f114d23177f6ec4292cd0"
+            "tx_hash": "d338381a546e7fbfd50bf66f9034220ca5441ca9868780b13c63acdb5b4a2afc",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658209ddb50d5a43869584929ed39b3b357f0f99640f766eb6cc155372fca42e14cb5"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 36 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 36 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "e4c252406823c196011fb6e6745342f47ef6127f5371365dbb40259bef245c16",
+      "tx_hash": "e53d0864fd528eace8d8ffc1b75e9452f5470aea62bfb95eb039f965be0f4352",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "e4c252406823c196011fb6e6745342f47ef6127f5371365dbb40259bef245c16",
+            "tx_hash": "e53d0864fd528eace8d8ffc1b75e9452f5470aea62bfb95eb039f965be0f4352",
             "block_height": 10000036,
             "tx_timestamp": 1700002220,
             "absolute_slot": 100002220
@@ -958,20 +958,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "e4c252406823c196011fb6e6745342f47ef6127f5371365dbb40259bef245c16",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820e58d62c25d09042e15203da462e11dcbd7c0e17167929e1362cba3cf25601dc9"
+            "tx_hash": "e53d0864fd528eace8d8ffc1b75e9452f5470aea62bfb95eb039f965be0f4352",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820fbeb8059b61999848a190a2a4fe04b8dd88de9b7055b85a5d2e181f674abbe21"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 37 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 37 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "5b639525d7c235234d5d09520612e2d4d93e09a562123f31c961ab33d007ac99",
+      "tx_hash": "22eeceba6477c55c525fc43e997761c840f42223c1f9f1d97237722aba66ddfa",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "5b639525d7c235234d5d09520612e2d4d93e09a562123f31c961ab33d007ac99",
+            "tx_hash": "22eeceba6477c55c525fc43e997761c840f42223c1f9f1d97237722aba66ddfa",
             "block_height": 10000037,
             "tx_timestamp": 1700002280,
             "absolute_slot": 100002280
@@ -984,20 +984,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "5b639525d7c235234d5d09520612e2d4d93e09a562123f31c961ab33d007ac99",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582007e0f2d7a72213732452985740aeb966cfeed795c52ec5d8aea77338e75b5e97"
+            "tx_hash": "22eeceba6477c55c525fc43e997761c840f42223c1f9f1d97237722aba66ddfa",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658204a6ef63121921a6f1cdfe75ced7552c3c3df7ea0b6dc9cc2bd9769662045e6c8"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 38 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 38 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "699b2c0390a79f1116f3fecf83b603063e448c768f2a1838c3180934b9f87f23",
+      "tx_hash": "8117e98c725b9534917e39665fa9b4d928fbfafe0a0729bdf28ee4f071c195d1",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "699b2c0390a79f1116f3fecf83b603063e448c768f2a1838c3180934b9f87f23",
+            "tx_hash": "8117e98c725b9534917e39665fa9b4d928fbfafe0a0729bdf28ee4f071c195d1",
             "block_height": 10000038,
             "tx_timestamp": 1700002340,
             "absolute_slot": 100002340
@@ -1010,20 +1010,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "699b2c0390a79f1116f3fecf83b603063e448c768f2a1838c3180934b9f87f23",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658208b7d06cc5b1a427b97ec211d6cb220fda5a8d3fa5500caec875fa4da9325271c"
+            "tx_hash": "8117e98c725b9534917e39665fa9b4d928fbfafe0a0729bdf28ee4f071c195d1",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582041f4134270cc1c295d34647d2e42ae614895f20fb724b68af8915c439bb41a4a"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 39 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 39 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "5e21a434327b2e1f06d797250befeb5b2a19c00afd272880a3de51939587b476",
+      "tx_hash": "3657b2ff0954625f1c9607c90c80aac6b7e117d7217027c1bed628986ef4fa26",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "5e21a434327b2e1f06d797250befeb5b2a19c00afd272880a3de51939587b476",
+            "tx_hash": "3657b2ff0954625f1c9607c90c80aac6b7e117d7217027c1bed628986ef4fa26",
             "block_height": 10000039,
             "tx_timestamp": 1700002400,
             "absolute_slot": 100002400
@@ -1036,20 +1036,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "5e21a434327b2e1f06d797250befeb5b2a19c00afd272880a3de51939587b476",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658201357984ce1925b87ae7f095d9facdb1b6d5ded1f3f0e5e20ebad7b2f0179dc86"
+            "tx_hash": "3657b2ff0954625f1c9607c90c80aac6b7e117d7217027c1bed628986ef4fa26",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820eaa20c707608c39d78bd4f482b1d412ba47f7007e70c57b413fc9a4a24606640"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 40 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 40 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "3d32caf2ad29abd4145f6072e51ef797188401848e133a73020b889f60680cfe",
+      "tx_hash": "42436f397d1dc5af4d56ff8c853d38cfb5705503f2fd268f95c87459522f54e9",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "3d32caf2ad29abd4145f6072e51ef797188401848e133a73020b889f60680cfe",
+            "tx_hash": "42436f397d1dc5af4d56ff8c853d38cfb5705503f2fd268f95c87459522f54e9",
             "block_height": 10000040,
             "tx_timestamp": 1700002460,
             "absolute_slot": 100002460
@@ -1062,20 +1062,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "3d32caf2ad29abd4145f6072e51ef797188401848e133a73020b889f60680cfe",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658207c7bef16a456ec77881c9542aa5a86686ac1e44891ed06815553d2f83a685883"
+            "tx_hash": "42436f397d1dc5af4d56ff8c853d38cfb5705503f2fd268f95c87459522f54e9",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658201629af17f1830ce5d25c8c8a0c6936bd2f6fad6785b4d24d5bdce18fd880e787"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 41 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 41 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "f4a6873bf10bf4de8cd1e6142613a2acdb13fc0e886f5fda76c765af89ec4fcc",
+      "tx_hash": "1d3cb42e93a7e4b2dda1a42d1132827dbc88a4366fc6d6943a4e870a55bf46e8",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "f4a6873bf10bf4de8cd1e6142613a2acdb13fc0e886f5fda76c765af89ec4fcc",
+            "tx_hash": "1d3cb42e93a7e4b2dda1a42d1132827dbc88a4366fc6d6943a4e870a55bf46e8",
             "block_height": 10000041,
             "tx_timestamp": 1700002520,
             "absolute_slot": 100002520
@@ -1088,20 +1088,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "f4a6873bf10bf4de8cd1e6142613a2acdb13fc0e886f5fda76c765af89ec4fcc",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820fc5787caa9b0758ddcb4ee3c334beb2e65f5ce6f88b813db52ad3ec3e06bda2a"
+            "tx_hash": "1d3cb42e93a7e4b2dda1a42d1132827dbc88a4366fc6d6943a4e870a55bf46e8",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820375ea8a944b98a52cb0f82c1e614faf473931290fdb0c1a3a175ffd03f5b4934"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 42 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 42 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "387daa32dbe9ab7f9384fde823a659297f425ec74becd394e976017eb0b43e41",
+      "tx_hash": "b77e854299213b7baf8f3c0a9d7d58f731eb263f04d5509003966dfe8df067b2",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "387daa32dbe9ab7f9384fde823a659297f425ec74becd394e976017eb0b43e41",
+            "tx_hash": "b77e854299213b7baf8f3c0a9d7d58f731eb263f04d5509003966dfe8df067b2",
             "block_height": 10000042,
             "tx_timestamp": 1700002580,
             "absolute_slot": 100002580
@@ -1114,20 +1114,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "387daa32dbe9ab7f9384fde823a659297f425ec74becd394e976017eb0b43e41",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658208a1d9e77f1661126f951f7b64186306b3da170eca55e1bc613732b57b981f738"
+            "tx_hash": "b77e854299213b7baf8f3c0a9d7d58f731eb263f04d5509003966dfe8df067b2",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582064a24991ebc4d9d1967e578cd1d51be50ef915ec4a6dfc4ae3f06e60a3a096ac"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 43 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 43 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "8a98c89acf33669604353432cb2a0fb49cd92301195faa3d279959d5b86d621b",
+      "tx_hash": "884976fc1c1dd51095bd17c3e0e76bd7c5c14c368cfc0081a87bbd8a5f1b2c48",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "8a98c89acf33669604353432cb2a0fb49cd92301195faa3d279959d5b86d621b",
+            "tx_hash": "884976fc1c1dd51095bd17c3e0e76bd7c5c14c368cfc0081a87bbd8a5f1b2c48",
             "block_height": 10000043,
             "tx_timestamp": 1700002640,
             "absolute_slot": 100002640
@@ -1140,20 +1140,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "8a98c89acf33669604353432cb2a0fb49cd92301195faa3d279959d5b86d621b",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658206512c2226c87de52e0b9a717ce813dee1fdb50349b7e8e83c33e86a13a50f735"
+            "tx_hash": "884976fc1c1dd51095bd17c3e0e76bd7c5c14c368cfc0081a87bbd8a5f1b2c48",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658203ef20945d1fc7714b223ca6438cd146328b369bc3fdd096f43b401df3cca241c"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 44 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 44 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "79a66001b15cc74c0ff469ef846aae0ad7613f59a5f91978941d0746ec112daa",
+      "tx_hash": "ef8361c96139e749f3f6bc76c9125f571d538f0373c3346e9a49088185396e49",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "79a66001b15cc74c0ff469ef846aae0ad7613f59a5f91978941d0746ec112daa",
+            "tx_hash": "ef8361c96139e749f3f6bc76c9125f571d538f0373c3346e9a49088185396e49",
             "block_height": 10000044,
             "tx_timestamp": 1700002700,
             "absolute_slot": 100002700
@@ -1166,20 +1166,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "79a66001b15cc74c0ff469ef846aae0ad7613f59a5f91978941d0746ec112daa",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820f489a5fbf1bb78667a8bd4b19e1719742a123b66a866282f98eb530185b5c844"
+            "tx_hash": "ef8361c96139e749f3f6bc76c9125f571d538f0373c3346e9a49088185396e49",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658201d96fc06d7ea6757cbf2727596f93f0101e7ffd83cc31dcd49792d302689b438"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 45 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 45 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "9368388d408c76164ab71863a6403efd9f83711dcc589d52ce10fbd88f367f73",
+      "tx_hash": "0ce40048224ca1839e9c031773b56525f8e55f1f79ad3fa55af9530664e4e474",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9368388d408c76164ab71863a6403efd9f83711dcc589d52ce10fbd88f367f73",
+            "tx_hash": "0ce40048224ca1839e9c031773b56525f8e55f1f79ad3fa55af9530664e4e474",
             "block_height": 10000045,
             "tx_timestamp": 1700002760,
             "absolute_slot": 100002760
@@ -1192,20 +1192,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9368388d408c76164ab71863a6403efd9f83711dcc589d52ce10fbd88f367f73",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582063009a99eebc71a327e4c6c5c60ffe057098cd8b41fa749ddcc9c72926fe97b2"
+            "tx_hash": "0ce40048224ca1839e9c031773b56525f8e55f1f79ad3fa55af9530664e4e474",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820c36f44fc52020209ff6c64f24b77caaf540c13f9c25d7ad39b7ca7ff4d0ded73"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 46 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 46 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "54ef6d31067e2dd76cfdf4eaa14b7c9c74735a16cb189ad7ca78ba8f7d897359",
+      "tx_hash": "8bee5cc6fc90e70ab4f103730956ffaad5b89e94d8189dca7460e52b0fe6ce92",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "54ef6d31067e2dd76cfdf4eaa14b7c9c74735a16cb189ad7ca78ba8f7d897359",
+            "tx_hash": "8bee5cc6fc90e70ab4f103730956ffaad5b89e94d8189dca7460e52b0fe6ce92",
             "block_height": 10000046,
             "tx_timestamp": 1700002820,
             "absolute_slot": 100002820
@@ -1218,20 +1218,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "54ef6d31067e2dd76cfdf4eaa14b7c9c74735a16cb189ad7ca78ba8f7d897359",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582039c16ad353858e468487f552775fd0f8212704acabe4d5086182e553eefabe4b"
+            "tx_hash": "8bee5cc6fc90e70ab4f103730956ffaad5b89e94d8189dca7460e52b0fe6ce92",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820fc87746bde2d828e7b0414d89b01a4308abf40cc31a8baba8d23529cb5b67210"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 47 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 47 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "59019d9028dd75f1405bc11490c620be1f94fcc27307f8b038da65cbf17d1d49",
+      "tx_hash": "d2e7228b002072cfeb9f3e8dd910bb64e2944c5757097824f91edb0c75653c51",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "59019d9028dd75f1405bc11490c620be1f94fcc27307f8b038da65cbf17d1d49",
+            "tx_hash": "d2e7228b002072cfeb9f3e8dd910bb64e2944c5757097824f91edb0c75653c51",
             "block_height": 10000047,
             "tx_timestamp": 1700002880,
             "absolute_slot": 100002880
@@ -1244,20 +1244,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "59019d9028dd75f1405bc11490c620be1f94fcc27307f8b038da65cbf17d1d49",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658201259b03a2163c373479144e3d6f638031d36a0bf7276c73b0169a9bd96fcb3b4"
+            "tx_hash": "d2e7228b002072cfeb9f3e8dd910bb64e2944c5757097824f91edb0c75653c51",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820de5a467abeae3d263fbee85fd7d8cf518c0d3fec1580132b7ee31aeba4501ac2"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 48 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 48 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "958a1210c5f853147585871cb765dfe56d99bf6b8f6ef5bfc7a21090e6ca48a7",
+      "tx_hash": "4955cd82fd4e8876b2ed7d4610064aa040066c772c038c332108088beca96b66",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "958a1210c5f853147585871cb765dfe56d99bf6b8f6ef5bfc7a21090e6ca48a7",
+            "tx_hash": "4955cd82fd4e8876b2ed7d4610064aa040066c772c038c332108088beca96b66",
             "block_height": 10000048,
             "tx_timestamp": 1700002940,
             "absolute_slot": 100002940
@@ -1270,20 +1270,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "958a1210c5f853147585871cb765dfe56d99bf6b8f6ef5bfc7a21090e6ca48a7",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820175ca483e0b5ebfac13a9c916caf84382a9b9b2b682f21560eaac4d1fd8ba318"
+            "tx_hash": "4955cd82fd4e8876b2ed7d4610064aa040066c772c038c332108088beca96b66",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582043a806c1939e939ded132302a6a2d35f73fa7bb5cb29a2536164148659f1c39c"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 49 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 49 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a47009bfccfe5ba4856b0cd1609913b3e95302a030b022e7e976250c0e04d8e6",
+      "tx_hash": "663364fbd762d16f705f45e728965413ebbab373d712f8d225ca4c5870f41661",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a47009bfccfe5ba4856b0cd1609913b3e95302a030b022e7e976250c0e04d8e6",
+            "tx_hash": "663364fbd762d16f705f45e728965413ebbab373d712f8d225ca4c5870f41661",
             "block_height": 10000049,
             "tx_timestamp": 1700003000,
             "absolute_slot": 100003000
@@ -1296,20 +1296,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a47009bfccfe5ba4856b0cd1609913b3e95302a030b022e7e976250c0e04d8e6",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820dc8e964863425e4b369d17d75c82e760c247d92631d86af7e61227c12d26327a"
+            "tx_hash": "663364fbd762d16f705f45e728965413ebbab373d712f8d225ca4c5870f41661",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820aabacb68c5d6d7430d239488c9656edbc1e63da542d6b04f8846a940ccc011da"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 50 (single-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 50 (single-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "0615c249af981c982bab967bdb7aa78dc3ae5fbddaf707c515a7ee068338bd62",
+      "tx_hash": "ebb3c565291a192c40a02b59f1f47c1efb0a14ec2a88d359df080f23d0102066",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "0615c249af981c982bab967bdb7aa78dc3ae5fbddaf707c515a7ee068338bd62",
+            "tx_hash": "ebb3c565291a192c40a02b59f1f47c1efb0a14ec2a88d359df080f23d0102066",
             "block_height": 10000050,
             "tx_timestamp": 1700003060,
             "absolute_slot": 100003060
@@ -1322,20 +1322,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "0615c249af981c982bab967bdb7aa78dc3ae5fbddaf707c515a7ee068338bd62",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658205f3c7c58e01862e6e024f56f165d7e517aea3076fcd0b92be031dd5a8b4a0b8a6b626c616b6532622d3235365820d024ec212900b048898fe45c34d507a6b2ed156fd18a1e86cdd604569d1b5865"
+            "tx_hash": "ebb3c565291a192c40a02b59f1f47c1efb0a14ec2a88d359df080f23d0102066",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582062614e1e86123a3d000b1da94b33997f57d4e18c4881ec701d5eab7e373420076b626c616b6532622d3235365820832944e6844735cc5bfb2f9fb5aaab3a3c6e6e704c25124b3aa9edadaaa21380"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 51 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 51 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "512d4418631cf8eb295993272d581fe4dee40dbaf512de7c3e81a76a3b15fb81",
+      "tx_hash": "a75213a3b4da12cd54f91c2039af539ddaf079f88a28cc6a3984233db07a72e6",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "512d4418631cf8eb295993272d581fe4dee40dbaf512de7c3e81a76a3b15fb81",
+            "tx_hash": "a75213a3b4da12cd54f91c2039af539ddaf079f88a28cc6a3984233db07a72e6",
             "block_height": 10000051,
             "tx_timestamp": 1700003120,
             "absolute_slot": 100003120
@@ -1348,20 +1348,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "512d4418631cf8eb295993272d581fe4dee40dbaf512de7c3e81a76a3b15fb81",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820dfe8d2c2c1042d6a42447c36c3813a1c9960807a4536f3d6564887a0b1bab5a16b626c616b6532622d323536582004612b686db09338668d48e903967b7800ddf760862cb6bc910e266b05ed0194"
+            "tx_hash": "a75213a3b4da12cd54f91c2039af539ddaf079f88a28cc6a3984233db07a72e6",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820a52b460188fc02542bad7d474df9e95134e10c885a45f974f7a1ac8ef90125276b626c616b6532622d32353658208df4ea3e49aa24ba54f9f1e0f9501f1132c71d1564f697a606efedabaad2f40f"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 52 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 52 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "6390c4e0a440773fe876d592a707746cb8c152d23fe496b2a74080aa888e197e",
+      "tx_hash": "4416c50538d8873d4b1b8f83004194d1e0a74bfa914aacc7c2dc016dc464dab2",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "6390c4e0a440773fe876d592a707746cb8c152d23fe496b2a74080aa888e197e",
+            "tx_hash": "4416c50538d8873d4b1b8f83004194d1e0a74bfa914aacc7c2dc016dc464dab2",
             "block_height": 10000052,
             "tx_timestamp": 1700003180,
             "absolute_slot": 100003180
@@ -1374,20 +1374,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "6390c4e0a440773fe876d592a707746cb8c152d23fe496b2a74080aa888e197e",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582049c9f14e3bfbe4338d511eaa8b4e744468657d4853c37486796badfcc55f54d26b626c616b6532622d3235365820cf2e8c6a9226ca9b80e068c0a1e925dec33b0b0ee518161505ffba691e99fb90"
+            "tx_hash": "4416c50538d8873d4b1b8f83004194d1e0a74bfa914aacc7c2dc016dc464dab2",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820f371b5d01c5e877613aefab7edf83bf43fa0c06ed51ce47be1d88920ffa48c0e6b626c616b6532622d3235365820b20f33111c176120d7417e32cb2f87e3ba1ceac007ac6e38007fdf0bbce8925f"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 53 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 53 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "d32624369f5965daae94d5370584bdcbb809236a35d1ca534f6a5011d81c5c99",
+      "tx_hash": "c2aef5b52e9703602a0debbf197f175a0ee0b144a080babc40ad1c24cceabff5",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "d32624369f5965daae94d5370584bdcbb809236a35d1ca534f6a5011d81c5c99",
+            "tx_hash": "c2aef5b52e9703602a0debbf197f175a0ee0b144a080babc40ad1c24cceabff5",
             "block_height": 10000053,
             "tx_timestamp": 1700003240,
             "absolute_slot": 100003240
@@ -1400,20 +1400,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "d32624369f5965daae94d5370584bdcbb809236a35d1ca534f6a5011d81c5c99",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820c8fae6e4a014709c6f6d08626840e9a77537e60c3697e0f062397168f694fa506b626c616b6532622d323536582017482372b5837c61f7c32dc00e647a012553cd6ee6a9a21792b496872d55e7f3"
+            "tx_hash": "c2aef5b52e9703602a0debbf197f175a0ee0b144a080babc40ad1c24cceabff5",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658202a58d1d7b72faa8cbb095c1e24565f0ac72d1e7c83e38afe7ee6f9f1b85b3a8d6b626c616b6532622d32353658203f6aa415c767c446004ecddcc1422c2403c64b738912c99d00b4b48a1d9e6b9a"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 54 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 54 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "e643b7dc071ecb453523436200e88bac895551728dd62f3c639388315dd80aea",
+      "tx_hash": "c9b0020cca343ac332f6155feba55bb67760524f86751ac11145a0cde19b07a3",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "e643b7dc071ecb453523436200e88bac895551728dd62f3c639388315dd80aea",
+            "tx_hash": "c9b0020cca343ac332f6155feba55bb67760524f86751ac11145a0cde19b07a3",
             "block_height": 10000054,
             "tx_timestamp": 1700003300,
             "absolute_slot": 100003300
@@ -1426,20 +1426,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "e643b7dc071ecb453523436200e88bac895551728dd62f3c639388315dd80aea",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658206b9cf65734f1c4aa186e1b017729bad0316e3c746e7281e0c3aa484065c7bd716b626c616b6532622d3235365820ce95062701a241892875ba2ba36e9de2238f8ba86af25552fd504e09b2ff9ec4"
+            "tx_hash": "c9b0020cca343ac332f6155feba55bb67760524f86751ac11145a0cde19b07a3",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658209f400d845ed4ee70d1942efaa33434f3bff0e6496253b7d9c5a8b0a4b8424e266b626c616b6532622d323536582022848f1936a98bd2bf4c3f816f1f05fe2645d1a1bf1fbf65c844dd452dc50a16"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 55 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 55 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "336fa5700e231cc5ee3f9608852aaf60d801b5f71f063cd875e08b212b57754d",
+      "tx_hash": "87d35f291814f09b99b8b8613743c136372ac0599f33239c95d51648ef3760dd",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "336fa5700e231cc5ee3f9608852aaf60d801b5f71f063cd875e08b212b57754d",
+            "tx_hash": "87d35f291814f09b99b8b8613743c136372ac0599f33239c95d51648ef3760dd",
             "block_height": 10000055,
             "tx_timestamp": 1700003360,
             "absolute_slot": 100003360
@@ -1452,20 +1452,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "336fa5700e231cc5ee3f9608852aaf60d801b5f71f063cd875e08b212b57754d",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820675f6e482d89a10db71ce97148c7082b4c8b36a4a4259564ff1029491f45054f6b626c616b6532622d3235365820292e7bacb2273e0b7bfd2fa1856e536f763e74eaef63b391d6113d1696117ba7"
+            "tx_hash": "87d35f291814f09b99b8b8613743c136372ac0599f33239c95d51648ef3760dd",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582099e6ef783eeb343ea830658db940e07d6222b468efbcfd592c1a552602f3ae986b626c616b6532622d3235365820fe90b5ca2a0aed351dc4c527165015b3fad5e8c4f1b17462f6956c53fd3bfb61"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 56 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 56 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "2792392771c69b999428a1c8659f4a941d7a559f2e8fde47a280ea4a3518c60b",
+      "tx_hash": "b7f45648fbb91aa58f1e02aa30d4499ff90e578b3f04e66b3cec089e90df56a8",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "2792392771c69b999428a1c8659f4a941d7a559f2e8fde47a280ea4a3518c60b",
+            "tx_hash": "b7f45648fbb91aa58f1e02aa30d4499ff90e578b3f04e66b3cec089e90df56a8",
             "block_height": 10000056,
             "tx_timestamp": 1700003420,
             "absolute_slot": 100003420
@@ -1478,20 +1478,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "2792392771c69b999428a1c8659f4a941d7a559f2e8fde47a280ea4a3518c60b",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820641852f487ffcd10b90d56c8e7b9fe3d032388a9805d69f8708a4d12979d21f16b626c616b6532622d3235365820151d87c9e1b9e3a18e21a4dca339476ddd69c8db249ae83de38a6585601d6792"
+            "tx_hash": "b7f45648fbb91aa58f1e02aa30d4499ff90e578b3f04e66b3cec089e90df56a8",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820e2fc775cd41d32de88b18a25e1670d49060c0c9cbf5e25161342f435c6c381966b626c616b6532622d323536582000e77eba9e4973a335e31d4221c7eefee7a5f6d660abea2554d137621ef6a647"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 57 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 57 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "b71a7899f683ab82927fd15269e3da3310dff425f8c27ff6fb33437b48f669e2",
+      "tx_hash": "70529320cfba8a6a688bb7727fc62c7630b8b5269c618df806ade82d7156defd",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "b71a7899f683ab82927fd15269e3da3310dff425f8c27ff6fb33437b48f669e2",
+            "tx_hash": "70529320cfba8a6a688bb7727fc62c7630b8b5269c618df806ade82d7156defd",
             "block_height": 10000057,
             "tx_timestamp": 1700003480,
             "absolute_slot": 100003480
@@ -1504,20 +1504,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "b71a7899f683ab82927fd15269e3da3310dff425f8c27ff6fb33437b48f669e2",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820e914f5544c1fcb3c26483386a7a68b0acd5b8bce883cc1b649dcde4690243e296b626c616b6532622d323536582055adeb248d108acbd9091fc9fa52ce2c58324b50721cf0e3c3370d1afea94e82"
+            "tx_hash": "70529320cfba8a6a688bb7727fc62c7630b8b5269c618df806ade82d7156defd",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820b8cefe70175697aeef4b96eace4fe66a3e394efb57876984964c64c0b7cdfd296b626c616b6532622d3235365820407cf63f3caf47387dd900149d9975e1d35760889cba79ebbe9a33a2e15a81e7"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 58 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 58 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "778faf85da6ef2bcc7ac61902855b5b2ce821e152bbe319acc7a3e32ea87dfc6",
+      "tx_hash": "7f77bdd506cc5720a77ec6c8b1b6f1951eafdb7e722694350fd017e88501f170",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "778faf85da6ef2bcc7ac61902855b5b2ce821e152bbe319acc7a3e32ea87dfc6",
+            "tx_hash": "7f77bdd506cc5720a77ec6c8b1b6f1951eafdb7e722694350fd017e88501f170",
             "block_height": 10000058,
             "tx_timestamp": 1700003540,
             "absolute_slot": 100003540
@@ -1530,20 +1530,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "778faf85da6ef2bcc7ac61902855b5b2ce821e152bbe319acc7a3e32ea87dfc6",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658203820277b8cf489c7a400ab7a853ba92016ae58736af280c01b123b6206aa8e396b626c616b6532622d3235365820aa34b35bdb2281d9ac513ba9ec0eb35880d81a16e7a4da37224ae6a1955365a9"
+            "tx_hash": "7f77bdd506cc5720a77ec6c8b1b6f1951eafdb7e722694350fd017e88501f170",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820dd008980300b90e2d425a2e3b7d9ea0bd9a8bd7e7262b4d01155487a89e744c86b626c616b6532622d3235365820e4197438348b504d21b3821a97ce2a428a65a38c5d1e5d42aedbf4450fa7c837"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 59 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 59 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "4a06cd39bf99ba67d7ca1c0ffbb19016e4d4a48de6fb9660c7f5424ea23a32fd",
+      "tx_hash": "be83f3052ff55ebfb5f4f2c00c3883383b1cc4c9271c8c0c68af83f5e3257064",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "4a06cd39bf99ba67d7ca1c0ffbb19016e4d4a48de6fb9660c7f5424ea23a32fd",
+            "tx_hash": "be83f3052ff55ebfb5f4f2c00c3883383b1cc4c9271c8c0c68af83f5e3257064",
             "block_height": 10000059,
             "tx_timestamp": 1700003600,
             "absolute_slot": 100003600
@@ -1556,20 +1556,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "4a06cd39bf99ba67d7ca1c0ffbb19016e4d4a48de6fb9660c7f5424ea23a32fd",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820abe3b37b8325e5a0edcb70cdb0a4a4b9b8ef01d7979cfea7d0f7b092d39ea11e6b626c616b6532622d3235365820113228c671e7ba5b7024ae0d827a39183c248c4a4f9951d1cee97c8d000a65c3"
+            "tx_hash": "be83f3052ff55ebfb5f4f2c00c3883383b1cc4c9271c8c0c68af83f5e3257064",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582026e87782e5c21ca7d3e297caa821d45598303bcc20cbcdc6c5352753669380926b626c616b6532622d3235365820d83e3d98f9a4fb8b48d182cc5de394007d3db20427b1994874b559091bf806c2"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 60 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 60 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "546b2c43ada5f67d4d8d0f74daf3227ce28ceeb76c78a751f847be7a6c0101d0",
+      "tx_hash": "efac4840b324e315ec2f5a8aa8b28a82d0abfdcac2716b0526e4b51548a77384",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "546b2c43ada5f67d4d8d0f74daf3227ce28ceeb76c78a751f847be7a6c0101d0",
+            "tx_hash": "efac4840b324e315ec2f5a8aa8b28a82d0abfdcac2716b0526e4b51548a77384",
             "block_height": 10000060,
             "tx_timestamp": 1700003660,
             "absolute_slot": 100003660
@@ -1582,20 +1582,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "546b2c43ada5f67d4d8d0f74daf3227ce28ceeb76c78a751f847be7a6c0101d0",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820e0424b4c04a897cdce536aa2ea3d18adc6cd4660657478895ea23d66623698216b626c616b6532622d323536582089c56df91c744622bc35952e5a2af4a8bf8d1472a3c05a409d11d2a2e9859df7"
+            "tx_hash": "efac4840b324e315ec2f5a8aa8b28a82d0abfdcac2716b0526e4b51548a77384",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582063ab8a5352cac90b79f08a2a4cae99cd0dbb2bef0532be781e41eb209ca5840d6b626c616b6532622d3235365820de5dc3b91412d3e64c4bbe30d7be374878c9ed900062012776b5a032396ef031"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 61 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 61 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a39dfdd916ffabb9533ad8e8e4669d894ff5dcc43a2a4784effc29118c64919b",
+      "tx_hash": "aba01aa954e498aeddcebdaaae8a9dc3379564f20607a9f1d5ee918baeabf11f",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a39dfdd916ffabb9533ad8e8e4669d894ff5dcc43a2a4784effc29118c64919b",
+            "tx_hash": "aba01aa954e498aeddcebdaaae8a9dc3379564f20607a9f1d5ee918baeabf11f",
             "block_height": 10000061,
             "tx_timestamp": 1700003720,
             "absolute_slot": 100003720
@@ -1608,20 +1608,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a39dfdd916ffabb9533ad8e8e4669d894ff5dcc43a2a4784effc29118c64919b",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582068dd13be575dfd1405d3e3836e498a85884f7a74ab85004705fb15db0304be026b626c616b6532622d323536582068e8da21beca5b2d2b79bf919d7e75bebe120de9c31c9196a96e88992a5092d2"
+            "tx_hash": "aba01aa954e498aeddcebdaaae8a9dc3379564f20607a9f1d5ee918baeabf11f",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820ac3cb3bad590aff15a0b58b71b3acf9bfcf9c7b0986564c78562d9114a62a1aa6b626c616b6532622d323536582010c6dc2757b1bd66141b4ecb6c13ffab29de94516ba15d3de45888485591baa9"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 62 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 62 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "24c1438896d2523acd8277b0bd66b53d6682f1722f43bebe8af5b63ba35f9131",
+      "tx_hash": "95bfae5109edc66ffb46835c6a768e8938712d0b2232207eb5714b72de195b87",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "24c1438896d2523acd8277b0bd66b53d6682f1722f43bebe8af5b63ba35f9131",
+            "tx_hash": "95bfae5109edc66ffb46835c6a768e8938712d0b2232207eb5714b72de195b87",
             "block_height": 10000062,
             "tx_timestamp": 1700003780,
             "absolute_slot": 100003780
@@ -1634,20 +1634,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "24c1438896d2523acd8277b0bd66b53d6682f1722f43bebe8af5b63ba35f9131",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582085b46b89bc4bddb00a0a0a699b070190ba7685ee969072ae60bb9280541951c86b626c616b6532622d3235365820c674170f9a5dbab725c9e7ef20227724242e409f23e7383288646c17333c8d21"
+            "tx_hash": "95bfae5109edc66ffb46835c6a768e8938712d0b2232207eb5714b72de195b87",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582070c843b5b455940b99d642105ab4e35325b6b3bb91b7d79de1f9412917e69a506b626c616b6532622d32353658208573a2f7f8a83973bf1638d6b1c22f988caa8d502085ecbd9b22e8f6098c623b"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 63 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 63 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "d81cff56684d12b7b430f34bee4b564f05d066f03c20919718aedb55c9728203",
+      "tx_hash": "06558fcd467c21b25333253359a07ae182d42345875c7e2fdba61d0094f7e0e4",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "d81cff56684d12b7b430f34bee4b564f05d066f03c20919718aedb55c9728203",
+            "tx_hash": "06558fcd467c21b25333253359a07ae182d42345875c7e2fdba61d0094f7e0e4",
             "block_height": 10000063,
             "tx_timestamp": 1700003840,
             "absolute_slot": 100003840
@@ -1660,20 +1660,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "d81cff56684d12b7b430f34bee4b564f05d066f03c20919718aedb55c9728203",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658202a5e26341b15d6d6d041192eb05c848720c471cbb2d0b4412c7148e006f33c966b626c616b6532622d32353658209a143afa0099492e0444073b5620b75c6d0309454aca311ac28ca817240ecbc9"
+            "tx_hash": "06558fcd467c21b25333253359a07ae182d42345875c7e2fdba61d0094f7e0e4",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658209aa0c08b10ed2e3e26f1715e0e46cb1476487d86dd11708b9cc7c9de34951ce06b626c616b6532622d3235365820c59e027ff3fd907aa2d92ced5de97baad48097209953a6fa1e59cf7c51c8f0dc"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 64 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 64 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "f464b54715b39cf5274abb872700d4b7c985c074cae841a5a3f61ae2290ee1df",
+      "tx_hash": "44fec688443e3ae2d9627a0e4ccffc3e1486eb2a6f7a7961f763f86d2301b1b8",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "f464b54715b39cf5274abb872700d4b7c985c074cae841a5a3f61ae2290ee1df",
+            "tx_hash": "44fec688443e3ae2d9627a0e4ccffc3e1486eb2a6f7a7961f763f86d2301b1b8",
             "block_height": 10000064,
             "tx_timestamp": 1700003900,
             "absolute_slot": 100003900
@@ -1686,20 +1686,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "f464b54715b39cf5274abb872700d4b7c985c074cae841a5a3f61ae2290ee1df",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582007105cff56960e338740fcce8ff69c5820f6fe213af26f481242b039efa20f946b626c616b6532622d32353658204f54db0a626cd9a8637a7827b33d4351aab45bf9fcaec92160ca6c8aaaa37cbf"
+            "tx_hash": "44fec688443e3ae2d9627a0e4ccffc3e1486eb2a6f7a7961f763f86d2301b1b8",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658202c7dcdce633044aaf7f4a3478430e9dd78731b2f8f58ccc3f5ac181cb58fcb8c6b626c616b6532622d32353658208d69f734073a3c4f70e88ae9131b9b05ee57dee88c13caded278b1a463e7ca58"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 65 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 65 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "86877b1ab22931f921518e20b9a9af0d006bde3aa41536f266d3945745c5217f",
+      "tx_hash": "b8e4aeb4e8767afe8e4da9d2aac1bbf7e3bbcee1c2a427c1df13f35af6e2271f",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "86877b1ab22931f921518e20b9a9af0d006bde3aa41536f266d3945745c5217f",
+            "tx_hash": "b8e4aeb4e8767afe8e4da9d2aac1bbf7e3bbcee1c2a427c1df13f35af6e2271f",
             "block_height": 10000065,
             "tx_timestamp": 1700003960,
             "absolute_slot": 100003960
@@ -1712,20 +1712,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "86877b1ab22931f921518e20b9a9af0d006bde3aa41536f266d3945745c5217f",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582062b07b09262a5d1bb85bd2ef0363e08c63e65bd3b0dc8ea6f18f6ae87dbb78746b626c616b6532622d32353658209e6c073292ee14c94207121066a565b59cd4a1c32295c82a4a3a0fc8e764fad4"
+            "tx_hash": "b8e4aeb4e8767afe8e4da9d2aac1bbf7e3bbcee1c2a427c1df13f35af6e2271f",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820783881cd16a5cc5eafb3aafcaa4bc8ed7616311a239b0f1d54a0c10fb9aa63d56b626c616b6532622d32353658208744579cc25cada6cc637f21593064ef1515f4b4453d97dfedd8680fbafc08fc"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 66 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 66 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "c200cbc8bf2405b08d963da6bdc7a84d0fbf2852d6f42a1bc3c65e2e2cb7373c",
+      "tx_hash": "937c1c27c5b68326344a86f154c708f20441233c47ededcd1670c388c57262f5",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "c200cbc8bf2405b08d963da6bdc7a84d0fbf2852d6f42a1bc3c65e2e2cb7373c",
+            "tx_hash": "937c1c27c5b68326344a86f154c708f20441233c47ededcd1670c388c57262f5",
             "block_height": 10000066,
             "tx_timestamp": 1700004020,
             "absolute_slot": 100004020
@@ -1738,20 +1738,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "c200cbc8bf2405b08d963da6bdc7a84d0fbf2852d6f42a1bc3c65e2e2cb7373c",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582051b617b97fefad1432a1dc9b4f7c13ed9d667ba178909f72452f3501d08a88ad6b626c616b6532622d3235365820a02995b9c0ccde59face66d539f6ec2f8b6d0877636ed84244da351315729af7"
+            "tx_hash": "937c1c27c5b68326344a86f154c708f20441233c47ededcd1670c388c57262f5",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658208d4c26ad0ad8795a1faefa25e22ee6f68df3164ff7c1a9298d87d5c548782c376b626c616b6532622d3235365820a1a0f92673ac7f13921996cab7dacd46ae2950440ef8436b46da08f7c2d25388"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 67 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 67 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a385ba2adf85f63c06198a2d258322cb09c17c092f24d30f04c2cc36311f07d9",
+      "tx_hash": "1ded9afc0ed6b0b7148c02d0cd4b484dfd781d20fabdfe06564585a3ae8ab937",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a385ba2adf85f63c06198a2d258322cb09c17c092f24d30f04c2cc36311f07d9",
+            "tx_hash": "1ded9afc0ed6b0b7148c02d0cd4b484dfd781d20fabdfe06564585a3ae8ab937",
             "block_height": 10000067,
             "tx_timestamp": 1700004080,
             "absolute_slot": 100004080
@@ -1764,20 +1764,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a385ba2adf85f63c06198a2d258322cb09c17c092f24d30f04c2cc36311f07d9",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658201a96e4574a3678a3523c887b6f8ced7753d341ff1795e51b0b14de073c5ed5326b626c616b6532622d323536582062bbc7251037fd00825d3b6d0f4829a55f7cdaa6a5f9d513858831d5ad57ec4f"
+            "tx_hash": "1ded9afc0ed6b0b7148c02d0cd4b484dfd781d20fabdfe06564585a3ae8ab937",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820d5e7b3c98f2a293510f4ce2bdb09f902eccb7a8f6b768889be29addcc48b70e26b626c616b6532622d323536582034ac5f96f4f781aafb8ffc21f19b722bd45d5a69c01d07d07736d0ba8a378722"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 68 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 68 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "2f6259d67bd73ea7af4dc15509d9e0e53c8bca167bba571cc133e8007e03c101",
+      "tx_hash": "ebf138d65dee79d1090041dc04d3fb02a889d7f0be32a5d9094257e84d870b34",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "2f6259d67bd73ea7af4dc15509d9e0e53c8bca167bba571cc133e8007e03c101",
+            "tx_hash": "ebf138d65dee79d1090041dc04d3fb02a889d7f0be32a5d9094257e84d870b34",
             "block_height": 10000068,
             "tx_timestamp": 1700004140,
             "absolute_slot": 100004140
@@ -1790,20 +1790,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "2f6259d67bd73ea7af4dc15509d9e0e53c8bca167bba571cc133e8007e03c101",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820c8fb6e97ac458bb364cfcca55ede8b935d7ad6b7ac80b0d983542d1f77f52cc16b626c616b6532622d3235365820b20c08c0a2d5ad075c37457332b46561e40a7ae1185d91839a05df7de73d887b"
+            "tx_hash": "ebf138d65dee79d1090041dc04d3fb02a889d7f0be32a5d9094257e84d870b34",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658209db990187bb4531bb51b990664eab320cb90ba2522a99deb1e84d0238b1177086b626c616b6532622d32353658205e0c5a2b5edb9a3421ccf5de8ca24ccfd1cd9aefa1f6c015d5cd3cb37f0cef64"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 69 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 69 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "79f65f63b025b9c94c722e83171b4ac23a4c3cc2a3cb545b4b12aac4c09e25c1",
+      "tx_hash": "91df80d4a21ba14d7c9a506137e02e106a291b9465002e6840d3cf0f99594ede",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "79f65f63b025b9c94c722e83171b4ac23a4c3cc2a3cb545b4b12aac4c09e25c1",
+            "tx_hash": "91df80d4a21ba14d7c9a506137e02e106a291b9465002e6840d3cf0f99594ede",
             "block_height": 10000069,
             "tx_timestamp": 1700004200,
             "absolute_slot": 100004200
@@ -1816,20 +1816,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "79f65f63b025b9c94c722e83171b4ac23a4c3cc2a3cb545b4b12aac4c09e25c1",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658209dac0a66980c65f0437bd6c58802856ebd5c456c90b85faa23a259f6db141dff6b626c616b6532622d32353658207060274feb9e49b5b2f028211a2cb319c56e3f1ac2e784ef4ae8cf76e269fd5a"
+            "tx_hash": "91df80d4a21ba14d7c9a506137e02e106a291b9465002e6840d3cf0f99594ede",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658202a0fc5549b6259fb9bbc454499dc23a9fad5c6f569bb17961822207e00b77a7c6b626c616b6532622d323536582058015ad0d7c6f2263bfd7b3b8d4eabc85235144ad75b0c85e2f95f4d815bbb80"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 70 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 70 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "0a2e7e228978a5c86c7bc2220f6fa21a556d4088f5f6de715e553e0d5b819e0c",
+      "tx_hash": "da069cea45caf7c7665dba9a04fa595c1d8de12bcdb2d30b95758083bcf35398",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "0a2e7e228978a5c86c7bc2220f6fa21a556d4088f5f6de715e553e0d5b819e0c",
+            "tx_hash": "da069cea45caf7c7665dba9a04fa595c1d8de12bcdb2d30b95758083bcf35398",
             "block_height": 10000070,
             "tx_timestamp": 1700004260,
             "absolute_slot": 100004260
@@ -1842,20 +1842,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "0a2e7e228978a5c86c7bc2220f6fa21a556d4088f5f6de715e553e0d5b819e0c",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820c23fdba9503eff60a02bd09ae1293fd81d8ba1c1d8dda42143f2352da7b6b1366b626c616b6532622d3235365820106771922c6502c1f02c0b9aeb8e4d66efc7146b2e1eae4e8627f63bc267de1a"
+            "tx_hash": "da069cea45caf7c7665dba9a04fa595c1d8de12bcdb2d30b95758083bcf35398",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820de4b820fea11604a59266e9154f1e44bec65162d5d42fdaae4cfdd2a42a4677c6b626c616b6532622d323536582075e9064d32b9361bcbf9886afb243bba732ee5a3bbf1e264931c9f27e336be2d"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 71 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 71 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a0f093be72cf057222f86b31024f4637b58e6173bf782528c2fa4c0653a2d72c",
+      "tx_hash": "e4f9538c29c13b48a63af846dd5da5c3bcfdab6742ec2fcbc296c1cbcb6ea612",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a0f093be72cf057222f86b31024f4637b58e6173bf782528c2fa4c0653a2d72c",
+            "tx_hash": "e4f9538c29c13b48a63af846dd5da5c3bcfdab6742ec2fcbc296c1cbcb6ea612",
             "block_height": 10000071,
             "tx_timestamp": 1700004320,
             "absolute_slot": 100004320
@@ -1868,20 +1868,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a0f093be72cf057222f86b31024f4637b58e6173bf782528c2fa4c0653a2d72c",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820ac26457c4f341d83c3fac60b52a24b3ad972ab6a15841e835bd7ac8d95f62bf76b626c616b6532622d323536582095c5a053fb2c17c2b4ffb0ee1155373fee98ffa6899d4ea9dfc91e89a350509e"
+            "tx_hash": "e4f9538c29c13b48a63af846dd5da5c3bcfdab6742ec2fcbc296c1cbcb6ea612",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820f84d47871ec54ea2438039c54d7ab41cbcb3220d11579db120c9fb382b622dcf6b626c616b6532622d323536582012da10f4269fe7dac07c5c7293f38a3340e80e014bc3856b704bafc49f6cfb07"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 72 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 72 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a857948f5c41c2deb69e1b2cde0e86a6d6a1975c0179a8258ebe9f08d42f8524",
+      "tx_hash": "f0b4fcea5fcd9eeede2fa562a57c1aa44f3b0bdcfbff525b9d28600cc68605a5",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a857948f5c41c2deb69e1b2cde0e86a6d6a1975c0179a8258ebe9f08d42f8524",
+            "tx_hash": "f0b4fcea5fcd9eeede2fa562a57c1aa44f3b0bdcfbff525b9d28600cc68605a5",
             "block_height": 10000072,
             "tx_timestamp": 1700004380,
             "absolute_slot": 100004380
@@ -1894,20 +1894,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a857948f5c41c2deb69e1b2cde0e86a6d6a1975c0179a8258ebe9f08d42f8524",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820b3ce27910b7bb8fafe9ca6e9eeab05657dc5c1339cddfe7a4448490adc30d9886b626c616b6532622d3235365820995e77f04e220487a8c6db6ab819ed21a7cdfdae65ec7a855af221f86a4e44ee"
+            "tx_hash": "f0b4fcea5fcd9eeede2fa562a57c1aa44f3b0bdcfbff525b9d28600cc68605a5",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820dd8f5892dc2eb4c74d21f9e5cf3eee19276c89600e13a39af92e13107376b9506b626c616b6532622d3235365820f5a410ff692a38c1d14e1b471c17fafa0df0d5ea64000095ab62aa670410f518"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 73 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 73 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "a7280dc78cbb905b9b1cfe0cb11a44c18fe6c211cda2ace3cba32e40e942d0b3",
+      "tx_hash": "e9b5b6c33607caeec03bdb2bfabebb2e0f29cc56bcdd96efe99d00c9365d4530",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a7280dc78cbb905b9b1cfe0cb11a44c18fe6c211cda2ace3cba32e40e942d0b3",
+            "tx_hash": "e9b5b6c33607caeec03bdb2bfabebb2e0f29cc56bcdd96efe99d00c9365d4530",
             "block_height": 10000073,
             "tx_timestamp": 1700004440,
             "absolute_slot": 100004440
@@ -1920,20 +1920,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a7280dc78cbb905b9b1cfe0cb11a44c18fe6c211cda2ace3cba32e40e942d0b3",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658202468fc7f75d67f2a3e3498a4adcf8a99efda315527327580a3f19d6f94d515e26b626c616b6532622d3235365820c525f34390a4e85ed0acca723ec01b4cb72cdf9ce83a2c998fef86f0e6dbe8a8"
+            "tx_hash": "e9b5b6c33607caeec03bdb2bfabebb2e0f29cc56bcdd96efe99d00c9365d4530",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820f8a290c3afb53d2c4b938b0b5ec5dd53ba9c9f729d35441d92a5c911aee241596b626c616b6532622d3235365820955c6655dc45f22317688812fa78a382b2118d3fbbfc1a45e6e12cc978a66a5b"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 74 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 74 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "c30c937d5f78d6f7f9aafcad5a9ded0a676a1acdec4f71614895e77af6564360",
+      "tx_hash": "2e249cfb08a877541946dd36fc5f3d2a4f751de2d047ac2b92a6021ef05f97eb",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "c30c937d5f78d6f7f9aafcad5a9ded0a676a1acdec4f71614895e77af6564360",
+            "tx_hash": "2e249cfb08a877541946dd36fc5f3d2a4f751de2d047ac2b92a6021ef05f97eb",
             "block_height": 10000074,
             "tx_timestamp": 1700004500,
             "absolute_slot": 100004500
@@ -1946,20 +1946,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "c30c937d5f78d6f7f9aafcad5a9ded0a676a1acdec4f71614895e77af6564360",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820815cb1508d34a27302070b57e78f9d5887095e478a35ede730ebde6daca68bd06b626c616b6532622d3235365820cfcf7c76533193e366e3487dd07e4e2dcc8e4b822b24a21cf75b14d40c641eb4"
+            "tx_hash": "2e249cfb08a877541946dd36fc5f3d2a4f751de2d047ac2b92a6021ef05f97eb",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658202efd9b498e37526c891359fff4446f9cf121edafe3da3ed492e1bcecf7e6466d6b626c616b6532622d3235365820a77066b933e4875472110c1718497374d7ef5e6fb59b0a8ae4ee38bfbf738286"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 75 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 75 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "d22b896850b60b21ae4941d6830c70c90e799b1ffdd5f492a324863f5220a5fc",
+      "tx_hash": "49fd6fbc0051cd9a6f78874869bb86e7c3216b970d231b6863fc345e0f719093",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "d22b896850b60b21ae4941d6830c70c90e799b1ffdd5f492a324863f5220a5fc",
+            "tx_hash": "49fd6fbc0051cd9a6f78874869bb86e7c3216b970d231b6863fc345e0f719093",
             "block_height": 10000075,
             "tx_timestamp": 1700004560,
             "absolute_slot": 100004560
@@ -1972,20 +1972,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "d22b896850b60b21ae4941d6830c70c90e799b1ffdd5f492a324863f5220a5fc",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820ca8cefb69280af57c82e9163ce878a8f2ba3ad8528886d84ee68618b50dfbbbe6b626c616b6532622d32353658207cc2452693d43a89318e54cc3d739a2a868345b2183257d91a6ac1b070fdc188"
+            "tx_hash": "49fd6fbc0051cd9a6f78874869bb86e7c3216b970d231b6863fc345e0f719093",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658207af9067598e54fcf4d757e168373106d8322d1aefaead2a24bb01b9a7068a1726b626c616b6532622d3235365820fb7602c3640fe6c4a954ef791b5f069678089aee79b89e61b3949746d2afa6fe"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 76 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 76 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "46955812446606b1444ef7f514e9f80fc5376b052a0e2749eec47b83eba7d991",
+      "tx_hash": "7aee335bdb6e44c0ae887cd13d2e2e0377e1c9bf61e97937ec6567d9ed22040d",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "46955812446606b1444ef7f514e9f80fc5376b052a0e2749eec47b83eba7d991",
+            "tx_hash": "7aee335bdb6e44c0ae887cd13d2e2e0377e1c9bf61e97937ec6567d9ed22040d",
             "block_height": 10000076,
             "tx_timestamp": 1700004620,
             "absolute_slot": 100004620
@@ -1998,20 +1998,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "46955812446606b1444ef7f514e9f80fc5376b052a0e2749eec47b83eba7d991",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658201934a6eb364da66dd7598df058541cecfef18882a23724cfad42c2955c3fb4186b626c616b6532622d32353658208d9293c81802805695236f08908a2bc24a93e1468862a4f7b961ab0f450ac725"
+            "tx_hash": "7aee335bdb6e44c0ae887cd13d2e2e0377e1c9bf61e97937ec6567d9ed22040d",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582054f93dba7d80574c9c8d23267e0415496a9c9b365e825776d0f8f26f01c85edf6b626c616b6532622d3235365820134364144cf1ae0710b5fdb9d00497961f049939861be8693309e8a712912cb1"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 77 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 77 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "1e9ad59b945609cd56acecc41f9c52ff0be58aadea89dd99bd54a73c191e58b7",
+      "tx_hash": "da09021d9ebfd90ff588614eeaf32d79ba5f91b221be17e975d7476225248ae0",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "1e9ad59b945609cd56acecc41f9c52ff0be58aadea89dd99bd54a73c191e58b7",
+            "tx_hash": "da09021d9ebfd90ff588614eeaf32d79ba5f91b221be17e975d7476225248ae0",
             "block_height": 10000077,
             "tx_timestamp": 1700004680,
             "absolute_slot": 100004680
@@ -2024,20 +2024,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "1e9ad59b945609cd56acecc41f9c52ff0be58aadea89dd99bd54a73c191e58b7",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582004b2561975eea12d2b46ca595a60f2d458a03641c89295de80e9faa9274ec4036b626c616b6532622d3235365820187cb2df13e50e38efacbf9596d8aa61f06d3229f45b29c47e824cfb3b3918ba"
+            "tx_hash": "da09021d9ebfd90ff588614eeaf32d79ba5f91b221be17e975d7476225248ae0",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820460a0891c836b04e4abd5af4ce4446ffc5b928a4b4116955fafade55460a1a5e6b626c616b6532622d32353658209eb19d9802a73c1720c5d84bd00b9edc0121b7e5d1bcbcf73e7219eed8a8117c"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 78 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 78 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "f0a7c2853c75466f3d8e5b876f02af1ef3b24c88fcb2e7fae2da8a9bf2a55cbe",
+      "tx_hash": "b6a38b59f00f60a21792611294178fd1d218ca762cb68ad0538470df3d1588cc",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "f0a7c2853c75466f3d8e5b876f02af1ef3b24c88fcb2e7fae2da8a9bf2a55cbe",
+            "tx_hash": "b6a38b59f00f60a21792611294178fd1d218ca762cb68ad0538470df3d1588cc",
             "block_height": 10000078,
             "tx_timestamp": 1700004740,
             "absolute_slot": 100004740
@@ -2050,20 +2050,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "f0a7c2853c75466f3d8e5b876f02af1ef3b24c88fcb2e7fae2da8a9bf2a55cbe",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820106d2d8e9ab129c6a233832337414b78e93b537d23590f3dee0f2d7d28e3ed2c6b626c616b6532622d323536582081a2e0086c307c4c2f6b7d2e65d0e4b3bdd55ee60f98ecacc070c002cdc2e7be"
+            "tx_hash": "b6a38b59f00f60a21792611294178fd1d218ca762cb68ad0538470df3d1588cc",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d323536582003fecbff1833bf687484eac0cd1a3c93a3405ffff6058afd9cd60b6382f8df476b626c616b6532622d3235365820769349f977b96a417b878f0cfc134eda3887b76b6868843b4e9e142a73cb637f"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 79 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 79 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "20a23ef3650d7f26a6dd95fd8fd33647b1f034f92d15bd48c9a41f585558b6f4",
+      "tx_hash": "7590b6b0df836ff98cfb771e6701eaa31341ca6de8688b6288f7c6d4b029e487",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "20a23ef3650d7f26a6dd95fd8fd33647b1f034f92d15bd48c9a41f585558b6f4",
+            "tx_hash": "7590b6b0df836ff98cfb771e6701eaa31341ca6de8688b6288f7c6d4b029e487",
             "block_height": 10000079,
             "tx_timestamp": 1700004800,
             "absolute_slot": 100004800
@@ -2076,20 +2076,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "20a23ef3650d7f26a6dd95fd8fd33647b1f034f92d15bd48c9a41f585558b6f4",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d3235365820193520b45ac4c7a8e31e04ad79093cc174f1ca5a0165a5915ef8de5feffadf396b626c616b6532622d3235365820cc56ac307f9a5f2342064f4ebc328e8c5ffddb006be3d05287e9d96df41a5a3a"
+            "tx_hash": "7590b6b0df836ff98cfb771e6701eaa31341ca6de8688b6288f7c6d4b029e487",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a268736861322d32353658203a7944256213ff7bbe28210fc5693c1548bf72bc1803de9cadb49f9e71a5ee736b626c616b6532622d32353658208e39458b591f274781f1c9849cf6a3948a2a3a5f5eb93f2345a8651a6501be4f"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 80 (dual-hash) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 80 (dual-hash) — no signatures, no enc"
     },
     {
-      "tx_hash": "0d789163267ef868003b3590003ff3d96ee92594f949b4d925e9281789d5f23e",
+      "tx_hash": "9084aabeeb7123a4649af01b0e02e32c27c6508b6f44dde6150749b8fb20f340",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "0d789163267ef868003b3590003ff3d96ee92594f949b4d925e9281789d5f23e",
+            "tx_hash": "9084aabeeb7123a4649af01b0e02e32c27c6508b6f44dde6150749b8fb20f340",
             "block_height": 10000080,
             "tx_timestamp": 1700004860,
             "absolute_slot": 100004860
@@ -2102,20 +2102,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "0d789163267ef868003b3590003ff3d96ee92594f949b4d925e9281789d5f23e",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6336633631333035626530623137326230373134343835356637646334626236343162373830656366393866686173686573a168736861322d3235365820a91813f5c468654cbf05375881b5f129e005c6bfbb8f7f20574e6cd82884a2b0"
+            "tx_hash": "9084aabeeb7123a4649af01b0e02e32c27c6508b6f44dde6150749b8fb20f340",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3533336636653463663465346632346133373436373838663237626566363263383763616262333338663166686173686573a168736861322d3235365820d90331e78255a3d17cb191aaa3bdaf304d34b92bd5eef4c63daa9d76b7b61668"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 81 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 81 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "9e9b95a222ce3efdbad9e278e0824d6496df2f6a73360fb097cf5e8aa35b1d58",
+      "tx_hash": "e6f971bc93024f0084f2901717868f2eb823132bc2fad6d46a3470392dd9d678",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9e9b95a222ce3efdbad9e278e0824d6496df2f6a73360fb097cf5e8aa35b1d58",
+            "tx_hash": "e6f971bc93024f0084f2901717868f2eb823132bc2fad6d46a3470392dd9d678",
             "block_height": 10000081,
             "tx_timestamp": 1700004920,
             "absolute_slot": 100004920
@@ -2128,20 +2128,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9e9b95a222ce3efdbad9e278e0824d6496df2f6a73360fb097cf5e8aa35b1d58",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6266313537643863613662636263663765376538363031666438396661356165653863383236646663333466686173686573a168736861322d323536582006abd1c750d67e3163a720453f1549715b6c1e8243d098ff7a10f202c6997963"
+            "tx_hash": "e6f971bc93024f0084f2901717868f2eb823132bc2fad6d46a3470392dd9d678",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3162366337383361353339336430333835306664363235396433393237396165323934343664363630653866686173686573a168736861322d323536582051679903fafbceaadc85b44c6b187f23ebae764ec37c6304585427fcb7148702"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 82 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 82 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "882fb01a875770ac9c7416e3fc46c1fdf1aedc1225fad045e4a808f9e8aa12e7",
+      "tx_hash": "adc7d7912a8580f5682552416317811c626ba23da1dbce74cd6b11ff5c827f8f",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "882fb01a875770ac9c7416e3fc46c1fdf1aedc1225fad045e4a808f9e8aa12e7",
+            "tx_hash": "adc7d7912a8580f5682552416317811c626ba23da1dbce74cd6b11ff5c827f8f",
             "block_height": 10000082,
             "tx_timestamp": 1700004980,
             "absolute_slot": 100004980
@@ -2154,20 +2154,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "882fb01a875770ac9c7416e3fc46c1fdf1aedc1225fad045e4a808f9e8aa12e7",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6166633739343337376539633934653037616233653337623134396666636237323939393935643634623966686173686573a168736861322d3235365820be13707bcadfc3ee368e7d80acc48b131114a546ad01ab3229c5bc4f93386995"
+            "tx_hash": "adc7d7912a8580f5682552416317811c626ba23da1dbce74cd6b11ff5c827f8f",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3263646237323863613264323061383361316635646639386463393831316238353631636236643530383666686173686573a168736861322d32353658205287cfc3bfe0a4ae2fd96b3e8ac5ab0c1b99584f33c0975bc158e5e19f7f3394"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 83 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 83 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "bd86c947cd0c59d0f5c4855c465f27a14bdac4ce306408ede291f00bdc56a46f",
+      "tx_hash": "e0b99222471b08220417814e99f19b9dc672fe4c6a67334ba41da43c50e64a9a",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "bd86c947cd0c59d0f5c4855c465f27a14bdac4ce306408ede291f00bdc56a46f",
+            "tx_hash": "e0b99222471b08220417814e99f19b9dc672fe4c6a67334ba41da43c50e64a9a",
             "block_height": 10000083,
             "tx_timestamp": 1700005040,
             "absolute_slot": 100005040
@@ -2180,20 +2180,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "bd86c947cd0c59d0f5c4855c465f27a14bdac4ce306408ede291f00bdc56a46f",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3165643935343266326235653535663634316134633437363761373433363363396239376461383835306266686173686573a168736861322d32353658209012267121609eb038aea246beba554b420dcfa46846d64b01f02416f9fd3de7"
+            "tx_hash": "e0b99222471b08220417814e99f19b9dc672fe4c6a67334ba41da43c50e64a9a",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6232336532666137623866663538386433336366343737643232306462393637623136306537346238323766686173686573a168736861322d32353658209141e8b76b443eab370c8c78e75c22cf5e8c1cab4595fbfbd5c3da68d1a24d59"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 84 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 84 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "a2d6de5abe46faa89c797e2857649d4a617f2aab058a51eb3735dd150839a4fe",
+      "tx_hash": "283b72c279c95ca99b1eed29d72d7fc4f7b50599542725fed6b6dce5878ba8c6",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "a2d6de5abe46faa89c797e2857649d4a617f2aab058a51eb3735dd150839a4fe",
+            "tx_hash": "283b72c279c95ca99b1eed29d72d7fc4f7b50599542725fed6b6dce5878ba8c6",
             "block_height": 10000084,
             "tx_timestamp": 1700005100,
             "absolute_slot": 100005100
@@ -2206,20 +2206,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "a2d6de5abe46faa89c797e2857649d4a617f2aab058a51eb3735dd150839a4fe",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6561666338323366326265363066383062336534613237316163653034343431653435626636613830323766686173686573a168736861322d3235365820fe26392bcad4d58f7d70ba915b74ce55e42d389fb6609d1f79f268725f17ba5a"
+            "tx_hash": "283b72c279c95ca99b1eed29d72d7fc4f7b50599542725fed6b6dce5878ba8c6",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6264313031303263353836633563343130613637393538353938323662656536353766343962316565383566686173686573a168736861322d3235365820ff0009e79bbf3b8d285340b4bc8af6b7c49985890787f195deff1945b1c73419"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 85 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 85 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "4400bbf323926a6ca03c5422c5b2c196840a983a1604ca0a7d46cddcc262d156",
+      "tx_hash": "f60159a7a904d15db499e4c85a0ca802d71e070282dc67aca1fde161c22515a6",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "4400bbf323926a6ca03c5422c5b2c196840a983a1604ca0a7d46cddcc262d156",
+            "tx_hash": "f60159a7a904d15db499e4c85a0ca802d71e070282dc67aca1fde161c22515a6",
             "block_height": 10000085,
             "tx_timestamp": 1700005160,
             "absolute_slot": 100005160
@@ -2232,20 +2232,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "4400bbf323926a6ca03c5422c5b2c196840a983a1604ca0a7d46cddcc262d156",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6431623465376631626633323630306336383936333262643439313931363962366638336339613066306566686173686573a168736861322d323536582054097162c51888a880133812559ab335201e83d2dec7de4e74be6b00e4552ce8"
+            "tx_hash": "f60159a7a904d15db499e4c85a0ca802d71e070282dc67aca1fde161c22515a6",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3236346664393063353134356465623330333338373533316433363365633462663539633238306439616666686173686573a168736861322d3235365820a972038ad0b0be0e0586d96bf957f65d649d960741bd383cc31812baf2376888"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 86 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 86 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "eff2d3effb054abd771de551dc602be1e229f018a5910a6dae8402e9b35fff4d",
+      "tx_hash": "66640a6fca7b57b4c2d968b41dc860aef2ebc9583bd2e02188353b48bff4312f",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "eff2d3effb054abd771de551dc602be1e229f018a5910a6dae8402e9b35fff4d",
+            "tx_hash": "66640a6fca7b57b4c2d968b41dc860aef2ebc9583bd2e02188353b48bff4312f",
             "block_height": 10000086,
             "tx_timestamp": 1700005220,
             "absolute_slot": 100005220
@@ -2258,20 +2258,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "eff2d3effb054abd771de551dc602be1e229f018a5910a6dae8402e9b35fff4d",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6665616532636238613364616364326262643166356135333639343139343564373631663134616662346666686173686573a168736861322d323536582063bb98e04fb27658a2bb7102b74973cf3118162e839ce1013b0635429229c083"
+            "tx_hash": "66640a6fca7b57b4c2d968b41dc860aef2ebc9583bd2e02188353b48bff4312f",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3234616662643139653861643639373066643837626430356136336562373266343339386266613739646366686173686573a168736861322d3235365820fe2a503d2cb555c7b9d5e1f56c9fac6fc478f681c849702c953f2c15937e480f"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 87 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 87 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "116019e6cbae47cb0519d9d873c6c693c21eeb55241b6821678607cae31474e8",
+      "tx_hash": "e19804264e5c53c03d193752f6a0b918e1aeefa88a6462a23edb1da726a10a84",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "116019e6cbae47cb0519d9d873c6c693c21eeb55241b6821678607cae31474e8",
+            "tx_hash": "e19804264e5c53c03d193752f6a0b918e1aeefa88a6462a23edb1da726a10a84",
             "block_height": 10000087,
             "tx_timestamp": 1700005280,
             "absolute_slot": 100005280
@@ -2284,20 +2284,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "116019e6cbae47cb0519d9d873c6c693c21eeb55241b6821678607cae31474e8",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6330313862623231393861613363323234303064366164663033653335626562616434643864653866636266686173686573a168736861322d3235365820d3afd971017ec3f33bea393cc4e1ccf154187f6315a1f741fffc8848f3b04dcb"
+            "tx_hash": "e19804264e5c53c03d193752f6a0b918e1aeefa88a6462a23edb1da726a10a84",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3635633461313162383533666265363565306664393435663232303631396265643330383135366336313066686173686573a168736861322d32353658207ead4a123336f2748d0481625c40412e997c41b82dd8b0a28cb01197f12b52b5"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 88 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 88 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "4cc7af3a843c4cfcc89bd05031c753102f9f1e909cb1f6f1f62fed52aea4612f",
+      "tx_hash": "a0288038c4a7cb2510367e35f3f61e37ee9de82034a1e1112b4c0dd76643b817",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "4cc7af3a843c4cfcc89bd05031c753102f9f1e909cb1f6f1f62fed52aea4612f",
+            "tx_hash": "a0288038c4a7cb2510367e35f3f61e37ee9de82034a1e1112b4c0dd76643b817",
             "block_height": 10000088,
             "tx_timestamp": 1700005340,
             "absolute_slot": 100005340
@@ -2310,20 +2310,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "4cc7af3a843c4cfcc89bd05031c753102f9f1e909cb1f6f1f62fed52aea4612f",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3939633133313765663133396633303566353363653738346338623939386364393834313438353332383966686173686573a168736861322d32353658205978f59646eacdb2759f9f118d2031006fcb282e3abc73d3eef474d19a8cf4bf"
+            "tx_hash": "a0288038c4a7cb2510367e35f3f61e37ee9de82034a1e1112b4c0dd76643b817",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3166363934303131653738656665383363643465303238326362613762613333316338366162366133306666686173686573a168736861322d32353658204b47ea578035bb5ed5bda08191017193d931cd3f07130e2b4a6da5d51b3406cd"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 89 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 89 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "7742d0020f85f8a027eea05a67535090ba9c476c5d8699f8197f3cc4bc92f1ee",
+      "tx_hash": "bf8d51c7528ab77b05c5051c9126156125271151f417047ab8945e6542e4fe59",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "7742d0020f85f8a027eea05a67535090ba9c476c5d8699f8197f3cc4bc92f1ee",
+            "tx_hash": "bf8d51c7528ab77b05c5051c9126156125271151f417047ab8945e6542e4fe59",
             "block_height": 10000089,
             "tx_timestamp": 1700005400,
             "absolute_slot": 100005400
@@ -2336,20 +2336,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "7742d0020f85f8a027eea05a67535090ba9c476c5d8699f8197f3cc4bc92f1ee",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3931633461633037383133303030643563376336316462653837313533303066393165323034353036386466686173686573a168736861322d323536582028b957d8115f252f2fcc0930ce6da4d57e7d7a7b5cf39114ae351b9e40b672db"
+            "tx_hash": "bf8d51c7528ab77b05c5051c9126156125271151f417047ab8945e6542e4fe59",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3534666166653462313733613865393063626262336561623039666365636433333663363739393465373166686173686573a168736861322d32353658203a74be8a9fa79eae1429be1e3da3d4c54dd81ef2ab630f152f9a2084cd644cfd"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 90 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 90 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "b1e9cfaa9582a7ad670e7a3ff04dd182e66a29911281a3495dee731a23847dd5",
+      "tx_hash": "d197239d9cb3b39ad53ebc25fb18d7c926ee3b9c554bac50e967d8f1b1cdf863",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "b1e9cfaa9582a7ad670e7a3ff04dd182e66a29911281a3495dee731a23847dd5",
+            "tx_hash": "d197239d9cb3b39ad53ebc25fb18d7c926ee3b9c554bac50e967d8f1b1cdf863",
             "block_height": 10000090,
             "tx_timestamp": 1700005460,
             "absolute_slot": 100005460
@@ -2362,20 +2362,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "b1e9cfaa9582a7ad670e7a3ff04dd182e66a29911281a3495dee731a23847dd5",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6238366664636266313066383636633962616262633633393161643139623437323234383730333733366166686173686573a168736861322d32353658203f45b5be311856f052f9f6bd47ac59c951d17c4b53f1b2b1751683ef4f583454"
+            "tx_hash": "d197239d9cb3b39ad53ebc25fb18d7c926ee3b9c554bac50e967d8f1b1cdf863",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6539383037636534336666393830383434646563613466306338623561353861646636623964306539323566686173686573a168736861322d3235365820809c328b3d27e9aa7bfa24d6cd8bffd59ab03f5664abbaeb31c79c4e9bdb26f0"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 91 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 91 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "aa8b2ec920b4bd670d82c34df312ab1e6ddc1ebd5e8ead2974185669996474d6",
+      "tx_hash": "41ffe7822e8b1c2d0291348e897964f13bdb24d337b7b7f5342488af6b953714",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "aa8b2ec920b4bd670d82c34df312ab1e6ddc1ebd5e8ead2974185669996474d6",
+            "tx_hash": "41ffe7822e8b1c2d0291348e897964f13bdb24d337b7b7f5342488af6b953714",
             "block_height": 10000091,
             "tx_timestamp": 1700005520,
             "absolute_slot": 100005520
@@ -2388,20 +2388,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "aa8b2ec920b4bd670d82c34df312ab1e6ddc1ebd5e8ead2974185669996474d6",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3863366362323036306435313062636666613834343930633465373164373437356630313431336239386466686173686573a168736861322d323536582035e9b276112a2a281b884a2448d06645fc408b5016daa8e6484f8a2c2b7e0e5f"
+            "tx_hash": "41ffe7822e8b1c2d0291348e897964f13bdb24d337b7b7f5342488af6b953714",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6165613239663539353838663562633564663364383935636263613363356433383230376366366130306166686173686573a168736861322d32353658202ec931d3de5a36d8602b1b026d637e3f1b81bf79ddf7cb00e9bb53ba86a25b82"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 92 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 92 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "d58049fe5b774852a846fb2208fa39ba11ca731e27dfebdf571977c5ff5c9301",
+      "tx_hash": "ebc23d32922a97017ec6afdf771ce54d25dbac0da0b1b80046f37aa9f5362318",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "d58049fe5b774852a846fb2208fa39ba11ca731e27dfebdf571977c5ff5c9301",
+            "tx_hash": "ebc23d32922a97017ec6afdf771ce54d25dbac0da0b1b80046f37aa9f5362318",
             "block_height": 10000092,
             "tx_timestamp": 1700005580,
             "absolute_slot": 100005580
@@ -2414,20 +2414,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "d58049fe5b774852a846fb2208fa39ba11ca731e27dfebdf571977c5ff5c9301",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3332643033313530626562346431386130626432616364383235643764366461323734626135636435323066686173686573a168736861322d3235365820657b17b26a9f8a6ab6c94f5e231b4864dd0578434c5958c991796c00b9daa86f"
+            "tx_hash": "ebc23d32922a97017ec6afdf771ce54d25dbac0da0b1b80046f37aa9f5362318",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3862346435343437396466303063653439666536643535313366343435643661633033343635316338653766686173686573a168736861322d3235365820b4bb12dab2a72de475f0827cfd82cd726ec8f5809f5c8ec6699b0b74b5ba6660"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 93 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 93 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "b5d5d0b2b63cf346e7f69c50882fd674a86dfaaeea2d2c91d4f64f8056677709",
+      "tx_hash": "e62fa0c8c222198fae3d464ce2fc9dde7e6dcd2adf4a2c7e46db8e617fad9275",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "b5d5d0b2b63cf346e7f69c50882fd674a86dfaaeea2d2c91d4f64f8056677709",
+            "tx_hash": "e62fa0c8c222198fae3d464ce2fc9dde7e6dcd2adf4a2c7e46db8e617fad9275",
             "block_height": 10000093,
             "tx_timestamp": 1700005640,
             "absolute_slot": 100005640
@@ -2440,20 +2440,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "b5d5d0b2b63cf346e7f69c50882fd674a86dfaaeea2d2c91d4f64f8056677709",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3661663234326330336336353534396630303232633432633831303233326466393138623163363539333366686173686573a168736861322d3235365820013247c319a19a0f7c0c40d5ed7dd7c058256f22fdb48ae4a457a820134752ee"
+            "tx_hash": "e62fa0c8c222198fae3d464ce2fc9dde7e6dcd2adf4a2c7e46db8e617fad9275",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6336666535646634663038396632313534633531366464636137336161353536306536366434386630623866686173686573a168736861322d3235365820fca1be14fac75b3f0435c6ed6feec188529160a50f5075b381a2946449af8a18"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 94 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 94 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "9f0482cb9857856d18b31cd5d0280cd62b82b722d2bd10b490b951010cd13d0a",
+      "tx_hash": "5ed6abe32778ae1fe22ed903cf9f5025dbd67e9deed56bb30265dfe0692cd79c",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9f0482cb9857856d18b31cd5d0280cd62b82b722d2bd10b490b951010cd13d0a",
+            "tx_hash": "5ed6abe32778ae1fe22ed903cf9f5025dbd67e9deed56bb30265dfe0692cd79c",
             "block_height": 10000094,
             "tx_timestamp": 1700005700,
             "absolute_slot": 100005700
@@ -2466,20 +2466,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9f0482cb9857856d18b31cd5d0280cd62b82b722d2bd10b490b951010cd13d0a",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3739666237393035386666623865376464343833343030346230623033633465643965663037376166376466686173686573a168736861322d3235365820fa1bb701c02a19c8a871f924bfb7f470fb76da8d9d50a3b3aa0ca5e091c6ff46"
+            "tx_hash": "5ed6abe32778ae1fe22ed903cf9f5025dbd67e9deed56bb30265dfe0692cd79c",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3634323866313737383030663566363537666536313363636562643134333865303134343463616437336166686173686573a168736861322d3235365820c8464bce53c561414df2260b1868ba702bb7dcd09fb801d127d050c111ab0958"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 95 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 95 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "6a94aaf52c6cc6aa9b60935821dbfd996d1a3157e20dc3d3e0c024aeb56d0f9b",
+      "tx_hash": "99e04492f0d0dee00461dd0f603b7ffd5bf6a360454a4597ebdfd1590efe85b3",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "6a94aaf52c6cc6aa9b60935821dbfd996d1a3157e20dc3d3e0c024aeb56d0f9b",
+            "tx_hash": "99e04492f0d0dee00461dd0f603b7ffd5bf6a360454a4597ebdfd1590efe85b3",
             "block_height": 10000095,
             "tx_timestamp": 1700005760,
             "absolute_slot": 100005760
@@ -2492,20 +2492,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "6a94aaf52c6cc6aa9b60935821dbfd996d1a3157e20dc3d3e0c024aeb56d0f9b",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3265393336323738643139376632366433633266386233643830353661373463316634306338323531643966686173686573a168736861322d3235365820abdf152d0de78bce151876f9947405ab9caf30ebdfa615232cd6b43f133f9f37"
+            "tx_hash": "99e04492f0d0dee00461dd0f603b7ffd5bf6a360454a4597ebdfd1590efe85b3",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6439356638303537316234303334633364653530396362343965366633353735306661666665636365336166686173686573a168736861322d3235365820b594fe9f963026bb1f087f5bb0b2fcf9ba5e8498b4cf66e4c650eaf43ce5142a"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 96 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 96 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "9fb91ddfd5066b24d2f514f1fd7fe549cef915a73556feaa85f0ae9a3d07f9a0",
+      "tx_hash": "fcb1da840dfb9bafad0159ba034c8a28d236e443d17ec834f75699e7e452ae88",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9fb91ddfd5066b24d2f514f1fd7fe549cef915a73556feaa85f0ae9a3d07f9a0",
+            "tx_hash": "fcb1da840dfb9bafad0159ba034c8a28d236e443d17ec834f75699e7e452ae88",
             "block_height": 10000096,
             "tx_timestamp": 1700005820,
             "absolute_slot": 100005820
@@ -2518,20 +2518,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9fb91ddfd5066b24d2f514f1fd7fe549cef915a73556feaa85f0ae9a3d07f9a0",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6531613331333434366563336533636632326535613561373332346539653638363766393033653766376266686173686573a168736861322d32353658205ce94a4cdd1c0f9202b488ef797335601858767aeb37f9be94f7b893483273e5"
+            "tx_hash": "fcb1da840dfb9bafad0159ba034c8a28d236e443d17ec834f75699e7e452ae88",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6239333062383831336433656139393761346435343638313363343563643331396166383130376232633166686173686573a168736861322d323536582033b9906c90ca1d86df5a88e11b969b1b9b02ef66d9d7cee8842a1e655d152cbf"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 97 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 97 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "9b76fd4fab5857c243f5b27739c12f3fe0fc0087d7790bdb71c071f5e09f16bb",
+      "tx_hash": "a027c66cff7dc2bd8e50b5f759cea60649fb3d7b215fc13f4fbf3c1b340f1b28",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9b76fd4fab5857c243f5b27739c12f3fe0fc0087d7790bdb71c071f5e09f16bb",
+            "tx_hash": "a027c66cff7dc2bd8e50b5f759cea60649fb3d7b215fc13f4fbf3c1b340f1b28",
             "block_height": 10000097,
             "tx_timestamp": 1700005880,
             "absolute_slot": 100005880
@@ -2544,20 +2544,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9b76fd4fab5857c243f5b27739c12f3fe0fc0087d7790bdb71c071f5e09f16bb",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6361336564323661633038616365353936626437356562636536656138343333333263663636656435646566686173686573a168736861322d32353658202af7b331f53e3b1a1db314ff1ef71685988da19ec103938c682b08d896d723df"
+            "tx_hash": "a027c66cff7dc2bd8e50b5f759cea60649fb3d7b215fc13f4fbf3c1b340f1b28",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6461396130313637316566353262633633323339303138363836633637643435653764646164636231656166686173686573a168736861322d32353658203c524ab2e712029b7114f55697464a95ab10cb49d232e08722e610edf58dcd41"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 98 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 98 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "c6c96e13b3dc0a09220f0c40ece9bcddcef681df1dec54bc71ffb0545b6a1a07",
+      "tx_hash": "4f335bda3bd6a99a52ebee2851fa544180ad0da9cf16c7e12b4c6cc00ad40d09",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "c6c96e13b3dc0a09220f0c40ece9bcddcef681df1dec54bc71ffb0545b6a1a07",
+            "tx_hash": "4f335bda3bd6a99a52ebee2851fa544180ad0da9cf16c7e12b4c6cc00ad40d09",
             "block_height": 10000098,
             "tx_timestamp": 1700005940,
             "absolute_slot": 100005940
@@ -2570,20 +2570,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "c6c96e13b3dc0a09220f0c40ece9bcddcef681df1dec54bc71ffb0545b6a1a07",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3064376266363761376665363264663265623861346461346432343665333364343564396135626331626566686173686573a168736861322d3235365820c13335089798c05e802073bb605fee1c41bdf37b9d4cc583a9edcdb5d147d3a2"
+            "tx_hash": "4f335bda3bd6a99a52ebee2851fa544180ad0da9cf16c7e12b4c6cc00ad40d09",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6630386264316434316536613236386362366635626162643530616336313433326636306234666633356166686173686573a168736861322d3235365820e16898614df280526710f1091d03bfa493a64fd245e0e86af7cb8395aa800136"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 99 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 99 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "9a66fc928bfd876b725e5b97c53a41cb82fd28835a8a52123576112a7cd6730f",
+      "tx_hash": "5d60d5e5381a74bbad6ffd25741fd83a62236ddfa06a0b667c8e8fbbaed22696",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "9a66fc928bfd876b725e5b97c53a41cb82fd28835a8a52123576112a7cd6730f",
+            "tx_hash": "5d60d5e5381a74bbad6ffd25741fd83a62236ddfa06a0b667c8e8fbbaed22696",
             "block_height": 10000099,
             "tx_timestamp": 1700006000,
             "absolute_slot": 100006000
@@ -2596,20 +2596,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "9a66fc928bfd876b725e5b97c53a41cb82fd28835a8a52123576112a7cd6730f",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f6332333138613934613062356565313463353166393563333832373735616463323234383339366139353666686173686573a168736861322d32353658208e10cc7a0dc684be65e2bdd4a9adc5afd1b9575db061f5923f7df6949ab4e7ce"
+            "tx_hash": "5d60d5e5381a74bbad6ffd25741fd83a62236ddfa06a0b667c8e8fbbaed22696",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a264757269738181783061723a2f2f3939316631313431306462333235343732623430336562303839336639306339326539323431323963316466686173686573a168736861322d32353658206b7ec736402159d7be6a5dc857bf62b1d62e047a6201e84eb11678db9c7db215"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 100 (with-uri) — no signatures, no enc"
+      "notes": "synthetic Label 309 record 100 (with-uri) — no signatures, no enc"
     },
     {
-      "tx_hash": "57987655ee647d45d8ba68d593f1b7a3848221d72ea2ef605b8270725f694d4a",
+      "tx_hash": "ac171fc9b63d89ab2a12ee915a9ab1aa471c3ce49af140357872f66a324aab16",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "57987655ee647d45d8ba68d593f1b7a3848221d72ea2ef605b8270725f694d4a",
+            "tx_hash": "ac171fc9b63d89ab2a12ee915a9ab1aa471c3ce49af140357872f66a324aab16",
             "block_height": 10000100,
             "tx_timestamp": 1700006060,
             "absolute_slot": 100006060
@@ -2622,20 +2622,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "57987655ee647d45d8ba68d593f1b7a3848221d72ea2ef605b8270725f694d4a",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5d90103a100a1190135a2617601656974656d7381a166686173686573a168736861322d32353658200ddb6433f121fa69d9cd114e7f66881cb168c315bbb601df9192ec2c03e894de"
+            "tx_hash": "ac171fc9b63d89ab2a12ee915a9ab1aa471c3ce49af140357872f66a324aab16",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5d90103a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820fd729e0d83b46fa66e4de0b9ee66886c99ca512e250e123354310300f2da5921"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 101 (tag-259 wrapped auxiliary_data)"
+      "notes": "synthetic Label 309 record 101 (tag-259 wrapped auxiliary_data)"
     },
     {
-      "tx_hash": "ac7907d9e71fd8aac89e8b96120724b69a0e4e5d497a95acdc5e2c6e0320ff05",
+      "tx_hash": "06ec87b8357265ab0f6f21312ff5a94ea044efd2a083d9d251a8c9313acea1bc",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "ac7907d9e71fd8aac89e8b96120724b69a0e4e5d497a95acdc5e2c6e0320ff05",
+            "tx_hash": "06ec87b8357265ab0f6f21312ff5a94ea044efd2a083d9d251a8c9313acea1bc",
             "block_height": 10000101,
             "tx_timestamp": 1700006120,
             "absolute_slot": 100006120
@@ -2648,20 +2648,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "ac7907d9e71fd8aac89e8b96120724b69a0e4e5d497a95acdc5e2c6e0320ff05",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a119013581583fa2617601656974656d7381a166686173686573a168736861322d32353658207f858792e32be51064c0e83aefa019998964ee06f27ccd4874b02b04f4bf9330"
+            "tx_hash": "06ec87b8357265ab0f6f21312ff5a94ea044efd2a083d9d251a8c9313acea1bc",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a119013581583fa2617601656974656d7381a166686173686573a168736861322d3235365820ee8df11bab4842eaef504d2fec6fad5cdfca5dd6383d01e32e31d32edb0049b2"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 102 (chunked label-309, single chunk)"
+      "notes": "synthetic Label 309 record 102 (chunked label-309, single chunk)"
     },
     {
-      "tx_hash": "7bb80997f59fcb5c6e01e28d1ad8286dbf8fb797b974919e82f0a94b711822f3",
+      "tx_hash": "c74308174b80e5cdb26ea0ecf969cb9117cba32e5ce27488cbb2c41bbaf2d987",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "7bb80997f59fcb5c6e01e28d1ad8286dbf8fb797b974919e82f0a94b711822f3",
+            "tx_hash": "c74308174b80e5cdb26ea0ecf969cb9117cba32e5ce27488cbb2c41bbaf2d987",
             "block_height": 10000102,
             "tx_timestamp": 1700006180,
             "absolute_slot": 100006180
@@ -2674,20 +2674,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "7bb80997f59fcb5c6e01e28d1ad8286dbf8fb797b974919e82f0a94b711822f3",
-            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135825840a2617601656974656d7381a166686173686573a268736861322d3235365820eaa4e1a241e11b480a3df211faa6872902d73a47191c4b0a71854215f587e0c16b582d626c616b6532622d3235365820ff9403264468ad7a44660b56a0b561d5a4b969b77e2288b935f4b232bc51aea4"
+            "tx_hash": "c74308174b80e5cdb26ea0ecf969cb9117cba32e5ce27488cbb2c41bbaf2d987",
+            "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135825840a2617601656974656d7381a166686173686573a268736861322d32353658201deb58692e7b8dba58662e1713f07d2800aedff6701b52c5b2630bff87e8bebb6b582d626c616b6532622d32353658201723946e53cb1037983be799c0c1cd8a0e0fce9c377a6364093ccfcc32c6e472"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 103 (chunked label-309, multi-chunk >64B)"
+      "notes": "synthetic Label 309 record 103 (chunked label-309, multi-chunk >64B)"
     },
     {
-      "tx_hash": "6dba7d62ca9277c08410d511385dee25ca34f80138892d09f9309e50e34f33b6",
+      "tx_hash": "f23b350e70085878ed3d9c3e56d0d42dd37345055a05271a5cebee3d11c01f4d",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "6dba7d62ca9277c08410d511385dee25ca34f80138892d09f9309e50e34f33b6",
+            "tx_hash": "f23b350e70085878ed3d9c3e56d0d42dd37345055a05271a5cebee3d11c01f4d",
             "block_height": 10000103,
             "tx_timestamp": 1700006240,
             "absolute_slot": 100006240
@@ -2700,20 +2700,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "6dba7d62ca9277c08410d511385dee25ca34f80138892d09f9309e50e34f33b6",
-            "cbor": "84a300818258204f3a3fccfbac0df9dd1ebb03b99d13e770456ac1785ab14719f7d54e4908002100018182581d61e3c74b40bf0823db908d30f0728f267d41fb2cace86118a03e512fec1a001e8480021a0002aac1a100818258205fafdd9e6a6b4ca34947a524a5e51bf0e5397d724c853a1c587c9a573073cbb4584061f7176e789b79b4328e22b249296cdede6a12fc02d7c74327baad06bcdbe4b97638a708312d66f9969224361c3e41aaa5e50a5aa1cd4ee57b43e153380a9805f5a100a1190135a3617601647369677381a16a636f73655f7369676e31825840845826a20127045820824aed85df37c3217ccd5c31b310234e0002a706644e6b22b665b37ea5a02e6ba0f658401e1edd4de3e1e151adb51734881ab360a6159b582d7617c860990a51e3d246a4fe6ccb3a668f37f575258cd9b9264b6fa3557ffa1c887507ef2757c8f3898e4d5704656974656d7381a166686173686573a168736861322d3235365820a006ffe18e60a1fcd487dc3722fc79b81439575479a5310d686bf5930047c044"
+            "tx_hash": "f23b350e70085878ed3d9c3e56d0d42dd37345055a05271a5cebee3d11c01f4d",
+            "cbor": "84a30081825820298b615f93d7ba22062e594648375df98c9b7785a4984a5dc744de62ea0a546200018182581d61a09496435e6d62206eb7d65496cf3e5d3d6c77bb9f033a9ef6c570391a001e8480021a0002aac1a100818258200520bf63dc10a3eb5b4254830d05ccc33eadcbd7022a02dd77d3f986bf8b9aaf5840952ac900f7c8fa997296f30367afa344e8abe5ea7e5541730a804a703475a1b48fad08913cbac81ee26562e61c4fb9d48df0532558e7793aeb87957751be0e04f5a100a1190135a3617601647369677381a16a636f73655f7369676e31825840845826a201270458208a753c056f575cebb0416a060c17947bb183e68896b4b7a0fc6ac30a51ed5af4a0f658408b43e42afdebe0c4b0f7be0ce6834291105713582d2e858d01493096ef92119670bf5d3a30fa5a5084828297c51a88b7572934fc1bad3a30321c5195a3293a919406656974656d7381a166686173686573a168736861322d3235365820bae9f28c251b5155cf59a8dd2e24f3a0d815ea57cf513d6408a7b837d2c53743"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 104 (in-signature-kid signed + operator vkey witness)"
+      "notes": "synthetic Label 309 record 104 (in-signature-kid signed + operator vkey witness)"
     },
     {
-      "tx_hash": "df5f2c3060614167b2f9040a9c975987e43b07411195e9f27d30cc97db73e836",
+      "tx_hash": "2e781e872d49e500968268edec5e05af6dd785b3ea452da44fbc13e1c417add7",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "df5f2c3060614167b2f9040a9c975987e43b07411195e9f27d30cc97db73e836",
+            "tx_hash": "2e781e872d49e500968268edec5e05af6dd785b3ea452da44fbc13e1c417add7",
             "block_height": 10000104,
             "tx_timestamp": 1700006300,
             "absolute_slot": 100006300
@@ -2726,20 +2726,20 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "df5f2c3060614167b2f9040a9c975987e43b07411195e9f27d30cc97db73e836",
-            "cbor": "84a30081825820576b5b59261495ea2a8c168d3ad53d065484d740d46da80df64523da1336c27600018182581d61254df159e1c2c76ac4b35ec8727a3b24804ea4c547f2129d8c2c617e1a001e8480021a0002c3f2a100818258202c8ea6b3748584dc7165445e140836116a6073c6b86e0f6b1fe7ba5ebe8a7f635840ad5386580345e6241a2ef400f4ff25dc46d3c88f60683787648d06be65403fdf97c6545122f20e8011f09564bcadcd8562e77f4d41d742acb426ecdce184cf0ff5a100a1190135a3617601647369677381a268636f73655f6b657981582aa40101032720062158208c9b1ca2e1260dcbaf71a289ac9efe0e6f7db0c4ca5827801029aafb24d4a02f6a636f73655f7369676e3182584084582aa201276761646472657373581de1a63ef5577ea60ce9c9be48d2b2e75cb61f5ef8c531d7580e8445c9dba0f6584073ba9b61835b52d7473add0b1b0f675831d2918ecf0819b91f4aa2b14a16fe411d3e3321623f29427f940f874ab73605720d27c72031a01c7d5d2cc1f4378ec0580d656974656d7381a166686173686573a168736861322d323536582077730ab2510a3bba4ee6c3b7032338a28ef08f845ed62c248bbac1bd3ee8bf2b"
+            "tx_hash": "2e781e872d49e500968268edec5e05af6dd785b3ea452da44fbc13e1c417add7",
+            "cbor": "84a300818258206051d432d0794ec4b84155c39ca5f7774a72c66ab35d13a230230294430dce9d00018182581d6176547c2098832aca4573227ad505ceabc8be4db7358a5a83d0cdb7231a001e8480021a0002c3f2a10081825820b835786eadce17cf3b11d8f450ae1a45c015231104dc13a95ef0daa42d3ccb9a5840b825676e7d80c529fd8230367966bdf2411764b35886cb599a9161277a801b3f1417fb88cc1d170178f7a82279c4a3d28476d3041fadf145f569966d3829540ff5a100a1190135a3617601647369677381a268636f73655f6b657981582aa4010103272006215820dfd36ae9cd7c0828d921eadaa370eaa24474f408c23734f7ddd3f7644b3fb6916a636f73655f7369676e3182584084582aa201276761646472657373581de1b496ac88933600c4437ba3032410b5a7a8da4aae0c6fdef825dc67e9a0f658400f2f5c873666a555707568c312811c5831337df3db310d0bb32ec47e4863ec72f39d0064f48779716e1ed4a04ad4fe379f4b452fb0cc656c0a6e68c7d6871c6ad407656974656d7381a166686173686573a168736861322d3235365820e794c8757482e170ab9dbf50b75d3ee8b2b3ef61c3826907c7ad3a31cf07fb9f"
           }
         ]
       },
-      "notes": "synthetic v2 CIP-309 record 105 (wallet-inline-key signed + stake-address binding + operator vkey witness)"
+      "notes": "synthetic Label 309 record 105 (wallet-inline-key signed + stake-address binding + operator vkey witness)"
     },
     {
-      "tx_hash": "20aaf5663d45a8b11f1c6735278b0aa5e77ae4ce911c03e1b7b9c5fe412b3182",
+      "tx_hash": "e6a29a3988827d17f8064e5ec5d3f1a9df5edfa1b59ff662678707e1bcac435f",
       "expected_verdict": "valid",
       "captured_gateway_responses": {
         "koios_tx_info": [
           {
-            "tx_hash": "20aaf5663d45a8b11f1c6735278b0aa5e77ae4ce911c03e1b7b9c5fe412b3182",
+            "tx_hash": "e6a29a3988827d17f8064e5ec5d3f1a9df5edfa1b59ff662678707e1bcac435f",
             "block_height": 10000105,
             "tx_timestamp": 1700006360,
             "absolute_slot": 100006360
@@ -2752,29 +2752,29 @@
         ],
         "koios_tx_cbor": [
           {
-            "tx_hash": "20aaf5663d45a8b11f1c6735278b0aa5e77ae4ce911c03e1b7b9c5fe412b3182",
-            "cbor": "84a30081825820e91d289dcb571ffc3554cb7cd98c8e60b592c18b1c30065aba14925b0ccee59200018182581d610700951253c9e13d39be4490726ba62a9d6f73367063ef4ff5872de91a001e8480021a0002ee00a10081825820b65b783f4d0bf5b4e5614528ed6f36edc7ccedc8d02d5155771d076adb5b47e258406a587747cd3b3e664c6330f10e90a8508eba243f3d0b163bc1427c94fef4d1461770e9991c77e5392aa292f9edc30f756c7c0f253ba86edf8b9b9a9b2c741a06f5a100a1190135a2617601656974656d7381a363656e63a6636b656d667832353531396461656164727863686163686132302d706f6c7931333035656e6f6e636558183afb6ba53cb60c2beea1850c2e9a6826041c78693cad4f9b65736c6f747381a26365706b5820bf19be30e860f866d17dcbf142fd95e172efc3f5a9dd0ede3e92e7ecac5c304a64777261705830e45d3ea41e473edd53052c40d9f2e23e1ce8e9683ce760b180db2e4b61f03ef7a9d49563814ae3d64e41557a267727d666736368656d650169736c6f74735f6d61635820a4b599e73dc68b2a721704ec208ffdb24f03dd81564658006d1074ffca15ae0964757269738181783061723a2f2f6236316232373930373663613334343230643234396437393933623630633634616132303866306464633366686173686573a168736861322d3235365820ddeb5125f45b66b029650272a65a354332767a1d24fb7cb12e6ff2945e3c4f52"
+            "tx_hash": "e6a29a3988827d17f8064e5ec5d3f1a9df5edfa1b59ff662678707e1bcac435f",
+            "cbor": "84a30081825820ac02bd5566e137b56c91754afcefdb20a4f4465a827512ad5890d14091e124d500018182581d61eb9d98b266c0466b5de94441f263ca3d8c48978f161e7286e138ab1b1a001e8480021a0002ee00a100818258203a08c71f62fbe83318106ea8b7268e028e64ac058ec51f601286385b8a3afe9e58407bc98053f9d5712fd84c81c70429b598063018725d516b4c7e73e212cde2bd1129f8b8fd79724043372c6940e7ef3340e454cf571c78b6e7c2b6a12ab2631a0ef5a100a1190135a2617601656974656d7381a363656e63a6636b656d667832353531396461656164727863686163686132302d706f6c7931333035656e6f6e63655818c32c23fc7408a32d789a82deebfc7d47b9d0beef724942af65736c6f747381a26365706b5820c705bc7a307c23004f57b0604ba946d3f70115363feb61019702e5324205c13064777261705830444c37db8a657ec9e4ecc7ae882a3c4be67c1fe0a7decbd6251fb47de8fd5f0271c112790674e621c6c202ea942d3bd866736368656d650169736c6f74735f6d6163582051ae8b73ca52882ae7a5d82923f650199480c45ec031f5f8619959157655836864757269738181783061723a2f2f3561663565636363373539616361383838303932316631626536613238303732336638313932336461633966686173686573a168736861322d3235365820a8543275664b480c5a1aae8d655dc2f4565d75b998903ac7c7dfde6a28ba9cc6"
           }
         ],
         "arweave_envelope_responses": {
-          "b61b279076ca34420d249d7993b60c64aa208f0ddc3": "b71bde898151e87d4779b39e1e878caa7584caca9d3f5cbe242a654ef76ed9ef067a6c39ca8fdb6423bd496fcba8ca7e879885beeb49d318680510000e66bfb77ea93cb645bfb16fb6b3f3371bd8b297"
+          "5af5eccc759aca8880921f1be6a280723f81923dac9": "8f48fa814d553e608773cbbe4cad9a60ea13ac756c806f7eef912005ba4c09ce50b39e98924ff18ba51d612cbf080bf7f9f03a53986acbd4156a155d41df284fee1b65ac8c63c3c56dd21e484c4e06f3"
         }
       },
       "recipient_secret_keys": [
         {
           "item_index": 0,
-          "secret_key": "ddfe662888d85be7bd3cbc48dfc077d5af2d64959d1e39e8834789db95ba1b59"
+          "secret_key": "cd1d9f2bf523f55e33f79e309a9d27f1b604679155cb98a78d58b4f8bfabf948"
         }
       ],
-      "notes": "synthetic v2 CIP-309 record 106 (recipient-sealed x25519 item, real decrypt)"
+      "notes": "synthetic Label 309 record 106 (recipient-sealed x25519 item, real decrypt)"
     },
     {
-      "tx_hash": "0cbeb122e9b9ce6b5c347853ab3af5b4aaefd04a7f2253f2249a7b2bdbb83cab",
+      "tx_hash": "4c88d0ccccdd0973eb8b4ea9eecad3f4dc7becbfabf2a6700b49316e71d1a89a",
       "expected_verdict": "valid",
       "provider": "blockfrost",
       "captured_gateway_responses": {
         "blockfrost_tx_cbor": {
-          "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d323536582053063f892cef86aa45cbdd23cb426b9f39ac4263da7240999f7f851034006270"
+          "cbor": "84a1617864626f6479a161786b7769746e6573735f736574f5a100a1190135a2617601656974656d7381a166686173686573a168736861322d3235365820f8f497cee9c6f564cda126cbad4f93d22424b5a34f7039816c5e31e949e8d8a7"
         },
         "blockfrost_tx": {
           "block_time": 1700006420,
@@ -2786,7 +2786,7 @@
           "slot": 100006520
         }
       },
-      "notes": "synthetic v2 CIP-309 record 107 (Blockfrost confirmation capture, blocks+1)"
+      "notes": "synthetic Label 309 record 107 (Blockfrost confirmation capture, blocks+1)"
     }
   ]
 }

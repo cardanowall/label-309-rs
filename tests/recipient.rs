@@ -17,7 +17,7 @@ use cardanowall::recipient::{
     parse_age_recipient, ParsedAgeRecipient, RecipientError, RecipientKem,
 };
 use cardanowall::seed_derive::derive_mlkem768x25519_keypair;
-use common::{read_fixture_json, sdk_py_fixtures};
+use common::{crypto_core_fixtures, read_fixture_json, sdk_py_fixtures};
 use serde_json::Value;
 
 fn vectors(fixture: &Value) -> &Vec<Value> {
@@ -89,6 +89,71 @@ fn recipients_fixture_pins_x25519_and_xwing_round_trips() {
         assert_eq!(parsed_xwing.kem, RecipientKem::MlKem768X25519);
         assert_eq!(parsed_xwing.public_key, xwing.public_key.to_vec());
     }
+}
+
+#[test]
+fn recipient_strings_kat_pins_exact_encode_and_decode() {
+    // Byte-exact KAT: KEM public key -> exact Bech32 string and back, for both
+    // KEMs, from the shared conformance fixture the TS and Python SDKs also load.
+    // Locks the HRP / visible-prefix distinction: HRP `age` renders `age1…`, HRP
+    // `age1pqc` renders `age1pqc1…` (the leading `1` is the Bech32 separator).
+    let path = crypto_core_fixtures().join("seed-derive/recipient-strings-kat.json");
+    let fixture = read_fixture_json(&path);
+    let vectors = vectors(&fixture);
+
+    let mut saw_x25519 = false;
+    let mut saw_hybrid = false;
+
+    for vector in vectors {
+        let name = field(vector, "name");
+        let kem = field(vector, "kem");
+        let public_key_hex = field(vector, "public_key_hex");
+        let recipient = field(vector, "recipient");
+        let public_key = hex::decode(public_key_hex)
+            .unwrap_or_else(|e| panic!("vector {name}: bad public_key_hex: {e}"));
+
+        let (expected_kem, encoded, visible_prefix) = match kem {
+            "x25519" => {
+                saw_x25519 = true;
+                (
+                    RecipientKem::X25519,
+                    encode_age_x25519_recipient(&public_key)
+                        .unwrap_or_else(|e| panic!("vector {name}: x25519 encode failed: {e}")),
+                    "age1",
+                )
+            }
+            "mlkem768x25519" => {
+                saw_hybrid = true;
+                (
+                    RecipientKem::MlKem768X25519,
+                    encode_age_xwing_recipient(&public_key)
+                        .unwrap_or_else(|e| panic!("vector {name}: x-wing encode failed: {e}")),
+                    "age1pqc1",
+                )
+            }
+            other => panic!("vector {name}: unexpected kem `{other}`"),
+        };
+
+        // encode -> exact pinned string, and the visible prefix the HRP implies.
+        assert_eq!(encoded, recipient, "vector {name}: encoded string");
+        assert!(
+            recipient.starts_with(visible_prefix),
+            "vector {name}: visible prefix `{visible_prefix}`"
+        );
+
+        // decode -> exact key bytes + the KEM the HRP implies.
+        let parsed = parse_age_recipient(recipient)
+            .unwrap_or_else(|e| panic!("vector {name}: parse failed: {e}"));
+        assert_eq!(parsed.kem, expected_kem, "vector {name}: parsed KEM");
+        assert_eq!(
+            hex::encode(&parsed.public_key),
+            public_key_hex,
+            "vector {name}: parsed public key"
+        );
+    }
+
+    assert!(saw_x25519, "fixture must carry an x25519 vector");
+    assert!(saw_hybrid, "fixture must carry an mlkem768x25519 vector");
 }
 
 #[test]

@@ -12,10 +12,12 @@
 //!   X-Wing ciphertext (`kem_ct`) and the 48-byte wrapped CEK. No per-slot
 //!   `epk`.
 //!
-//! The `slots_mac` is an HMAC over the canonical-CBOR projection of the slots,
-//! keyed by an HKDF expansion of the CEK; it binds the slot set into the
-//! content AAD so a verifier that recovers the CEK can detect any tampering with
-//! the on-chain slots (including a hybrid `kem_ct`).
+//! The `slots_mac` is an HMAC over the 32-byte `slots_hash` (the SHA-256 of the
+//! header-bound slots transcript), keyed by an HKDF expansion of the CEK. The
+//! content is then encrypted under a CEK-derived `payload_key` with a structured
+//! AAD that carries both `slots_hash` and `slots_mac`, so a verifier that
+//! recovers the CEK can detect any tampering with the on-chain header or slots
+//! (including a hybrid `kem_ct`).
 //!
 //! Randomness for the anonymity shuffle, and for any absent CEK / nonce /
 //! ephemeral material, comes from a caller-supplied [`RandomSource`] closure —
@@ -38,8 +40,12 @@ use super::kem::{
     MLKEM768X25519_ESEED_LENGTH, MLKEM768X25519_PUBLIC_KEY_LENGTH,
 };
 use super::slots::{
-    chunk_kem_ct, slots_to_mac_cbor, Mlkem768X25519Slot, SealedEnvelope, SealedPoeOutput,
-    SealedSlots, X25519Slot, AEAD_XCHACHA20_POLY1305, KEM_MLKEM768X25519, KEM_X25519,
+    chunk_kem_ct, join_kem_ct, Mlkem768X25519Slot, SealedEnvelope, SealedPoeOutput, SealedSlots,
+    X25519Slot, AEAD_XCHACHA20_POLY1305, KEM_MLKEM768X25519, KEM_X25519,
+};
+use super::transcript::{
+    ad_content_slots, assert_plaintext_within_bound, compute_slots_hash, slots_payload_key,
+    xwing_kek_salt,
 };
 
 /// The classical per-slot KEK derivation label, reused verbatim as the per-slot
@@ -252,10 +258,15 @@ fn wrap_slot_mlkem768x25519(
         )
     })?;
     debug_assert_eq!(encaps.enc.len(), MLKEM768X25519_ENC_LENGTH);
-    // Salt is EMPTY for the hybrid KEK (distinct from the classical epk||pub_R).
+    // The hybrid KEK salt binds the slot's own reassembled X-Wing ciphertext and
+    // the recipient public key, mirroring the classical `epk || pub_R` salt: the
+    // ciphertext anchors the KEK to a slot-unique value and `pub_R` binds it to
+    // the specific recipient. It is computed outside the KEM, over the slot's
+    // wire bytes, so it holds X-Wing as a black-box KEM.
+    let salt = xwing_kek_salt(&encaps.enc, pub_r);
     let mut kek = hkdf_sha256(
         &encaps.ss,
-        &[],
+        &salt,
         CARDANO_POE_HKDF_INFO_KEK_MLKEM768X25519,
         32,
     )
@@ -274,23 +285,57 @@ fn wrap_slot_mlkem768x25519(
     })
 }
 
-/// Compute the `slots_mac`: an HMAC-SHA256 over the canonical-CBOR slot
-/// projection, keyed by an HKDF expansion of the CEK.
+/// Compute the `slots_mac`: an HMAC-SHA256 over the 32-byte `slots_hash`, keyed
+/// by an HKDF expansion of the CEK.
 ///
 /// `hmac_key = HKDF-SHA256(ikm = CEK, salt = "", info =
 /// "cardano-poe-slots-mac-v1")`; `slots_mac = HMAC-SHA256(hmac_key,
-/// slots_to_mac_cbor(slots))`. The KEM-driven CBOR projection means the hybrid
-/// `kem_ct` is authenticated exactly as the classical `epk` is.
-fn compute_slots_mac(cek: &[u8], slots: &SealedSlots) -> [u8; SLOTS_MAC_LENGTH] {
+/// slots_hash)`. The transcript is pre-hashed to `slots_hash` (header fields +
+/// canonicalised slot set, including the entire chunked `kem_ct` on the hybrid
+/// path); pre-hashing only changes the HMAC message from the full transcript to
+/// its SHA-256, leaving the CEK-keyed commitment intact.
+fn compute_slots_mac(cek: &[u8], slots_hash: &[u8]) -> [u8; SLOTS_MAC_LENGTH] {
     let mut hmac_key = hkdf_sha256(cek, &[], CARDANO_POE_HKDF_INFO_SLOTS_MAC, 32)
         .expect("32-byte HKDF output is within the RFC 5869 maximum");
-    let slots_cbor = slots_to_mac_cbor(slots);
     let mut mac =
         <Hmac<Sha256>>::new_from_slice(&hmac_key).expect("HMAC accepts a key of any length");
-    mac.update(&slots_cbor);
+    mac.update(slots_hash);
     let out: [u8; SLOTS_MAC_LENGTH] = mac.finalize().into_bytes().into();
     hmac_key.zeroize();
     out
+}
+
+/// Per-slot KEK-uniqueness gate. The zero-nonce per-slot wrap is sound only when
+/// every slot's KEK is unique; the KEK is a deterministic function of the slot's
+/// KEM material (the x25519 `epk` and recipient public key, or the reassembled
+/// hybrid `kem_ct` and recipient public key), so two slots carrying identical
+/// KEM material against the same recipient repeat the (KEK, nonce) pair. Reject
+/// an envelope with duplicate per-slot KEM material — a duplicate `epk` for
+/// x25519, a duplicate reassembled `kem_ct` for the hybrid path — at the
+/// producer before committing anything to the wire.
+fn assert_unique_slot_kem_material(slots: &SealedSlots) -> Result<(), EciesSealedPoeError> {
+    let mut seen: std::collections::HashSet<Vec<u8>> = std::collections::HashSet::new();
+    let materials: Vec<Vec<u8>> = match slots {
+        SealedSlots::X25519(slots) => slots.iter().map(|s| s.epk.clone()).collect(),
+        SealedSlots::Mlkem768X25519(slots) => {
+            slots.iter().map(|s| join_kem_ct(&s.kem_ct)).collect()
+        }
+    };
+    let field = match slots {
+        SealedSlots::X25519(_) => "epk",
+        SealedSlots::Mlkem768X25519(_) => "kem_ct",
+    };
+    for (i, material) in materials.into_iter().enumerate() {
+        if !seen.insert(material) {
+            return Err(EciesSealedPoeError::new(
+                EciesSealedPoeErrorCode::EncSlotsDuplicateKemMaterial,
+                format!(
+                    "slots[{i}].{field} duplicates an earlier slot; per-slot KEK uniqueness is violated"
+                ),
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// Seal `plaintext` to one or more recipients, drawing every secret from the
@@ -380,6 +425,11 @@ pub fn ecies_sealed_poe_wrap_with_rng(
             format!("recipient_public_keys.len()={n} must be >= 1"),
         ));
     }
+
+    // Reject a plaintext at or above the single-shot keystream capacity before
+    // any KEM or AEAD work, so an over-large input never reaches the content
+    // cipher.
+    assert_plaintext_within_bound(args.plaintext.len() as u64)?;
 
     let expected_pub_len = match kem {
         SealedKem::X25519 => X25519_KEY_LENGTH,
@@ -495,9 +545,6 @@ pub fn ecies_sealed_poe_wrap_with_rng(
                 let priv_eph = args.ephemeral_secrets.map(|e| e[i].as_slice());
                 slots.push(wrap_slot_x25519(pub_r, priv_eph, cek, i, rng)?);
             }
-            if !args.skip_shuffle {
-                csprng_shuffle(&mut slots, rng);
-            }
             SealedSlots::X25519(slots)
         }
         SealedKem::Mlkem768X25519 => {
@@ -517,22 +564,42 @@ pub fn ecies_sealed_poe_wrap_with_rng(
                 fresh.zeroize();
                 slots.push(slot?);
             }
-            if !args.skip_shuffle {
-                csprng_shuffle(&mut slots, rng);
-            }
             SealedSlots::Mlkem768X25519(slots)
         }
     };
 
-    // The MAC is computed AFTER the shuffle, binding the on-wire slot order.
-    let slots_mac = compute_slots_mac(cek, &slots);
+    // Per-slot KEK uniqueness is the safety condition for the zero-nonce wrap.
+    // Duplicate per-slot KEM material (a repeated x25519 epk, or a repeated
+    // reassembled hybrid kem_ct) would repeat the (KEK, nonce) pair, so reject
+    // it at the producer before committing anything to the wire.
+    assert_unique_slot_kem_material(&slots)?;
 
-    // Content AEAD AAD is `nonce || slots_mac` (24 + 32 = 56 bytes).
-    let mut ad_content = Vec::with_capacity(NONCE_LENGTH + SLOTS_MAC_LENGTH);
-    ad_content.extend_from_slice(nonce);
-    ad_content.extend_from_slice(&slots_mac);
-    let ciphertext = xchacha20_poly1305_encrypt(cek, nonce, &ad_content, args.plaintext);
+    // Anonymity invariant: post-wrap CSPRNG shuffle so wire ordering encodes no
+    // recipient identity. The transcript (and thus the MAC) is built AFTER the
+    // shuffle, binding the on-wire slot order.
+    let mut slots = slots;
+    if !args.skip_shuffle {
+        match &mut slots {
+            SealedSlots::X25519(s) => csprng_shuffle(s, rng),
+            SealedSlots::Mlkem768X25519(s) => csprng_shuffle(s, rng),
+        }
+    }
 
+    // `slots_hash` is the SHA-256 of the header-bound slots transcript. It is
+    // computed once here, fed into both the slot-set MAC and the content AAD.
+    let slots_hash = compute_slots_hash(kem.as_str(), nonce, &slots);
+    let slots_mac = compute_slots_mac(cek, &slots_hash);
+
+    // Content is encrypted under a derived `payload_key` (a separate HKDF leaf
+    // of the CEK keyed on the nonce), never under the CEK directly, so the wrap
+    // layer and the content layer never key the same primitive on the same
+    // bytes. The AAD re-binds the slots-path header and carries both
+    // `slots_hash` and `slots_mac`.
+    let mut payload_key = slots_payload_key(cek, nonce);
+    let ad_content = ad_content_slots(kem.as_str(), nonce, &slots_hash, &slots_mac);
+    let ciphertext = xchacha20_poly1305_encrypt(&payload_key, nonce, &ad_content, args.plaintext);
+
+    payload_key.zeroize();
     owned_cek.zeroize();
 
     Ok(SealedPoeOutput {

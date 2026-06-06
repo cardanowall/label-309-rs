@@ -504,6 +504,44 @@ fn xwing_tampered_ct_x25519_yields_a_defined_secret() {
 }
 
 #[test]
+fn mlkem768x25519_deterministic_keygen_encaps_kat() {
+    // The full deterministic chain pinned by draft-10 Appendix C: seed -> pk
+    // (keygen) and eseed -> (ct, ss) (encaps). Binds keygen and encaps together
+    // against the externally pinned anchor; the encaps KAT above starts from a
+    // hardcoded pk and never re-derives it from the seed.
+    let corpus = kem_fixture("mlkem768x25519-encaps-deterministic-draft10-kat.json");
+    let vectors = vectors(&corpus);
+    assert_eq!(vectors.len(), 3, "deterministic encaps vector count");
+    for vector in vectors {
+        let name = field(vector, "name");
+        let seed: [u8; 32] = bytes(vector, "seed_hex")
+            .try_into()
+            .unwrap_or_else(|b: Vec<u8>| panic!("{name}: seed is {} bytes, want 32", b.len()));
+
+        let public_key = xwing_keygen(&seed);
+        assert_eq!(
+            hex::encode(&public_key),
+            field(vector, "expected_pk_hex"),
+            "{name}: keygen public key"
+        );
+
+        let eseed = bytes(vector, "eseed_hex");
+        let encaps = mlkem768x25519_encapsulate(&public_key, &eseed)
+            .unwrap_or_else(|e| panic!("{name}: encapsulate failed: {e}"));
+        assert_eq!(
+            hex::encode(&encaps.enc),
+            field(vector, "expected_enc_hex"),
+            "{name}: ciphertext"
+        );
+        assert_eq!(
+            hex::encode(&encaps.ss),
+            field(vector, "expected_ss_hex"),
+            "{name}: combiner shared secret"
+        );
+    }
+}
+
+#[test]
 fn fixture_trees_resolve() {
     // Guard against a future fixture relocation silently turning the parity
     // suite into a no-op.
