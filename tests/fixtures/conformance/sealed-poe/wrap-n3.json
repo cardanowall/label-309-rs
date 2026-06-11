@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "primitive": "sealed-poe-wrap",
+  "source": "N=3 recipients, 32-byte plaintext",
+  "vector": {
+    "name": "n3",
+    "recipient_publics_hex": [
+      "a4e09292b651c278b9772c569f5fa9bb13d906b46ab68c9df9dc2b4409f8a209",
+      "ce8d3ad1ccb633ec7b70c17814a5c76ecd029685050d344745ba05870e587d59",
+      "5dfedd3b6bd47f6fa28ee15d969d5bb0ea53774d488bdaf9df1c6e0124b3ef22"
+    ],
+    "recipient_secrets_hex": [
+      "0001010101010101010101010101010101010101010101010101010101010141",
+      "0002020202020202020202020202020202020202020202020202020202020242",
+      "0003030303030303030303030303030303030303030303030303030303030343"
+    ],
+    "ephemeral_secrets_hex": [
+      "e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e060",
+      "e0e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e161",
+      "e0e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e262"
+    ],
+    "cek_hex": "abababababababababababababababababababababababababababababababab",
+    "nonce_hex": "202122232425262728292a2b2c2d2e2f3031323334353637",
+    "hashes": {
+      "sha2-256": "630dcd2966c4336691125448bbb25b4ff412a49c732db2c8abc1b8581bd710dd"
+    },
+    "plaintext_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "expected_slots": [
+      {
+        "epk_hex": "ff5d87907f1394b3a131985b894f513de72778ce27b8c10b32f93982a87cda47",
+        "wrap_hex": "9ff5a970e87cff775319599dbb2e3edbb088d7af55786c5d949b423f469ea3541800fb8390b59737f2713ef5e9a082da"
+      },
+      {
+        "epk_hex": "4c2817a9d668ed844d2f95b93b69ecb8485095783a015a424164b0d09702894f",
+        "wrap_hex": "963e4e053f18ac6a1c9ceefd8787913d8ba4d63ceef1cefbf1be354cc7b30f415d7fc6e3b8666f7b444f7710722a0bde"
+      },
+      {
+        "epk_hex": "19d80204bf85f3e1118e1b23410c88f0d0eeced5156f4c5bdf347b14ed7ec63f",
+        "wrap_hex": "7dd36221051d446622f82d92100289262675ff27b3c2cb31bf3e1e27d1458841fdeed65ebac5216f511d92e79eb4eaba"
+      }
+    ],
+    "expected_slots_mac_hex": "5a3179b4d304a7b3e20c307d2cb1535298a075dbe498c9ccc3582b17d4faf1b6",
+    "expected_ciphertext_hex": "08c29e24d9037a9788ea11dcdd4d96f8f4efc9dcfdc2485b2d81f2c1012c23f77bf0228ceddf450e8cd300a8abbb6e7a",
+    "expected_plaintext_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+  }
+}

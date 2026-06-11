@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "primitive": "sealed-poe-unwrap",
+  "source": "reuses wrap-n1-empty",
+  "vector": {
+    "name": "n1-empty",
+    "recipient_secrets_hex": [
+      "a0a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a161"
+    ],
+    "envelope": {
+      "scheme": 1,
+      "aead": "chacha20-poly1305-stream64k",
+      "kem": "x25519",
+      "nonce_hex": "000102030405060708090a0b0c0d0e0f1011121314151617",
+      "slots": [
+        {
+          "epk_hex": "4c2817a9d668ed844d2f95b93b69ecb8485095783a015a424164b0d09702894f",
+          "wrap_hex": "ab146d75a0d33f466537b34a6d3d4b4cb6a82bf3061c28820e258889bc24bc91b92217d2b83de84a3719b1608a025696"
+        }
+      ],
+      "slots_mac_hex": "d832ec6269f3d598fdf123132a0b9e50c66748d4e4ffed20b871da3abf335178"
+    },
+    "hashes": {
+      "sha2-256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ciphertext_hex": "b89b263709c327610d744b77307355b5",
+    "expected_plaintext_hex": ""
+  }
+}

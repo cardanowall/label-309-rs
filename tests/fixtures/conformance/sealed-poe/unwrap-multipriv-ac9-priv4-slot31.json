@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "primitive": "sealed-poe-unwrap-multipriv",
+  "source": "multi-priv trial-decrypt iterator extension",
+  "vector": {
+    "name": "multipriv-ac9-priv4-slot31-n32-k5",
+    "recipient_privs_hex": [
+      "5151515151515151515151515151515151515151515151515151515151515151",
+      "5252525252525252525252525252525252525252525252525252525252525252",
+      "5353535353535353535353535353535353535353535353535353535353535353",
+      "5454545454545454545454545454545454545454545454545454545454545454",
+      "5555555555555555555555555555555555555555555555555555555555555555"
+    ],
+    "hashes": {
+      "sha2-256": "630dcd2966c4336691125448bbb25b4ff412a49c732db2c8abc1b8581bd710dd"
+    },
+    "envelope": {
+      "scheme": 1,
+      "aead": "chacha20-poly1305-stream64k",
+      "kem": "x25519",
+      "nonce_hex": "b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8",
+      "slots": [
+        {
+          "epk_hex": "e50c239bc204f1341664c9d9c50c6a0d0fff6fc79d9301f1e713aab2e0344b3f",
+          "wrap_hex": "7e5ebc3a0f738d464ed96b86455fdc1424cec5b88bf18881c896f000c7ea6bb6b471830effa9b15571d3c6dd224235cd"
+        },
+        {
+          "epk_hex": "04f5f29162c31a8defa18e6e742224ee806fc1718a278be859ba5620402b8f3a",
+          "wrap_hex": "bcaa37cc02f561e796ad81b82e4df5886a261d87454bd159c16ea997f04097bf0cf36d098da176afd975200f0ba3676a"
+        },
+        {
+          "epk_hex": "59d9225473451efffe6b36dbcaefdbf7b1895de62084509a7f5b58bf01d06418",
+          "wrap_hex": "c1a8f8ec15e4da3147a72e8712f4e6793ee6ef398fe58c0962a083fd685e7472f88de9a56a8f47142f389a462d431d2c"
+        },
+        {
+          "epk_hex": "7b0d47d93427f8311160781c7c733fd89f88970aef490d8aa0ee19a4cb8a1b14",
+          "wrap_hex": "326dae759f459919b514ac6da70bb7ce59d976a0f2105c70456dbfcf4518a4bd228ff38ff3cae78642b4e446a381d699"
+        },
+        {
+          "epk_hex": "ffc951aa6f2fa03096d1d1b579735b2f6f84019fe2f617aa65ff3d68705f2527",
+          "wrap_hex": "0e29545151dd405dd46c937c7c228d2805fe425b60ade502bdb82b6684c49d73d57ba240c26017125951e04c5ee6ea3a"
+        },
+        {
+          "epk_hex": "627967ac833d07ad274bdfb6fb7ba2a336780e721e82f1447e859bf90a69ad62",
+          "wrap_hex": "c311ea69e9a58088c6bd57a9c0fcfee9a2fe9a9ae216e21d063995762d557c7e621d533a03fc4e653efba23d56ff69de"
+        },
+        {
+          "epk_hex": "e5cde2019dc0b3e464d3d8e12952426e0acca21beabd1e499fb0265bd1e9614d",
+          "wrap_hex": "21f975c2359c6bd05b2362ec1c4af7356e8a13256f3d0618ced7d17af4ebb3b153860444bd190aff4471d8c4e76575b3"
+        },
+        {
+          "epk_hex": "b7565b6daf0749c27dcbc6f842c32cf217371165bc2d2505146b30d8b3536434",
+          "wrap_hex": "09ee873fb227992b908737fc7574689fed763896ccd6faa4f888b6d5ca860a2146405e1600f64c1cf35117e1473e4f20"
+        },
+        {
+          "epk_hex": "95f3c97784c7a161c9e9b1c334384f625f0b9f872424ecf49d20ca8fc674fe42",
+          "wrap_hex": "43148e1e30cc63c3635caba1f86cd68b4b5ae7b7f1c4fb50ebec3d26049951e3ca421b2f4830e8ab5dcbdc9cca52ae47"
+        },
+        {
+          "epk_hex": "1f3e70a25b7f25ceccc7fe12233790573c95084b3e0f8f80738d33e50a6d6943",
+          "wrap_hex": "445a259a55a17ef9001f7769ff8fd8e773658b8e1a0dba6e782d21f8ff6c15be3dbd5c059bc81a0b1cf3402e6014fa35"
+        },
+        {
+          "epk_hex": "0d43915fb4b40a2e9f111ae150197e643d39d000ec6977d28551a04caa189354",
+          "wrap_hex": "3ec6a02bf00ef5c2e1b881a04b2164d5fe618796f3e2f64dfdbb465caef68f6adc6270d5a44977638c9f64bef109de3e"
+        },
+        {
+          "epk_hex": "437f462c58a8964fa718164019ee3dcaab6023db339c857ecd2a31a56b89d54e",
+          "wrap_hex": "bfcd69a4321d9f69eb97bb21086051f649b10fa6db8efb7a222021a236a3822f20b57f098e18794555265d115d9c338b"
+        },
+        {
+          "epk_hex": "513f6639b3e84e8db530e84bba689373da3b6f3ecf45df32414738d58d792d66",
+          "wrap_hex": "9f14365c8031f3157d13ae6793ddec0784c3402cf544a53b6032728ef0360c07971cdb8cebfff5b4e1b9269e630985d6"
+        },
+        {
+          "epk_hex": "41d9804a02dd08bf5e7b7e63024c3290dec5f8fcdef01bd02f016fb2a7ad5e0a",
+          "wrap_hex": "f32e57e3f9853959613f934c925a132a1705fe34cc0982d4ef9a59be5453d2be1c304f1687a7d92156a6501b72c41c18"
+        },
+        {
+          "epk_hex": "1fdaa2ca6f50b7ed41eb6f914cd90d869e97f7ec88306c4684bdc0228a448a4d",
+          "wrap_hex": "a73814c769710b3d17eee1c534e6d7c07d1e53f0166eeeca77fff75c7b71eff07f2b40730300536eedcbb3607646d37f"
+        },
+        {
+          "epk_hex": "8855b39f1b92789433851a5ce8348487ec0cf7dd7777b8b9c2673d6994de6745",
+          "wrap_hex": "75bbf24e66e06b52da4b41c054bd78c0e07d108e323dc7b8bb0d63c4d231e8cab9c6e0a7c2919cd6f8289899f9ac54cb"
+        },
+        {
+          "epk_hex": "d7b5e81d336e578b13b8d706e82d061e3038c96bce66cdcf50d566b96ddbba10",
+          "wrap_hex": "0a1ba526ab193fa06342a68410d4751114ecf6e7c1f152c6e7a00b3b3172ac1caa645b7542d06f36819a9f7b29f52bbf"
+        },
+        {
+          "epk_hex": "7a1a4e709bf085ac494aba0469b9b1eda0ab1f78b16aabb79ffeda90623e8522",
+          "wrap_hex": "7db13496105ff3a313650e389eb11be53fc031723aa1e352a62cb5b42e6e01c7a736b207335f4298b400a76031a4d44a"
+        },
+        {
+          "epk_hex": "132c442be010fbd57e72603328aa76e71fccc1503aae219327d14d9c9993f472",
+          "wrap_hex": "fc9e9dd34b7facc8e4d27d98c3f7ab2a18c6c72bc132b5b385cfc7fb16cebac4602031b77fe2225bda54f93c4b56b5f4"
+        },
+        {
+          "epk_hex": "cdefd8783a91b446640e2e1f95599db35e484a0071bd2182b3b60d0812c10c70",
+          "wrap_hex": "3d25f80c74be5bf0cd114505507f81ae6234d587c729b082d6de865efdef9a3d9be07e9c1bb24cf0cf3796d1abd957c0"
+        },
+        {
+          "epk_hex": "ff2ee45601ec1b67310c7790404585ae697331eee1c1f8cf2419731c1fff3e6b",
+          "wrap_hex": "187e32ca57f76d52eb651c4e79e639e81f6e90950dd8d5e7a285514892b734b83186449f74264308e2ca5cb17d7e64e1"
+        },
+        {
+          "epk_hex": "3286894cd2845a6db6a28fbf0677605f80e5a62385bf4e10a790ae5fde36736b",
+          "wrap_hex": "bc251272ded18104e4120b929e6e47acabb2d80d21b9629bc5c644799ec42d0b1f4ebb8a3f6c9376c5ecdb16a50b9557"
+        },
+        {
+          "epk_hex": "a28a7c44ede257d664fbf156affa7da8abb3ae74b9fee8d7a2078543504e1a75",
+          "wrap_hex": "f0a3527e0c5bf8de243a0fd84f1d585f82b4acff621fd44a16e373e388a81deff7d75e4f332760a77f3eee3c4ff374c5"
+        },
+        {
+          "epk_hex": "603fe5551330bf6d2c174a2736fa2996bf8311a259b38a9ed749425a83562909",
+          "wrap_hex": "9952a5249bfc150833fefeb278b0fed551db43606a6710c6c4734711245feda1bbc10c22d1f71b8fcdc80baf56368f53"
+        },
+        {
+          "epk_hex": "9177b23278cbf0f3d17c36f2acc9b55e9c85f87b220a5386ec370d663e20e337",
+          "wrap_hex": "c30636d56611ee5b322ec3bdc307e4ffc2cae6526998a6de246d929b23897493ffc86cbe2303af4771081f7efc6e1bca"
+        },
+        {
+          "epk_hex": "51c76caf97b8a36e21513eab8b23a1a90126ddf9823deee64c8ffb2954fd4975",
+          "wrap_hex": "6f4c919984f626afa9d0fd08ee29b3e1e7f73dca4682bec1a7042dd5989408f913bb2e2ef78d7524e11eded6aa4a2b02"
+        },
+        {
+          "epk_hex": "2fdfe0bc09a91e01f740bef7e6622bf4d8837a0a8fc862469491bd80a1e6c35a",
+          "wrap_hex": "7e2137789732b4ff66031939ea7ac9288f778055ad0d8787ee2e8a19a4b8edbaaac11286f96e6159e9c3751d75f81d57"
+        },
+        {
+          "epk_hex": "95f4eafe1fe1b695e4bd27fc3838c527b1945afc455ee2b0e0f81bdffbadce24",
+          "wrap_hex": "e2cb8002431b137765b7996f331be2d186cfa8167f615d0b06560ee0037861660d34e57225b8fa164993ad582c21785f"
+        },
+        {
+          "epk_hex": "2ea20c093a1201cc85bfefc8eb4673b90b23b6c0038fa2b5b5c5a78b73800910",
+          "wrap_hex": "67d2d61b0ab8721aa85570168c62d7edb9d52151bef4a5c088f84746bc95b80055de96d5769943e83c3c658795736c6d"
+        },
+        {
+          "epk_hex": "f24a1450d7f84eb6112dfc800c8ee33dd74139f6b66ef2b5f03d2cd7de76f93b",
+          "wrap_hex": "a27d4ca7864092df0d5b0c9f5a12258db06833d89ce6e904c106d1fba82f8e83a6f35a7e6c5b4702a9a4479393384ca9"
+        },
+        {
+          "epk_hex": "1a61189b2818f9111a3280b9cee17fe2edc11271f54c1187e80ddefae590df7d",
+          "wrap_hex": "da21399d3f306c9d3624c9fa0dc3bc6bac9d18f620004e5c920c8f2ede6c0a7e09b495b29ee1f92406a2668414ad164d"
+        },
+        {
+          "epk_hex": "5590e18b13045370235f1719ab8448c3c0a39a269bfc86ded297b1fa1bf4ac30",
+          "wrap_hex": "8b4552839507aecab1f1ae50997ce5807aa16f0967808506482518956bb31d36742eb91190b8092fa4d3e643c5e5e583"
+        }
+      ],
+      "slots_mac_hex": "87a792e8c458ac9343cae0945253cc868d67d3e86065aa334a4ac45cc2bd088c"
+    },
+    "ciphertext_hex": "b55440abaf79af746a4c8044bd5d797c5b21bfe7218f4d21e85df9f4d1f4ab06478f541c9692ee843e8b546b78fd65bb",
+    "expected_plaintext_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "expected_matching_priv_index": 4,
+    "expected_outer_loop_count": 5,
+    "expected_inner_loop_count_per_priv": 32
+  }
+}
