@@ -1,6 +1,6 @@
 [package]
 name = "cardanowall"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = ["CardanoWall <hello@cardanowall.com>"]
@@ -39,10 +39,11 @@ argon2 = "0.5.3"
 blake2 = "0.10.6"
 chacha20poly1305 = "0.10.1"
 ed25519-dalek = "2"
-# The OS CSPRNG behind the secure-by-default sealed-PoE wrap. Already resolved
-# transitively (via chacha20poly1305 -> crypto-common -> rand_core); promoting
-# it to a direct dependency adds no new crate to the lockfile.
-getrandom = "0.2"
+# The OS CSPRNG behind the secure-by-default sealed-PoE wrap. The 0.4 line
+# exposes the system entropy source directly through `getrandom::fill`; the
+# older 0.2 line is still pulled in transitively (via chacha20poly1305 ->
+# crypto-common -> rand_core 0.6), but our direct calls go through 0.4.
+getrandom = "0.4"
 hex = "0.4.3"
 hkdf = "0.13.0"
 hmac = "0.13.0"
@@ -55,7 +56,11 @@ reqwest = { version = "0.13.4", default-features = false, features = ["rustls", 
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 sha2 = "0.11.0"
-sha3 = "0.11.0"
+sha3 = "0.12"
+# SHAKE moved out of `sha3` in 0.12 into its own crate; `Shake256` (the XOF used
+# for X-Wing seed expansion) now lives here. Both crates track the same `digest`
+# generation as sha2 0.11, so the `Update`/`XofReader` traits stay one type.
+shake = "0.1"
 subtle = "2.6.1"
 thiserror = "2.0.18"
 # RFC 3986 URL parsing for the verifier's pure deny-host and SSRF guards. Kept

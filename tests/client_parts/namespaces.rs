@@ -1,4 +1,4 @@
-// Records (list / get / verify), account, batch, config-resolution, and
+// Records (list / get), account, batch, config-resolution, and
 // high-level publish-helper coverage. Assertions target request shape, parsed
 // responses, page entries, and typed errors — never log strings.
 
@@ -30,7 +30,7 @@ fn config_resolution_contract() {
     let body = records_list_body(serde_json::json!([]), false, None);
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body.clone())));
     let (client, ptr) = client_with(
-        "https://gateway.example.com",
+        "https://gateway.example.com/api/v1",
         Some("opaque-vendor-token-123"),
         transport,
     );
@@ -43,7 +43,7 @@ fn config_resolution_contract() {
 
     // Explicit base_url, no key: anonymous, no Authorization header.
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("https://gateway.example.com", None, transport);
+    let (client, ptr) = client_with("https://gateway.example.com/api/v1", None, transport);
     client.records().list(None).unwrap();
     assert!(mock(ptr).first().url.starts_with("https://gateway.example.com/api/v1/records"));
     assert_eq!(header(&mock(ptr).first(), "authorization"), None);
@@ -72,10 +72,169 @@ fn missing_base_url_is_rejected() {
 fn base_url_strips_one_trailing_slash() {
     let body = records_list_body(serde_json::json!([]), false, None);
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://localhost:3000/", None, transport);
+    let (client, ptr) = client_with("http://localhost:3000/api/v1/", None, transport);
     // No input → no query string at all (the bare list endpoint).
     client.records().list(None).unwrap();
     assert_eq!(mock(ptr).first().url, "http://localhost:3000/api/v1/records");
+}
+
+/// Drive one matrix suffix through its real namespace call against `client`,
+/// queuing the right stub response shape for that endpoint. Returns the URL the
+/// client actually emitted. `tx` is the 64-char hex hash the `/records/<tx>`
+/// suffixes bake into both their literal and their expected URL.
+fn drive_join_suffix(suffix: &str, base_url: &str, tx: &str) -> String {
+    // The success body each endpoint expects so the real call reaches the
+    // transport (and the URL is captured) without erroring before the request.
+    let publish_body = publish_success_body();
+    let stub = match suffix {
+        "/records" => StubResponse::json(200, records_list_body(serde_json::json!([]), false, None)),
+        s if s == format!("/records/{tx}") => StubResponse::json(
+            200,
+            serde_json::json!({
+                "tx_hash": tx, "status": "confirmed", "block_height": 1,
+                "block_time": "2026-01-01T00:00:00.000Z", "num_confirmations": 1,
+                "scheme": 0, "item_count": 1, "signer_ed25519": null,
+                "metadata_cbor_base64": "oWNmb29jYmFy",
+            }),
+        ),
+        "/account/balance" => {
+            StubResponse::json(200, serde_json::json!({ "balance_usd_micros": "0" }))
+        }
+        "/poe/quote" => StubResponse::json(
+            200,
+            serde_json::json!({
+                "quote_id": QUOTE_ID, "amount": "1", "currency": "USD",
+                "expires_at": "2026-01-01T00:00:00.000Z",
+            }),
+        ),
+        "/poe/publish" => StubResponse::json(202, publish_body),
+        "/poe/publish-batch" => StubResponse::json(
+            200,
+            serde_json::json!({ "results": [], "balance_after_usd_micros": "4500000" }),
+        ),
+        "/poe/uploads" => StubResponse::json(
+            200,
+            serde_json::json!({
+                "uploads": [{ "idx": 0, "ok": true, "uri": format!("ar://{}", "A".repeat(43)),
+                              "sha256": "00".repeat(32), "bytes": 1 }],
+            }),
+        ),
+        other => panic!("matrix suffix has no driver: {other:?}"),
+    };
+    let transport = Box::new(MockTransport::single(stub));
+    let (client, ptr) = client_with(base_url, None, transport);
+    match suffix {
+        "/records" => {
+            client.records().list(None).unwrap();
+        }
+        s if s == format!("/records/{tx}") => {
+            client.records().get(tx).unwrap();
+        }
+        "/account/balance" => {
+            client.account().balance().unwrap();
+        }
+        "/poe/quote" => {
+            client
+                .poe()
+                .quote(&QuoteInput { record_bytes: 1, recipient_count: 0, file_bytes_total: 0 })
+                .unwrap();
+        }
+        "/poe/publish" => {
+            client
+                .poe()
+                .publish(&PublishInput {
+                    record: vec![0xaa],
+                    quote_id: QUOTE_ID.to_string(),
+                    signatures: None,
+                    idempotency_key: None,
+                })
+                .unwrap();
+        }
+        "/poe/publish-batch" => {
+            client
+                .poe()
+                .publish_batch(&PublishBatchInput {
+                    records: vec![PublishBatchEntry {
+                        record: vec![0xaa],
+                        quote_id: QUOTE_ID.to_string(),
+                        signatures: None,
+                    }],
+                    idempotency_key: None,
+                })
+                .unwrap();
+        }
+        "/poe/uploads" => {
+            client
+                .poe()
+                .uploads(&UploadsInput {
+                    target: "arweave".to_string(),
+                    data: vec![vec![0xaa]],
+                    idempotency_key: None,
+                })
+                .unwrap();
+        }
+        other => panic!("matrix suffix has no driver: {other:?}"),
+    }
+    mock(ptr).first().url
+}
+
+/// The shared cross-SDK base_url-join parity matrix, loaded from a fixture that
+/// is mirrored BYTE-IDENTICALLY across the three Label 309 SDKs
+/// (label-309-ts, label-309-py, label-309-rs); each carries its own
+/// self-contained copy because they publish to separate repositories. Any edit
+/// to the matrix MUST be applied to all three copies in lockstep.
+///
+/// The contract: the configured `base_url` carries the gateway's version
+/// segment, the client trims surrounding ASCII whitespace, strips AT MOST ONE
+/// trailing slash, and appends the bare resource suffix by plain string
+/// concatenation. Given the same `base_url`, every SDK must emit byte-identical
+/// request URLs. Every suffix is driven through the real namespace call so the
+/// assertion exercises the production join path.
+///
+/// The `…/api/v1//` rows are load-bearing: a base ending in two slashes must
+/// strip exactly one (leaving one), proving the normalisation collapses no
+/// further and never re-parses — the discriminator that catches a
+/// `trim_end_matches('/')` that would strip every trailing slash. The
+/// whitespace-wrapped rows pin the trim-before-join. The `origin-only` rows
+/// prove the client injects no `/api/v1` of its own.
+#[test]
+fn base_url_join_convention_parity_matrix() {
+    let tx = "a".repeat(64);
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/client-url-join/base-url-join-vectors.json");
+    let vectors = common::read_fixture_json(&path);
+    let cases = vectors["cases"].as_array().expect("matrix has a `cases` array");
+
+    // Every suffix in the matrix must have a driver, and every driver must be
+    // exercised by the matrix — a divergence means a suffix was added/removed on
+    // one side. `drive_join_suffix` panics on an unknown suffix, covering the
+    // first direction; this asserts the matrix references no stale suffix-set.
+    let suffixes: std::collections::BTreeSet<String> = cases
+        .iter()
+        .map(|c| c["suffix"].as_str().unwrap().to_string())
+        .collect();
+    let expected_suffixes: std::collections::BTreeSet<String> = [
+        "/records",
+        &format!("/records/{tx}"),
+        "/account/balance",
+        "/poe/quote",
+        "/poe/publish",
+        "/poe/publish-batch",
+        "/poe/uploads",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect();
+    assert_eq!(suffixes, expected_suffixes, "matrix suffix set drifted");
+
+    for case in cases {
+        let base_url = case["base_url"].as_str().unwrap();
+        let suffix = case["suffix"].as_str().unwrap();
+        let expected = case["expected_url"].as_str().unwrap();
+        let name = case["name"].as_str().unwrap();
+        let actual = drive_join_suffix(suffix, base_url, &tx);
+        assert_eq!(actual, expected, "case {name}: base_url {base_url:?} must join to {expected:?}");
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +249,7 @@ fn records_list_returns_page_of_record_resources_with_sealed_filter() {
     ]);
     let body = records_list_body(rows, true, Some("opaque-next"));
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
 
     let out = client
         .records()
@@ -124,7 +283,7 @@ fn records_list_returns_page_of_record_resources_with_sealed_filter() {
 fn records_list_omits_sealed_filter_and_query_when_no_input() {
     let body = records_list_body(serde_json::json!([]), false, None);
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
     let out = client.records().list(None).unwrap();
     assert_eq!(out.data.len(), 0);
     // An empty page has no anchored rows to derive a tip from.
@@ -145,7 +304,7 @@ fn records_list_honours_gateway_supplied_tip_block_height() {
         .unwrap()
         .insert("tip_block_height".to_string(), serde_json::json!(9000));
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, _ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, _ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
     let out = client.records().list(None).unwrap();
     // Gateway-reported tip wins over the derived 100 + 15 - 1 = 114.
     assert_eq!(out.tip_block_height, Some(9000));
@@ -157,7 +316,7 @@ fn records_list_omits_sealed_when_filter_is_false() {
     // applied only when explicitly true, matching the reference.
     let body = records_list_body(serde_json::json!([]), false, None);
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     client
         .records()
         .list(Some(&RecordsListInput {
@@ -178,7 +337,7 @@ fn records_list_raises_unauthorized_on_401() {
         "detail": "Authentication required.", "code": "unauthorized",
     }));
     let transport = Box::new(MockTransport::single(StubResponse::json(401, body)));
-    let (client, _) = client_with("http://test", None, transport);
+    let (client, _) = client_with("http://test/api/v1",None, transport);
     let err = http_err(
         client
             .records()
@@ -211,7 +370,7 @@ fn records_get_parses_resource_and_owner_field() {
         "account_id": "acct_06bqrjg0csvqfanaqexvqexvqc",
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
     let out = client.records().get(&"a".repeat(64)).unwrap();
     assert_eq!(out.status.as_deref(), Some("confirmed"));
     assert_eq!(out.scheme, 0);
@@ -219,51 +378,6 @@ fn records_get_parses_resource_and_owner_field() {
     let url = mock(ptr).first().url;
     assert_eq!(url, format!("http://test.example/api/v1/records/{}", "a".repeat(64)));
     assert!(!url.contains("/api/v1/poe/"));
-}
-
-#[test]
-fn records_verify_posts_input_and_returns_report_json() {
-    let report = serde_json::json!({
-        "tx_hash": "a".repeat(64),
-        "network": "cardano:mainnet",
-        "verdict": "valid",
-        "exit_code": 0,
-        "profile": "core",
-        "validation": { "valid": true },
-        "http_calls": [],
-    });
-    let transport = Box::new(MockTransport::single(StubResponse::json(200, report)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
-    let out = client
-        .records()
-        .verify(&"a".repeat(64), Some(&PoeVerifyInput { fetch_content: Some(false) }))
-        .unwrap();
-    assert_eq!(out["verdict"], "valid");
-    assert_eq!(out["exit_code"], 0);
-
-    let captured = mock(ptr).first();
-    assert_eq!(
-        captured.url,
-        format!("http://test.example/api/v1/records/{}/verify", "a".repeat(64))
-    );
-    assert_eq!(captured.method, HttpMethod::Post);
-    // Body MUST round-trip the caller-supplied flag — proves the body is
-    // actually sent over the wire (not mock-asserted against itself). The
-    // endpoint is the hosted PUBLIC verifier: `fetch_content` is the ONLY
-    // accepted field, so this also pins that the client wire body carries no
-    // decryption credentials.
-    let sent: serde_json::Value = serde_json::from_str(captured.body.as_json()).unwrap();
-    assert_eq!(sent, serde_json::json!({ "fetch_content": false }));
-}
-
-#[test]
-fn records_verify_sends_empty_body_when_no_input() {
-    let report = serde_json::json!({ "tx_hash": "a".repeat(64), "verdict": "valid" });
-    let transport = Box::new(MockTransport::single(StubResponse::json(200, report)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
-    client.records().verify(&"a".repeat(64), None).unwrap();
-    let sent: serde_json::Value = serde_json::from_str(mock(ptr).first().body.as_json()).unwrap();
-    assert_eq!(sent, serde_json::json!({}));
 }
 
 // ---------------------------------------------------------------------------
@@ -274,7 +388,7 @@ fn records_verify_sends_empty_body_when_no_input() {
 fn account_balance_gets_endpoint_and_returns_micros_as_string() {
     let body = serde_json::json!({ "balance_usd_micros": "1234567" });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
 
     let out: AccountBalance = client.account().balance().unwrap();
     assert_eq!(out.balance_usd_micros, "1234567");
@@ -295,7 +409,7 @@ fn account_balance_preserves_value_past_2_to_the_53_verbatim() {
     let huge = "9007199254740993";
     let body = serde_json::json!({ "balance_usd_micros": huge });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let out = client.account().balance().unwrap();
     assert_eq!(out.balance_usd_micros, huge);
 }
@@ -304,7 +418,7 @@ fn account_balance_preserves_value_past_2_to_the_53_verbatim() {
 fn account_balance_reads_zero_for_account_with_no_ledger_activity() {
     let body = serde_json::json!({ "balance_usd_micros": "0" });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, _) = client_with("http://test", None, transport);
+    let (client, _) = client_with("http://test/api/v1",None, transport);
     let out = client.account().balance().unwrap();
     assert_eq!(out.balance_usd_micros, "0");
 }
@@ -316,7 +430,7 @@ fn account_balance_raises_insufficient_scope_on_403() {
         "required": ["account:read"], "granted": ["poe:read"],
     }));
     let transport = Box::new(MockTransport::single(StubResponse::json(403, body)));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let err = http_err(client.account().balance().unwrap_err());
     match err.kind() {
         HttpErrorKind::InsufficientScope {
@@ -334,7 +448,7 @@ fn account_balance_raises_insufficient_scope_on_403() {
 fn account_balance_raises_unauthorized_on_401_when_anonymous() {
     let body = problem_body(serde_json::json!({ "code": "unauthorized", "status": 401 }));
     let transport = Box::new(MockTransport::single(StubResponse::json(401, body)));
-    let (client, _) = client_with("http://test", None, transport);
+    let (client, _) = client_with("http://test/api/v1",None, transport);
     let err = http_err(client.account().balance().unwrap_err());
     assert!(matches!(err.kind(), HttpErrorKind::Unauthorized));
 }
@@ -366,7 +480,7 @@ fn publish_batch_posts_records_and_parses_mixed_results() {
         "balance_after_usd_micros": "4320000",
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let out = client
         .poe()
         .publish_batch(&PublishBatchInput {
@@ -408,7 +522,7 @@ fn publish_batch_posts_records_and_parses_mixed_results() {
 fn publish_batch_surfaces_batch_too_large() {
     let body = problem_body(serde_json::json!({ "code": "batch-too-large", "status": 400, "max": 50, "got": 73 }));
     let transport = Box::new(MockTransport::single(StubResponse::json(400, body)));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let err = http_err(
         client
             .poe()
@@ -462,7 +576,7 @@ impl Signer for InMemorySigner {
 #[test]
 fn publish_content_signs_and_posts_single_item_record() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
     let signer = InMemorySigner::from_seed([0x42; 32]);
     let out = client
         .poe()
@@ -502,7 +616,7 @@ fn publish_content_signs_and_posts_single_item_record() {
 #[test]
 fn publish_content_unsigned_omits_sigs() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     client
         .poe()
         .publish_content(&PublishContentInput {
@@ -525,7 +639,7 @@ fn publish_content_unsigned_omits_sigs() {
 #[test]
 fn publish_content_supports_blake2b_256() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     client
         .poe()
         .publish_content(&PublishContentInput {
@@ -550,7 +664,7 @@ fn publish_content_supports_blake2b_256() {
 #[test]
 fn publish_prehashed_validates_and_posts_supplied_digest() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let digest = hex::encode(cardanowall::hash::sha256(b"prehashed"));
     client
         .poe()
@@ -573,7 +687,7 @@ fn publish_prehashed_validates_and_posts_supplied_digest() {
 #[test]
 fn publish_prehashed_rejects_wrong_length_digest() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let err = client
         .poe()
         .publish_prehashed(&PublishPrehashedInput {
@@ -601,7 +715,7 @@ fn publish_sealed_encrypts_uploads_and_publishes_with_ar_uri() {
         StubResponse::json(200, uploads_body),
         StubResponse::json(202, publish_success_body()),
     ]));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let recipient = vec![0x07_u8; 32];
     client
         .poe()
@@ -653,7 +767,7 @@ fn publish_sealed_encrypts_uploads_and_publishes_with_ar_uri() {
 #[test]
 fn publish_sealed_rejects_empty_and_wrong_length_recipients() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let empty = client.poe().publish_sealed(&PublishSealedInput {
         content: b"x".to_vec(),
         recipients: vec![],
@@ -672,7 +786,7 @@ fn publish_sealed_rejects_empty_and_wrong_length_recipients() {
     ));
 
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let wrong = client.poe().publish_sealed(&PublishSealedInput {
         content: b"x".to_vec(),
         recipients: vec![vec![0u8; 31]],
@@ -702,7 +816,7 @@ fn publish_sealed_escalates_partial_upload_failure() {
         "uploads": [{ "idx": 0, "ok": false, "error": { "code": "storage-provider-rejected", "detail": "arweave timeout" } }],
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, uploads_body)));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let err = client
         .poe()
         .publish_sealed(&PublishSealedInput {
@@ -746,7 +860,7 @@ fn publish_merkle_binds_root_and_leaf_count() {
         StubResponse::json(200, uploads_body),
         StubResponse::json(202, publish_success_body()),
     ]));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let signer = InMemorySigner::from_seed([0x42; 32]);
     let out = client
         .poe()
@@ -779,7 +893,7 @@ fn publish_merkle_binds_root_and_leaf_count() {
 #[test]
 fn publish_merkle_rejects_empty_leaves() {
     let transport = Box::new(MockTransport::single(StubResponse::json(202, publish_success_body())));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let err = client
         .poe()
         .publish_merkle(&PublishMerkleInput {
@@ -864,4 +978,167 @@ fn client_transport_does_not_follow_redirects() {
         !internal_reached.load(Ordering::SeqCst),
         "the redirect target must never be contacted"
     );
+}
+
+// ---------------------------------------------------------------------------
+// Records count
+// ---------------------------------------------------------------------------
+
+#[test]
+fn records_count_sends_the_signer_and_filters_and_parses_the_count() {
+    // The count is publisher-scoped: the signer is always on the query, and the
+    // optional filters (scheme/sealed/block/time) ride alongside it with the
+    // list route's parameter names. The body parses to { object: "count", count,
+    // url }.
+    let signer = "b".repeat(64);
+    let body = serde_json::json!({
+        "object": "count",
+        "count": 4242,
+        "url": "/api/v1/records/count",
+    });
+    let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
+    let (client, ptr) = client_with("http://test/api/v1", Some(&bearer_key()), transport);
+
+    let input = cardanowall::client::RecordsCountInput {
+        signer: signer.clone(),
+        scheme: Some(1),
+        sealed: Some(true),
+        from_block: Some(100),
+        to_block: Some(200),
+        from_time: Some("2026-01-01T00:00:00Z".to_string()),
+        to_time: Some("2026-02-01T00:00:00Z".to_string()),
+    };
+    let out = client.records().count(&input).unwrap();
+
+    assert_eq!(out.object, "count");
+    assert_eq!(out.count, 4242);
+    assert_eq!(out.url, "/api/v1/records/count");
+
+    let req = mock(ptr).first();
+    assert_eq!(req.method, HttpMethod::Get);
+    let url = req.url;
+    assert!(url.starts_with("http://test/api/v1/records/count?"), "url was {url}");
+    assert!(url.contains(&format!("signer={signer}")));
+    assert!(url.contains("scheme=1"));
+    assert!(url.contains("sealed=true"));
+    assert!(url.contains("from_block=100"));
+    assert!(url.contains("to_block=200"));
+    // Time values are percent-encoded the URLSearchParams way (':' -> %3A).
+    assert!(url.contains("from_time=2026-01-01T00%3A00%3A00Z"));
+    assert!(url.contains("to_time=2026-02-01T00%3A00%3A00Z"));
+}
+
+#[test]
+fn records_count_minimal_input_sends_only_the_signer() {
+    let signer = "c".repeat(64);
+    let body = serde_json::json!({ "object": "count", "count": 0, "url": "/api/v1/records/count" });
+    let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
+    let (client, ptr) = client_with("http://test/api/v1", Some(&bearer_key()), transport);
+
+    let out = client
+        .records()
+        .count(&cardanowall::client::RecordsCountInput::new(signer.clone()))
+        .unwrap();
+    assert_eq!(out.count, 0);
+
+    let url = mock(ptr).first().url;
+    assert!(url.ends_with(&format!("/records/count?signer={signer}")), "url was {url}");
+    assert!(!url.contains("scheme"));
+    assert!(!url.contains("sealed"));
+}
+
+#[test]
+fn records_count_surfaces_validation_failed_without_a_valid_signer() {
+    // The gateway 422s a count whose signer is missing/invalid; the client
+    // surfaces that as a typed error (the SDK always sends a signer string, so
+    // this exercises the gateway rejecting a malformed one).
+    let body = problem_body(serde_json::json!({
+        "status": 422, "code": "validation-failed",
+        "detail": "signer must be 64 lowercase hex characters (a 32-byte Ed25519 key)",
+    }));
+    let transport = Box::new(MockTransport::single(StubResponse::json(422, body)));
+    let (client, _) = client_with("http://test/api/v1", Some(&bearer_key()), transport);
+    let err = http_err(
+        client
+            .records()
+            .count(&cardanowall::client::RecordsCountInput::new("not-hex"))
+            .unwrap_err(),
+    );
+    assert_eq!(err.http_status(), 422);
+    assert_eq!(err.code(), "validation-failed");
+}
+
+// ---------------------------------------------------------------------------
+// Quote breakdown (additive deserialize)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn quote_parses_the_optional_breakdown_when_present() {
+    // A breakdown-exposing gateway returns the additive fields; they parse onto
+    // the optional QuoteResponse fields without disturbing the always-present
+    // opaque token.
+    let body = serde_json::json!({
+        "quote_id": QUOTE_ID,
+        "amount": "1250000",
+        "currency": "USD",
+        "expires_at": "2026-06-15T00:15:00Z",
+        "usd_micros": "1250000",
+        "breakdown": {
+            "network_usd_micros": "171617",
+            "storage_usd_micros": "1000000",
+            "service_usd_micros": "78383",
+        },
+        "margin_pct": 0.07,
+        "margin_source": "operator-default",
+        "fx_age_seconds": 42,
+    });
+    let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
+    let (client, _) = client_with("http://test/api/v1", Some(&bearer_key()), transport);
+    let q = client
+        .poe()
+        .quote(&cardanowall::client::QuoteInput {
+            record_bytes: 1,
+            recipient_count: 0,
+            file_bytes_total: 0,
+        })
+        .unwrap();
+
+    assert_eq!(q.quote_id, QUOTE_ID);
+    assert_eq!(q.amount, "1250000");
+    assert_eq!(q.usd_micros.as_deref(), Some("1250000"));
+    let bd = q.breakdown.expect("breakdown present");
+    assert_eq!(bd.network_usd_micros, "171617");
+    assert_eq!(bd.storage_usd_micros, "1000000");
+    assert_eq!(bd.service_usd_micros, "78383");
+    assert_eq!(q.margin_pct, Some(0.07));
+    assert_eq!(q.margin_source.as_deref(), Some("operator-default"));
+    assert_eq!(q.fx_age_seconds, Some(42));
+}
+
+#[test]
+fn quote_without_a_breakdown_still_parses_with_none_fields() {
+    // A non-breakdown gateway returns only the opaque token; the additive fields
+    // default to None, so an older/minimal gateway is parsed unchanged.
+    let body = serde_json::json!({
+        "quote_id": QUOTE_ID,
+        "amount": "1250000",
+        "currency": "USD",
+        "expires_at": "2026-06-15T00:15:00Z",
+    });
+    let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
+    let (client, _) = client_with("http://test/api/v1", Some(&bearer_key()), transport);
+    let q = client
+        .poe()
+        .quote(&cardanowall::client::QuoteInput {
+            record_bytes: 1,
+            recipient_count: 0,
+            file_bytes_total: 0,
+        })
+        .unwrap();
+    assert_eq!(q.quote_id, QUOTE_ID);
+    assert!(q.usd_micros.is_none());
+    assert!(q.breakdown.is_none());
+    assert!(q.margin_pct.is_none());
+    assert!(q.margin_source.is_none());
+    assert!(q.fx_age_seconds.is_none());
 }

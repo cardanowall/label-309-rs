@@ -39,7 +39,11 @@ pub const CHUNK_SIZE: usize = 65536;
 pub const TAG_SIZE: usize = 16;
 
 /// A full sealed chunk: [`CHUNK_SIZE`] plaintext bytes plus the tag.
-const SEALED_CHUNK_SIZE: usize = CHUNK_SIZE + TAG_SIZE;
+///
+/// Exposed so the streaming wrappers re-chunk a sealed STREAM at the exact
+/// boundary the chunk machine produces, rather than restating the `65552`
+/// literal at every call site.
+pub const SEALED_CHUNK_SIZE: usize = CHUNK_SIZE + TAG_SIZE;
 
 /// The chunk counter is an 11-byte (88-bit) big-endian integer, so a stream
 /// admits at most `2^88` chunks — far above any realisable payload.

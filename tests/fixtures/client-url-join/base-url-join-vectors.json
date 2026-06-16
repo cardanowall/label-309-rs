@@ -1,0 +1,257 @@
+{
+  "_comment": "SHARED cross-SDK base_url-join parity matrix. This file is mirrored BYTE-IDENTICALLY across the three Label 309 SDKs (label-309-ts, label-309-py, label-309-rs); each SDK ships its own self-contained copy because the three publish to separate repositories. Any edit here MUST be applied to all three copies in lockstep so the SDKs keep producing byte-identical request URLs. CONTRACT: the configured base_url carries the gateway's FULL version segment; the client trims surrounding ASCII whitespace, strips AT MOST ONE trailing slash, and appends the bare resource suffix by plain string concatenation (no URL() recomposition, no extra slash collapse, no injected '/api/' or version literal). expected_url = normalize(base_url) + suffix where normalize = trim then strip exactly one trailing slash. The 'double-slash' rows are load-bearing: a base ending in two slashes keeps exactly one (proving the strip removes at most one and never re-parses). The 'whitespace' rows pin the trim-before-join. The 'origin-only' rows prove the client injects NO version segment — the joined URL has no '/api/v1'. The suffix set is exactly the resource suffixes that exist in all three client modules (records list/get, account balance, and the poe quote/publish/publish-batch/uploads endpoints); endpoints that are not present in every SDK (e.g. the resumable upload session routes) are deliberately excluded.",
+  "cases": [
+    {
+      "name": "canonical__records-list",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/records",
+      "expected_url": "https://host.example/api/v1/records"
+    },
+    {
+      "name": "canonical__records-get",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_url": "https://host.example/api/v1/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "canonical__account-balance",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/account/balance",
+      "expected_url": "https://host.example/api/v1/account/balance"
+    },
+    {
+      "name": "canonical__poe-quote",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/poe/quote",
+      "expected_url": "https://host.example/api/v1/poe/quote"
+    },
+    {
+      "name": "canonical__poe-publish",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/poe/publish",
+      "expected_url": "https://host.example/api/v1/poe/publish"
+    },
+    {
+      "name": "canonical__poe-publish-batch",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/poe/publish-batch",
+      "expected_url": "https://host.example/api/v1/poe/publish-batch"
+    },
+    {
+      "name": "canonical__poe-uploads",
+      "base_url": "https://host.example/api/v1",
+      "suffix": "/poe/uploads",
+      "expected_url": "https://host.example/api/v1/poe/uploads"
+    },
+    {
+      "name": "trailing-slash__records-list",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/records",
+      "expected_url": "https://host.example/api/v1/records"
+    },
+    {
+      "name": "trailing-slash__records-get",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_url": "https://host.example/api/v1/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "trailing-slash__account-balance",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/account/balance",
+      "expected_url": "https://host.example/api/v1/account/balance"
+    },
+    {
+      "name": "trailing-slash__poe-quote",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/poe/quote",
+      "expected_url": "https://host.example/api/v1/poe/quote"
+    },
+    {
+      "name": "trailing-slash__poe-publish",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/poe/publish",
+      "expected_url": "https://host.example/api/v1/poe/publish"
+    },
+    {
+      "name": "trailing-slash__poe-publish-batch",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/poe/publish-batch",
+      "expected_url": "https://host.example/api/v1/poe/publish-batch"
+    },
+    {
+      "name": "trailing-slash__poe-uploads",
+      "base_url": "https://host.example/api/v1/",
+      "suffix": "/poe/uploads",
+      "expected_url": "https://host.example/api/v1/poe/uploads"
+    },
+    {
+      "name": "whitespace__records-list",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/records",
+      "expected_url": "https://host.example/api/v1/records"
+    },
+    {
+      "name": "whitespace__records-get",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_url": "https://host.example/api/v1/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "whitespace__account-balance",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/account/balance",
+      "expected_url": "https://host.example/api/v1/account/balance"
+    },
+    {
+      "name": "whitespace__poe-quote",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/poe/quote",
+      "expected_url": "https://host.example/api/v1/poe/quote"
+    },
+    {
+      "name": "whitespace__poe-publish",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/poe/publish",
+      "expected_url": "https://host.example/api/v1/poe/publish"
+    },
+    {
+      "name": "whitespace__poe-publish-batch",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/poe/publish-batch",
+      "expected_url": "https://host.example/api/v1/poe/publish-batch"
+    },
+    {
+      "name": "whitespace__poe-uploads",
+      "base_url": "  https://host.example/api/v1  ",
+      "suffix": "/poe/uploads",
+      "expected_url": "https://host.example/api/v1/poe/uploads"
+    },
+    {
+      "name": "double-slash__records-list",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/records",
+      "expected_url": "https://host.example/api/v1//records"
+    },
+    {
+      "name": "double-slash__records-get",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_url": "https://host.example/api/v1//records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "double-slash__account-balance",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/account/balance",
+      "expected_url": "https://host.example/api/v1//account/balance"
+    },
+    {
+      "name": "double-slash__poe-quote",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/poe/quote",
+      "expected_url": "https://host.example/api/v1//poe/quote"
+    },
+    {
+      "name": "double-slash__poe-publish",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/poe/publish",
+      "expected_url": "https://host.example/api/v1//poe/publish"
+    },
+    {
+      "name": "double-slash__poe-publish-batch",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/poe/publish-batch",
+      "expected_url": "https://host.example/api/v1//poe/publish-batch"
+    },
+    {
+      "name": "double-slash__poe-uploads",
+      "base_url": "https://host.example/api/v1//",
+      "suffix": "/poe/uploads",
+      "expected_url": "https://host.example/api/v1//poe/uploads"
+    },
+    {
+      "name": "proxied-prefix__records-list",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/records",
+      "expected_url": "https://host.example/prefix/api/v1/records"
+    },
+    {
+      "name": "proxied-prefix__records-get",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_url": "https://host.example/prefix/api/v1/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "proxied-prefix__account-balance",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/account/balance",
+      "expected_url": "https://host.example/prefix/api/v1/account/balance"
+    },
+    {
+      "name": "proxied-prefix__poe-quote",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/poe/quote",
+      "expected_url": "https://host.example/prefix/api/v1/poe/quote"
+    },
+    {
+      "name": "proxied-prefix__poe-publish",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/poe/publish",
+      "expected_url": "https://host.example/prefix/api/v1/poe/publish"
+    },
+    {
+      "name": "proxied-prefix__poe-publish-batch",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/poe/publish-batch",
+      "expected_url": "https://host.example/prefix/api/v1/poe/publish-batch"
+    },
+    {
+      "name": "proxied-prefix__poe-uploads",
+      "base_url": "https://host.example/prefix/api/v1",
+      "suffix": "/poe/uploads",
+      "expected_url": "https://host.example/prefix/api/v1/poe/uploads"
+    },
+    {
+      "name": "origin-only__records-list",
+      "base_url": "http://localhost:3000",
+      "suffix": "/records",
+      "expected_url": "http://localhost:3000/records"
+    },
+    {
+      "name": "origin-only__records-get",
+      "base_url": "http://localhost:3000",
+      "suffix": "/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_url": "http://localhost:3000/records/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "origin-only__account-balance",
+      "base_url": "http://localhost:3000",
+      "suffix": "/account/balance",
+      "expected_url": "http://localhost:3000/account/balance"
+    },
+    {
+      "name": "origin-only__poe-quote",
+      "base_url": "http://localhost:3000",
+      "suffix": "/poe/quote",
+      "expected_url": "http://localhost:3000/poe/quote"
+    },
+    {
+      "name": "origin-only__poe-publish",
+      "base_url": "http://localhost:3000",
+      "suffix": "/poe/publish",
+      "expected_url": "http://localhost:3000/poe/publish"
+    },
+    {
+      "name": "origin-only__poe-publish-batch",
+      "base_url": "http://localhost:3000",
+      "suffix": "/poe/publish-batch",
+      "expected_url": "http://localhost:3000/poe/publish-batch"
+    },
+    {
+      "name": "origin-only__poe-uploads",
+      "base_url": "http://localhost:3000",
+      "suffix": "/poe/uploads",
+      "expected_url": "http://localhost:3000/poe/uploads"
+    }
+  ]
+}

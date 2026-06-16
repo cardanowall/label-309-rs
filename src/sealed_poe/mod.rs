@@ -37,6 +37,7 @@ pub mod normalize;
 pub mod passphrase;
 pub mod slots;
 pub mod stream;
+pub mod stream_io;
 pub mod transcript;
 pub mod unwrap;
 pub mod wrap;
@@ -65,7 +66,12 @@ pub use slots::{
     AEAD_CHACHA20_POLY1305_STREAM64K, KEM_MLKEM768X25519, KEM_X25519,
 };
 pub use stream::{
-    stream_open, stream_seal, StreamError, StreamOpener, StreamSealer, CHUNK_SIZE, TAG_SIZE,
+    stream_open, stream_seal, StreamError, StreamOpener, StreamSealer, CHUNK_SIZE,
+    SEALED_CHUNK_SIZE, TAG_SIZE,
+};
+pub use stream_io::{
+    ecies_sealed_poe_seal_stream, ecies_sealed_poe_seal_stream_with_rng,
+    ecies_sealed_poe_unwrap_stream, StreamSealArgs, StreamUnwrapArgs, StreamUnwrapOutcome,
 };
 pub use transcript::{
     compute_passphrase_hash, compute_slots_hash, item_hashes_hash, passphrase_payload_key,

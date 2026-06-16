@@ -10,11 +10,12 @@
 //! and Python (`cardanowall-sdk`) SDKs and is pinned against the shared
 //! known-answer-test fixtures.
 
-// SHA-256 and SHA-3 ride the `digest` 0.11 traits (re-exported by `sha2` /
-// `sha3` 0.11). BLAKE2b rides the `digest` 0.10 traits (re-exported by
-// `blake2` 0.10). The two trait generations are deliberately kept apart — they
-// have incompatible `Digest`/`Update` traits, so we import each crate's own
-// `Digest` under a local alias rather than trying to unify them.
+// SHA-256 and SHA-3 ride the `digest` 0.11 traits (re-exported by `sha2` 0.11 /
+// `sha3` 0.12 / `shake` 0.1). BLAKE2b rides the `digest` 0.10 traits
+// (re-exported by `blake2` 0.10). The two trait generations are deliberately
+// kept apart — they have incompatible `Digest`/`Update` traits, so we import
+// each crate's own `Digest` under a local alias rather than trying to unify
+// them.
 use blake2::digest::consts::U32;
 use blake2::digest::Digest as Blake2Digest;
 use blake2::Blake2b;

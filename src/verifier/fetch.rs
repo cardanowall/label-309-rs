@@ -111,9 +111,10 @@ impl HttpPurpose {
 /// The closed set of HTTP methods the egress allows.
 ///
 /// `PUT` is admitted because the gateway's resumable-upload protocol uploads each
-/// chunk with an idempotent positional `PUT`; it carries the same deny-host /
-/// SSRF / protocol pre-flight every other method does, so the security boundary
-/// is unchanged. `DELETE`, `PATCH`, and the rest remain unrepresentable.
+/// chunk with an idempotent positional `PUT`, and `DELETE` because that protocol
+/// abandons a session with a `DELETE`; both carry the same deny-host / SSRF /
+/// protocol pre-flight every other method does, so the security boundary is
+/// unchanged. `PATCH` and the rest remain unrepresentable.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HttpMethod {
     /// HTTP `GET`.
@@ -122,6 +123,8 @@ pub enum HttpMethod {
     Post,
     /// HTTP `PUT` (idempotent positional chunk upload).
     Put,
+    /// HTTP `DELETE` (idempotent resumable-upload session abandon).
+    Delete,
 }
 
 impl HttpMethod {
@@ -132,6 +135,7 @@ impl HttpMethod {
             HttpMethod::Get => "GET",
             HttpMethod::Post => "POST",
             HttpMethod::Put => "PUT",
+            HttpMethod::Delete => "DELETE",
         }
     }
 }
@@ -450,7 +454,7 @@ impl Jitter for RandomJitter {
         let mut buf = [0u8; 8];
         // The OS CSPRNG. A failure here is unrecoverable for backoff timing, so a
         // mid-band fallback keeps the retry loop running rather than panicking.
-        let rand = match getrandom::getrandom(&mut buf) {
+        let rand = match getrandom::fill(&mut buf) {
             Ok(()) => (u64::from_le_bytes(buf) as f64) / (u64::MAX as f64),
             Err(_) => 0.5,
         };
@@ -642,6 +646,7 @@ pub fn parse_http_method(method: &str, url: &str) -> Result<HttpMethod, Outbound
         "GET" => Ok(HttpMethod::Get),
         "POST" => Ok(HttpMethod::Post),
         "PUT" => Ok(HttpMethod::Put),
+        "DELETE" => Ok(HttpMethod::Delete),
         other => Err(OutboundError::UnsupportedMethod {
             method: other.to_string(),
             url: url.to_string(),
@@ -764,6 +769,7 @@ impl FetchTransport for ReqwestTransport {
             HttpMethod::Get => reqwest::Method::GET,
             HttpMethod::Post => reqwest::Method::POST,
             HttpMethod::Put => reqwest::Method::PUT,
+            HttpMethod::Delete => reqwest::Method::DELETE,
         };
         let mut req = client.request(method, url);
         for (k, v) in &opts.headers {
@@ -1565,7 +1571,7 @@ mod tests {
 
     #[test]
     fn parse_method_rejects_methods_outside_the_allowlist() {
-        for m in ["DELETE", "PATCH", "HEAD", "OPTIONS"] {
+        for m in ["PATCH", "HEAD", "OPTIONS"] {
             let err = parse_http_method(m, "https://example.com/x").unwrap_err();
             assert_eq!(err.code(), "UNSUPPORTED_METHOD");
             match err {
@@ -1581,11 +1587,16 @@ mod tests {
             parse_http_method("POST", "https://x/").unwrap(),
             HttpMethod::Post
         );
-        // PUT is admitted for the resumable-upload chunk path; it rides the same
+        // PUT and DELETE are admitted for the resumable-upload protocol (a
+        // positional chunk PUT and a session-abandon DELETE); both ride the same
         // deny-host / SSRF pre-flight as GET and POST.
         assert_eq!(
             parse_http_method("PUT", "https://x/").unwrap(),
             HttpMethod::Put
+        );
+        assert_eq!(
+            parse_http_method("DELETE", "https://x/").unwrap(),
+            HttpMethod::Delete
         );
     }
 

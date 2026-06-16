@@ -1,11 +1,12 @@
 //! Cross-implementation parity tests for the RFC 9162 §2.1.1 SHA-256 Merkle
 //! subsystem and the canonical-CBOR leaves-list codec.
 //!
-//! Most known-answer vectors (roots, audit-path siblings, leaves-list CBOR
-//! bytes) are inlined in the TypeScript and Python reference suites and ported
-//! here byte-for-byte. The leaves-list reject taxonomy additionally has a shared
-//! JSON fixture (`merkle/leaves-list-negative.json`) that every SDK decodes and
-//! asserts the same error code against.
+//! The known-answer vectors (roots, audit-path siblings, leaves-list CBOR
+//! bytes) live in the shared conformance corpus and are loaded here, so a single
+//! source of truth drives every SDK rather than each one carrying its own copy.
+//! The leaves-list reject taxonomy has its own shared fixture
+//! (`merkle/leaves-list-negative.json`) that every SDK decodes and asserts the
+//! same error code against.
 
 mod common;
 
@@ -15,8 +16,10 @@ use cardanowall::merkle::{
     decode_leaves_list, encode_leaves_list, merkle_inclusion_proof, merkle_root, verify_inclusion,
     MerkleError, MerkleLeavesListErrorCode, LEAVES_LIST_FORMAT_V1, MERKLE_ALG_ID,
 };
+use serde_json::Value;
 
-/// The reference leaf input for index `i`: `SHA-256("merkle-leaf-{i}")`.
+/// The reference leaf input for index `i`: `SHA-256("merkle-leaf-{i}")`. Used by
+/// the negative-path and forged-payload tests that need fresh leaf digests.
 fn leaf_d(i: usize) -> [u8; 32] {
     sha256(format!("merkle-leaf-{i}").as_bytes())
 }
@@ -35,180 +38,118 @@ fn proof_hex(proof: &[[u8; 32]]) -> Vec<String> {
     proof.iter().map(|s| hex::encode(s)).collect()
 }
 
-// Pinned d_i leaf inputs (i = 0..6) from the reference KAT.
-const PINNED_DI: [&str; 7] = [
-    "b5e62a21038c1c2fdf28ad4d39ba6502e0568591c8647cac6998bfff67a25b3c",
-    "986aad6d251d450b9e7cd0c811e65bc95f95688060d963a83ab6505da350be56",
-    "27f4c2b7157b2e28b1a08e47fce1c3fa27a0f2c8a6760f5995c8a83c9cd1cacc",
-    "49707d9c71d5ebf72aaa3ada7a34e152d41811b345366681fc09849e8c634076",
-    "e1599f1d13ee839f0fe64c2d5697b9d098ea947053f2fd8033e93b5ea1da8970",
-    "7777a46ef6264ec24caf8239bea80bd6b3b1e38e9d3dc4f9daf6ce3722e8ba02",
-    "741c8f1001d6e807fac74c182d15f01fba2ed98375ca7a7cdc6257fdae97b621",
-];
+/// Decode a hex digest from a JSON string value into a 32-byte array.
+fn digest32(value: &Value) -> [u8; 32] {
+    let bytes = hex::decode(value.as_str().expect("digest hex string")).expect("digest hex");
+    let mut out = [0u8; 32];
+    assert_eq!(bytes.len(), 32, "digest must be 32 bytes");
+    out.copy_from_slice(&bytes);
+    out
+}
+
+/// Decode an array of hex digests from a JSON array value.
+fn digest_list(value: &Value) -> Vec<[u8; 32]> {
+    value
+        .as_array()
+        .expect("digest array")
+        .iter()
+        .map(digest32)
+        .collect()
+}
 
 #[test]
 fn algorithm_identifier_is_canonical() {
     assert_eq!(MERKLE_ALG_ID, "rfc9162-sha256");
 }
 
+// === Root known-answer vectors (sizes 1,2,3,4,5,7) ===
 #[test]
-fn leaf_inputs_match_pinned_d_i() {
-    for (i, &pinned) in PINNED_DI.iter().enumerate() {
-        assert_eq!(hx(leaf_d(i)), pinned, "d_{i} mismatch");
+fn root_kat_reproduces_every_pinned_root() {
+    let corpus = common::read_fixture_json(
+        &common::label309_conformance().join("merkle/rfc9162-sha256-root-kat.json"),
+    );
+    let vectors = corpus["vectors"].as_array().expect("root-kat vectors");
+    assert!(!vectors.is_empty(), "the root KAT carries vectors");
+
+    for vector in vectors {
+        let name = vector["name"].as_str().expect("vector name");
+        let leaves = digest_list(&vector["leaves"]);
+        let leaf_count = vector["leaf_count"].as_u64().expect("leaf_count") as usize;
+        assert_eq!(
+            leaf_count,
+            leaves.len(),
+            "{name}: leaf_count == leaves.len()"
+        );
+
+        let root = merkle_root(&leaves).unwrap();
+        assert_eq!(
+            hx(root),
+            vector["root"].as_str().expect("root hex"),
+            "{name}: root"
+        );
+
+        // A single-leaf root is SHA-256(0x00 || d_0), never the bare leaf digest
+        // (CVE-2012-2459 prefix separation).
+        if leaves.len() == 1 {
+            assert_ne!(hx(root), hx(leaves[0]), "{name}: leaf-prefix separation");
+        }
+
+        // Every leaf's own inclusion proof recomputes to this root.
+        for (i, leaf) in leaves.iter().enumerate() {
+            let proof = merkle_inclusion_proof(&leaves, i).unwrap();
+            assert!(
+                verify_inclusion(leaf, i, leaves.len(), &proof, &root),
+                "{name}: leaf {i} did not verify"
+            );
+        }
     }
 }
 
-// === 1-leaf tree ===
+// === Inclusion-proof known-answer vectors (sibling paths per position) ===
 #[test]
-fn one_leaf_tree() {
-    let leaves = [leaf_d(0)];
-    let expected_root = "b696b144b6e6815fb3e83cbd501bca5b3e509fd0d309d582a8329718b9516ccc";
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), expected_root);
+fn inclusion_proof_kat_reproduces_every_pinned_sibling_path() {
+    let corpus = common::read_fixture_json(
+        &common::label309_conformance().join("merkle/rfc9162-sha256-inclusion-proof-kat.json"),
+    );
+    let trees = corpus["trees"].as_array().expect("inclusion-proof trees");
+    assert!(!trees.is_empty(), "the inclusion-proof KAT carries trees");
 
-    let proof = merkle_inclusion_proof(&leaves, 0).unwrap();
-    assert_eq!(proof.len(), 0);
-    assert!(verify_inclusion(&leaves[0], 0, 1, &proof, &root));
+    for tree in trees {
+        let name = tree["name"].as_str().expect("tree name");
+        let leaves = digest_list(&tree["leaves"]);
+        let tree_size = tree["tree_size"].as_u64().expect("tree_size") as usize;
+        assert_eq!(tree_size, leaves.len(), "{name}: tree_size == leaves.len()");
 
-    // A single-leaf root is SHA-256(0x00 || d_0), never the bare leaf digest
-    // (CVE-2012-2459 prefix separation).
-    assert_ne!(hx(root), hx(leaf_d(0)));
-}
+        let root = merkle_root(&leaves).unwrap();
+        assert_eq!(
+            hx(root),
+            tree["root"].as_str().expect("tree root"),
+            "{name}: root"
+        );
 
-// === 2-leaf tree ===
-#[test]
-fn two_leaf_tree() {
-    let leaves = [leaf_d(0), leaf_d(1)];
-    let expected_root = "f44b533747be7db04b33260c722d24b7e8bc9231511cc1dd291bb9134cd9aaee";
-    let expected_proofs: [Vec<&str>; 2] = [
-        vec!["7c55458ad0046eaadabc4a77b312225471068b6e98aae84050312dd49fbd5db5"],
-        vec!["b696b144b6e6815fb3e83cbd501bca5b3e509fd0d309d582a8329718b9516ccc"],
-    ];
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), expected_root);
+        for inclusion in tree["inclusions"].as_array().expect("inclusions") {
+            let index = inclusion["index"].as_u64().expect("index") as usize;
+            let expected_leaf = digest32(&inclusion["leaf"]);
+            assert_eq!(leaves[index], expected_leaf, "{name}[{index}]: leaf");
 
-    for i in 0..2 {
-        let proof = merkle_inclusion_proof(&leaves, i).unwrap();
-        assert_eq!(proof_hex(&proof), expected_proofs[i]);
-        assert!(verify_inclusion(&leaves[i], i, leaves.len(), &proof, &root));
-    }
-}
+            let expected_path: Vec<String> = inclusion["proof"]
+                .as_array()
+                .expect("proof array")
+                .iter()
+                .map(|v| v.as_str().expect("proof sibling hex").to_string())
+                .collect();
 
-// === 3-leaf tree (split 3 -> 2+1) ===
-#[test]
-fn three_leaf_tree() {
-    let leaves = [leaf_d(0), leaf_d(1), leaf_d(2)];
-    let expected_root = "2c5230105235655a072f552fddcbc78bf5a76e16476c882e8199f9fce20a8f55";
-    let l0 = "b696b144b6e6815fb3e83cbd501bca5b3e509fd0d309d582a8329718b9516ccc";
-    let l1 = "7c55458ad0046eaadabc4a77b312225471068b6e98aae84050312dd49fbd5db5";
-    let l2 = "807ffa56924d0647034b00f8ce5517917ab065335048a1ea53f920c2274a2890";
-    let h01 = "f44b533747be7db04b33260c722d24b7e8bc9231511cc1dd291bb9134cd9aaee";
-    let expected_proofs: [Vec<&str>; 3] = [vec![l1, l2], vec![l0, l2], vec![h01]];
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), expected_root);
-
-    for i in 0..3 {
-        let proof = merkle_inclusion_proof(&leaves, i).unwrap();
-        assert_eq!(proof_hex(&proof), expected_proofs[i]);
-        assert!(verify_inclusion(&leaves[i], i, leaves.len(), &proof, &root));
-    }
-}
-
-// === 4-leaf tree (baseline, split 4 -> 2+2) ===
-#[test]
-fn four_leaf_tree() {
-    let leaves = [leaf_d(0), leaf_d(1), leaf_d(2), leaf_d(3)];
-    let expected_root = "93a86cdff4f26f1a7c9793cc7c3ce107102570a81a323902617f7c13670582ee";
-    let l0 = "b696b144b6e6815fb3e83cbd501bca5b3e509fd0d309d582a8329718b9516ccc";
-    let l1 = "7c55458ad0046eaadabc4a77b312225471068b6e98aae84050312dd49fbd5db5";
-    let l2 = "807ffa56924d0647034b00f8ce5517917ab065335048a1ea53f920c2274a2890";
-    let l3 = "2c03e3ac9e4cf8ec8b505361e892e257ca59d91fa6a3b4741de9cd5962b62737";
-    let h01 = "f44b533747be7db04b33260c722d24b7e8bc9231511cc1dd291bb9134cd9aaee";
-    let h23 = "1e4e22ce45fea38703a4c93994677fdb3b2602650c835bb7448c81a68a561363";
-    let expected_proofs: [Vec<&str>; 4] =
-        [vec![l1, h23], vec![l0, h23], vec![l3, h01], vec![l2, h01]];
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), expected_root);
-
-    for i in 0..4 {
-        let proof = merkle_inclusion_proof(&leaves, i).unwrap();
-        assert_eq!(proof_hex(&proof), expected_proofs[i]);
-        assert!(verify_inclusion(&leaves[i], i, leaves.len(), &proof, &root));
-    }
-}
-
-// === 5-leaf tree (split 5 -> 4+1, odd recursion edge) ===
-#[test]
-fn five_leaf_tree() {
-    let leaves = [leaf_d(0), leaf_d(1), leaf_d(2), leaf_d(3), leaf_d(4)];
-    let expected_root = "03928445a6003ca5f6a925cddb04a508116b06cf80037dca9e579ed41122fb9f";
-    let l0 = "b696b144b6e6815fb3e83cbd501bca5b3e509fd0d309d582a8329718b9516ccc";
-    let l1 = "7c55458ad0046eaadabc4a77b312225471068b6e98aae84050312dd49fbd5db5";
-    let l2 = "807ffa56924d0647034b00f8ce5517917ab065335048a1ea53f920c2274a2890";
-    let l3 = "2c03e3ac9e4cf8ec8b505361e892e257ca59d91fa6a3b4741de9cd5962b62737";
-    let l4 = "57fe46aac0fcd5d1392884b3523724bd145dcf9f70aa176318808ea56a9f8009";
-    let h01 = "f44b533747be7db04b33260c722d24b7e8bc9231511cc1dd291bb9134cd9aaee";
-    let h23 = "1e4e22ce45fea38703a4c93994677fdb3b2602650c835bb7448c81a68a561363";
-    let h0123 = "93a86cdff4f26f1a7c9793cc7c3ce107102570a81a323902617f7c13670582ee";
-    let expected_proofs: [Vec<&str>; 5] = [
-        vec![l1, h23, l4],
-        vec![l0, h23, l4],
-        vec![l3, h01, l4],
-        vec![l2, h01, l4],
-        vec![h0123],
-    ];
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), expected_root);
-
-    for i in 0..5 {
-        let proof = merkle_inclusion_proof(&leaves, i).unwrap();
-        assert_eq!(proof_hex(&proof), expected_proofs[i]);
-        assert!(verify_inclusion(&leaves[i], i, leaves.len(), &proof, &root));
-    }
-}
-
-// === 7-leaf tree (split 7 -> 4+3; right subtree splits 3 -> 2+1) ===
-#[test]
-fn seven_leaf_tree() {
-    let leaves = [
-        leaf_d(0),
-        leaf_d(1),
-        leaf_d(2),
-        leaf_d(3),
-        leaf_d(4),
-        leaf_d(5),
-        leaf_d(6),
-    ];
-    let expected_root = "90306bf5dca8f89e7b253471148f3795e7a6c857f04924c8309d81375e79d987";
-    let l0 = "b696b144b6e6815fb3e83cbd501bca5b3e509fd0d309d582a8329718b9516ccc";
-    let l1 = "7c55458ad0046eaadabc4a77b312225471068b6e98aae84050312dd49fbd5db5";
-    let l2 = "807ffa56924d0647034b00f8ce5517917ab065335048a1ea53f920c2274a2890";
-    let l3 = "2c03e3ac9e4cf8ec8b505361e892e257ca59d91fa6a3b4741de9cd5962b62737";
-    let l4 = "57fe46aac0fcd5d1392884b3523724bd145dcf9f70aa176318808ea56a9f8009";
-    let l5 = "f03cea80d0e99780698a755e4684555e821c2af821f97058926caf8e2d7d2969";
-    let l6 = "5bd8bd33c7e3c41a98511068b7dfea418b5a6c84ff53767a1c7c0565efb651f4";
-    let h01 = "f44b533747be7db04b33260c722d24b7e8bc9231511cc1dd291bb9134cd9aaee";
-    let h23 = "1e4e22ce45fea38703a4c93994677fdb3b2602650c835bb7448c81a68a561363";
-    let h45 = "02c09225565b2fb10fd263edc6951200c743b9121192f68ba7967ffc8a6f1128";
-    let h0123 = "93a86cdff4f26f1a7c9793cc7c3ce107102570a81a323902617f7c13670582ee";
-    // The right-subtree (leaves 4,5,6) root that hangs off the top-level node.
-    let h456 = "32f86b4111e8859b214cf501d1091023da954f169d8916dce42aa469c5795d17";
-    let expected_proofs: [Vec<&str>; 7] = [
-        vec![l1, h23, h456],
-        vec![l0, h23, h456],
-        vec![l3, h01, h456],
-        vec![l2, h01, h456],
-        vec![l5, l6, h0123],
-        vec![l4, l6, h0123],
-        vec![h45, h0123],
-    ];
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), expected_root);
-
-    for i in 0..7 {
-        let proof = merkle_inclusion_proof(&leaves, i).unwrap();
-        assert_eq!(proof_hex(&proof), expected_proofs[i], "proof[{i}]");
-        assert!(verify_inclusion(&leaves[i], i, leaves.len(), &proof, &root));
+            let proof = merkle_inclusion_proof(&leaves, index).unwrap();
+            assert_eq!(
+                proof_hex(&proof),
+                expected_path,
+                "{name}[{index}]: audit path"
+            );
+            assert!(
+                verify_inclusion(&leaves[index], index, leaves.len(), &proof, &root),
+                "{name}[{index}]: did not verify"
+            );
+        }
     }
 }
 
@@ -343,52 +284,96 @@ fn verify_rejects_proof_longer_than_depth() {
 // Leaves-list codec
 // ---------------------------------------------------------------------------
 
-// Pinned 275-byte canonical-CBOR leaves-list for the 4-leaf fixture.
-const PINNED_CBOR_HEX: &str = concat!(
-    "a664726f6f74582093a86cdff4f26f1a7c9793cc7c3ce107102570a81a323902617f7c13670582ee",
-    "66666f726d6174781c63617264616e6f2d706f652d6d65726b6c652d6c65617665732d7631666c65",
-    "61766573845820b5e62a21038c1c2fdf28ad4d39ba6502e0568591c8647cac6998bfff67a25b3c58",
-    "20986aad6d251d450b9e7cd0c811e65bc95f95688060d963a83ab6505da350be56582027f4c2b715",
-    "7b2e28b1a08e47fce1c3fa27a0f2c8a6760f5995c8a83c9cd1cacc582049707d9c71d5ebf72aaa3a",
-    "da7a34e152d41811b345366681fc09849e8c634076686c6561665f616c6768736861322d32353668",
-    "747265655f616c676e726663393136322d7368613235366a6c6561665f636f756e7404",
-);
-
-const PINNED_ROOT_HEX: &str = "93a86cdff4f26f1a7c9793cc7c3ce107102570a81a323902617f7c13670582ee";
-
 #[test]
 fn leaves_list_format_constant() {
     assert_eq!(LEAVES_LIST_FORMAT_V1, "cardano-poe-merkle-leaves-v1");
 }
 
+// === Leaves-list canonical-CBOR known-answer vectors ===
+//
+// Each vector pins the canonical encoding both with and without the optional
+// `leaf_alg` key; the encoder must reproduce both byte-for-byte, and the decoder
+// must round-trip each back to the same fields.
 #[test]
-fn encode_leaves_list_matches_pinned_bytes() {
-    let leaves = [leaf_d(0), leaf_d(1), leaf_d(2), leaf_d(3)];
-    let root = merkle_root(&leaves).unwrap();
-    assert_eq!(hx(root), PINNED_ROOT_HEX);
+fn leaves_list_kat_encodes_and_decodes_pinned_bytes() {
+    let corpus = common::read_fixture_json(
+        &common::label309_conformance().join("merkle/leaves-list-kat.json"),
+    );
+    let vectors = corpus["vectors"].as_array().expect("leaves-list vectors");
+    assert!(!vectors.is_empty(), "the leaves-list KAT carries vectors");
 
-    let bytes = encode_leaves_list(&leaves, &root, Some("sha2-256")).unwrap();
-    assert_eq!(bytes.len(), 275);
-    assert_eq!(hex::encode(&bytes), PINNED_CBOR_HEX);
-}
+    for vector in vectors {
+        let name = vector["name"].as_str().expect("vector name");
+        let leaves = digest_list(&vector["leaves"]);
+        let leaf_count = vector["leaf_count"].as_u64().expect("leaf_count") as usize;
+        assert_eq!(
+            leaf_count,
+            leaves.len(),
+            "{name}: leaf_count == leaves.len()"
+        );
+        let leaf_alg = vector["leaf_alg"].as_str().expect("leaf_alg");
 
-#[test]
-fn decode_leaves_list_parses_pinned_bytes() {
-    let decoded = decode_leaves_list(&hex::decode(PINNED_CBOR_HEX).unwrap()).unwrap();
-    assert_eq!(decoded.format, LEAVES_LIST_FORMAT_V1);
-    assert_eq!(decoded.tree_alg, "rfc9162-sha256");
-    assert_eq!(hx(decoded.root), PINNED_ROOT_HEX);
-    assert_eq!(decoded.leaf_count, 4);
-    assert_eq!(decoded.leaf_alg.as_deref(), Some("sha2-256"));
-    assert_eq!(decoded.leaves.len(), 4);
-    let expected_leaves = [
-        "b5e62a21038c1c2fdf28ad4d39ba6502e0568591c8647cac6998bfff67a25b3c",
-        "986aad6d251d450b9e7cd0c811e65bc95f95688060d963a83ab6505da350be56",
-        "27f4c2b7157b2e28b1a08e47fce1c3fa27a0f2c8a6760f5995c8a83c9cd1cacc",
-        "49707d9c71d5ebf72aaa3ada7a34e152d41811b345366681fc09849e8c634076",
-    ];
-    for (i, &expected) in expected_leaves.iter().enumerate() {
-        assert_eq!(hx(decoded.leaves[i]), expected);
+        let root = merkle_root(&leaves).unwrap();
+        assert_eq!(
+            hx(root),
+            vector["root"].as_str().expect("root hex"),
+            "{name}: root"
+        );
+
+        // Encode matches the pinned bytes, both without and with the optional
+        // leaf_alg key.
+        let no_alg = encode_leaves_list(&leaves, &root, None).unwrap();
+        assert_eq!(
+            hex::encode(&no_alg),
+            vector["cbor_hex_no_leaf_alg"]
+                .as_str()
+                .expect("cbor_hex_no_leaf_alg"),
+            "{name}: encode without leaf_alg"
+        );
+        let with_alg = encode_leaves_list(&leaves, &root, Some(leaf_alg)).unwrap();
+        assert_eq!(
+            hex::encode(&with_alg),
+            vector["cbor_hex_with_leaf_alg"]
+                .as_str()
+                .expect("cbor_hex_with_leaf_alg"),
+            "{name}: encode with leaf_alg"
+        );
+
+        // Decode of the pinned bytes recomputes the root and recovers the fields.
+        let decoded_no_alg = decode_leaves_list(&no_alg).unwrap();
+        assert_eq!(decoded_no_alg.format, LEAVES_LIST_FORMAT_V1);
+        assert_eq!(decoded_no_alg.tree_alg, "rfc9162-sha256");
+        assert_eq!(decoded_no_alg.root, root, "{name}: decoded root (no alg)");
+        assert_eq!(decoded_no_alg.leaf_count, leaf_count);
+        assert_eq!(decoded_no_alg.leaf_alg, None);
+        assert_eq!(
+            decoded_no_alg.leaves, leaves,
+            "{name}: decoded leaves (no alg)"
+        );
+
+        let decoded_with_alg = decode_leaves_list(&with_alg).unwrap();
+        assert_eq!(
+            decoded_with_alg.root, root,
+            "{name}: decoded root (with alg)"
+        );
+        assert_eq!(decoded_with_alg.leaf_count, leaf_count);
+        assert_eq!(decoded_with_alg.leaf_alg.as_deref(), Some(leaf_alg));
+        assert_eq!(
+            decoded_with_alg.leaves, leaves,
+            "{name}: decoded leaves (with alg)"
+        );
+
+        // encode(decode(cbor)) == cbor: re-encoding the decoded form is stable.
+        let reencoded = encode_leaves_list(
+            &decoded_with_alg.leaves,
+            &decoded_with_alg.root,
+            decoded_with_alg.leaf_alg.as_deref(),
+        )
+        .unwrap();
+        assert_eq!(
+            reencoded, with_alg,
+            "{name}: encode(decode(cbor)) round-trip"
+        );
     }
 }
 

@@ -1,7 +1,7 @@
 //! RFC 7807 / RFC 9457 `application/problem+json` envelope and the typed error
 //! catalogue the client raises on every non-2xx response.
 //!
-//! Every gateway `/api/v1/*` route emits the canonical shape
+//! Every gateway data-plane route emits the canonical shape
 //!
 //! ```json
 //! {

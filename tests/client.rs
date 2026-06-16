@@ -19,11 +19,11 @@ use std::sync::Mutex;
 use cardanowall::client::{
     parse_http_error, AccountBalance, ClientError, ClientResponse, ClientTransport, HttpErrorKind,
     InvalidClientConfigError, Label309Client, Label309ClientConfig, Label309HttpError, MerkleLeaf,
-    ParseHttpErrorArgs, PoeVerifyInput, PublishBatchEntry, PublishBatchInput,
-    PublishBatchResultEntry, PublishContentInput, PublishInput, PublishMerkleInput,
-    PublishPrehashedInput, PublishSealedInput, QuoteInput, RecordSignature, RecordsListInput,
-    RequestBody, ResponseHeaders, ResumableSource, ResumableUploadError, ResumableUploadInput,
-    SealedKemChoice, Signer, SignerError, SupportedHashAlg, UploadsInput,
+    ParseHttpErrorArgs, PublishBatchEntry, PublishBatchInput, PublishBatchResultEntry,
+    PublishContentInput, PublishInput, PublishMerkleInput, PublishPrehashedInput,
+    PublishSealedInput, QuoteInput, RecordSignature, RecordsListInput, RequestBody,
+    ResponseHeaders, ResumableSource, ResumableUploadError, ResumableUploadInput, SealedKemChoice,
+    Signer, SignerError, SupportedHashAlg, UploadsInput,
 };
 use cardanowall::verifier::fetch::{HttpMethod, OutboundError};
 

@@ -56,7 +56,7 @@ fn poe_publish_request_matches_fixture() {
         202,
         publish_success_body(),
     )));
-    let (client, ptr) = client_with("http://test.example", Some(&key), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&key), transport);
 
     // 16 bytes of canonical-CBOR-shaped placeholder: the fixture pins the wire
     // shape, not record contents.
@@ -112,7 +112,7 @@ fn records_get_request_matches_fixture() {
         "metadata_cbor_base64": "oWNmb29jYmFy",
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, record_body)));
-    let (client, ptr) = client_with("http://test.example", Some(&key), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&key), transport);
 
     client.records().get(&"a".repeat(64)).unwrap();
 
@@ -143,7 +143,7 @@ fn records_list_request_emits_json_headers_and_no_body() {
     // (content-type + accept + bearer) and never a request body.
     let page = records_list_body(serde_json::json!([]), false, None);
     let transport = Box::new(MockTransport::single(StubResponse::json(200, page)));
-    let (client, ptr) = client_with("http://test.example", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test.example/api/v1",Some(&bearer_key()), transport);
 
     client.records().list(None).unwrap();
 
@@ -175,7 +175,7 @@ fn quote_posts_byte_counts_and_parses_opaque_price_lock() {
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
     // The caller names the gateway; the bearer is forwarded verbatim.
-    let (client, ptr) = client_with("https://gateway.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gateway.example.com/api/v1",Some(&bearer_key()), transport);
 
     let out = client
         .poe()
@@ -210,7 +210,7 @@ fn publish_hex_encodes_record_and_reports_dedup_hit_from_status() {
         202,
         publish_success_body(),
     )));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let out = client
         .poe()
         .publish(&PublishInput {
@@ -231,7 +231,7 @@ fn publish_hex_encodes_record_and_reports_dedup_hit_from_status() {
         200,
         publish_success_body(),
     )));
-    let (client, _) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, _) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let out = client
         .poe()
         .publish(&PublishInput {
@@ -250,7 +250,7 @@ fn publish_threads_idempotency_key_and_signatures() {
         202,
         publish_success_body(),
     )));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     client
         .poe()
         .publish(&PublishInput {
@@ -278,7 +278,7 @@ fn uploads_builds_multipart_with_target_and_indexed_files() {
         "uploads": [{ "idx": 0, "ok": true, "uri": format!("ar://{}", "A".repeat(43)), "sha256": "00".repeat(32), "bytes": 1 }],
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
-    let (client, ptr) = client_with("http://test", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("http://test/api/v1",Some(&bearer_key()), transport);
     let out = client
         .poe()
         .uploads(&UploadsInput {

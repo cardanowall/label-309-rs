@@ -9,6 +9,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > release. Pre-1.0 versions do not carry the stability guarantees of
 > [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-06-16
+
+### Added
+
+- Label 309 **inclusion certificates**: build and verify a self-contained, standalone-verifiable proof that a content hash was committed as a leaf of an RFC 9162 SHA-256 Merkle tree whose root was published on Cardano under metadata label 309, plus the COSE / RFC 9162-aligned CBOR proof and the bare IETF inclusion-proof encoding — byte-identical with the TypeScript and Python SDKs.
+- Streaming sealed-PoE seal/open for the segmented `chacha20-poly1305-stream64k` content layer, and a resumable upload client with progress, cancel, and abandon.
+
+### Breaking
+
+- Client base URLs now carry the full versioned API root (e.g. `https://gateway.example.com/api/v1`); the client appends only bare resource suffixes. Update your configuration to include the version segment.
+- `records::verify` has been removed. A Label 309 verdict must never require trusting a gateway; use this crate's standalone verifier instead.
+
+### Changed
+
+- Dependencies modernized: `sha3` 0.11 → 0.12 (with the `shake` XOF), `getrandom` 0.2 → 0.4, and `toml` 0.8 → 1.x, plus patch bumps to `zeroize`, `uuid`, and `rust_decimal`. No API or wire-format change.
+
 ## [0.6.0] - 2026-06-13
 
 ### Fixed

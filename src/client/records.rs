@@ -1,8 +1,11 @@
 //! The `client.records.*` namespace: the open-standard indexer read surface.
 //!
-//! - `GET  /api/v1/records` → [`list`](RecordsNamespace::list)
-//! - `GET  /api/v1/records/{tx_hash}` → [`get`](RecordsNamespace::get)
-//! - `POST /api/v1/records/{tx_hash}/verify` → [`verify`](RecordsNamespace::verify)
+//! Paths below are relative to the configured `base_url`, which carries the
+//! gateway's version segment (e.g. `https://host/api/vN`):
+//!
+//! - `GET  /records` → [`list`](RecordsNamespace::list)
+//! - `GET  /records/count` → [`count`](RecordsNamespace::count)
+//! - `GET  /records/{tx_hash}` → [`get`](RecordsNamespace::get)
 //!
 //! Auth is optional — chain data is public. When an API key is configured it is
 //! forwarded as `Authorization: Bearer …` so owner-only fields (currently
@@ -11,7 +14,9 @@
 
 use crate::client::http::{decode, json_headers, send, ClientError, NamespaceConfig};
 use crate::client::transport::RequestBody;
-use crate::client::types::{PoeVerifyInput, RecordResource, RecordsListInput, RecordsListResponse};
+use crate::client::types::{
+    RecordResource, RecordsCountInput, RecordsCountResponse, RecordsListInput, RecordsListResponse,
+};
 use crate::verifier::fetch::HttpMethod;
 
 /// The `client.records.*` namespace.
@@ -56,13 +61,9 @@ impl<'t> RecordsNamespace<'t> {
             }
         }
         let url = if query.is_empty() {
-            format!("{}/api/v1/records", self.config.base_url)
+            format!("{}/records", self.config.base_url)
         } else {
-            format!(
-                "{}/api/v1/records?{}",
-                self.config.base_url,
-                encode_query(&query)
-            )
+            format!("{}/records?{}", self.config.base_url, encode_query(&query))
         };
         let headers = json_headers(self.config.api_key.as_deref(), None);
         let response = send(
@@ -79,6 +80,55 @@ impl<'t> RecordsNamespace<'t> {
         Ok(page)
     }
 
+    /// Count the records matching a publisher-scoped filter.
+    ///
+    /// The count must be scoped to a `signer` (the gateway 422s without one): a
+    /// count's cost is the cardinality of the match, which only a signer key
+    /// bounds. The remaining filters (`scheme`, `sealed`, the block / time
+    /// windows) narrow the count but do not bound it, and share the list route's
+    /// grammar.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed [`ClientError`] on any non-2xx response — notably a 422
+    /// `validation-failed` if `signer` is absent or not 64 lowercase-hex
+    /// characters.
+    pub fn count(&self, input: &RecordsCountInput) -> Result<RecordsCountResponse, ClientError> {
+        let mut query: Vec<(String, String)> = vec![("signer".to_string(), input.signer.clone())];
+        if let Some(scheme) = input.scheme {
+            query.push(("scheme".to_string(), scheme.to_string()));
+        }
+        if input.sealed == Some(true) {
+            query.push(("sealed".to_string(), "true".to_string()));
+        }
+        if let Some(from_block) = input.from_block {
+            query.push(("from_block".to_string(), from_block.to_string()));
+        }
+        if let Some(to_block) = input.to_block {
+            query.push(("to_block".to_string(), to_block.to_string()));
+        }
+        if let Some(from_time) = &input.from_time {
+            query.push(("from_time".to_string(), from_time.clone()));
+        }
+        if let Some(to_time) = &input.to_time {
+            query.push(("to_time".to_string(), to_time.clone()));
+        }
+        let url = format!(
+            "{}/records/count?{}",
+            self.config.base_url,
+            encode_query(&query)
+        );
+        let headers = json_headers(self.config.api_key.as_deref(), None);
+        let response = send(
+            self.config.transport,
+            &url,
+            HttpMethod::Get,
+            &headers,
+            &RequestBody::None,
+        )?;
+        decode(&response.body)
+    }
+
     /// Fetch a record by Cardano transaction hash.
     ///
     /// # Errors
@@ -88,7 +138,7 @@ impl<'t> RecordsNamespace<'t> {
     /// does not own), and other typed errors on any non-2xx response.
     pub fn get(&self, tx_hash: &str) -> Result<RecordResource, ClientError> {
         let url = format!(
-            "{}/api/v1/records/{}",
+            "{}/records/{}",
             self.config.base_url,
             encode_path_segment(tx_hash)
         );
@@ -104,49 +154,6 @@ impl<'t> RecordsNamespace<'t> {
             &RequestBody::None,
         )?;
         decode(&response.body)
-    }
-
-    /// Run the canonical Label 309 verifier against the record at `tx_hash`.
-    ///
-    /// Returns the verify report as a JSON value. The report is the serialized
-    /// `VerifyReport` the standalone verifier emits — the gateway returns it
-    /// verbatim. The client exposes the JSON document directly (rather than the
-    /// in-process verifier type, which carries non-deserializable fields).
-    ///
-    /// This is the hosted PUBLIC verifier: it accepts no decryption
-    /// credentials, and sealed items report as unverifiable without
-    /// decryption. To verify as a recipient (decrypt + plaintext-hash
-    /// recheck), run the `verifier` module locally with its `decryption`
-    /// input — keys never leave the process. Optional
-    /// `fetch_content: Some(false)` skips content re-fetching; affected
-    /// claims report `not_checked`.
-    ///
-    /// # Errors
-    ///
-    /// Returns a typed [`ClientError`] on any non-2xx response.
-    pub fn verify(
-        &self,
-        tx_hash: &str,
-        input: Option<&PoeVerifyInput>,
-    ) -> Result<serde_json::Value, ClientError> {
-        let body = verify_input_to_json(input);
-        let url = format!(
-            "{}/api/v1/records/{}/verify",
-            self.config.base_url,
-            encode_path_segment(tx_hash)
-        );
-        let headers = json_headers(self.config.api_key.as_deref(), None);
-        let response = send(
-            self.config.transport,
-            &url,
-            HttpMethod::Post,
-            &headers,
-            &RequestBody::Json(serde_json::to_string(&body).expect("verify body serialises")),
-        )?;
-        if response.body.is_empty() {
-            return Ok(serde_json::Value::Null);
-        }
-        serde_json::from_slice(&response.body).map_err(|e| ClientError::Decode(e.to_string()))
     }
 }
 
@@ -165,21 +172,6 @@ fn derive_tip_block_height(records: &[RecordResource]) -> Option<u64> {
                 .map(|bh| bh.saturating_add(r.num_confirmations).saturating_sub(1))
         })
         .max()
-}
-
-/// Lower a [`PoeVerifyInput`] to its JSON wire shape (`{}` when `None`).
-fn verify_input_to_json(input: Option<&PoeVerifyInput>) -> serde_json::Value {
-    let Some(input) = input else {
-        return serde_json::Value::Object(serde_json::Map::new());
-    };
-    let mut map = serde_json::Map::new();
-    if let Some(fetch_content) = input.fetch_content {
-        map.insert(
-            "fetch_content".to_string(),
-            serde_json::Value::Bool(fetch_content),
-        );
-    }
-    serde_json::Value::Object(map)
 }
 
 /// Encode an ordered query into a `key=value&…` string, percent-encoding values

@@ -206,6 +206,7 @@ impl FetchTransport for HeaderCapturingTransport {
             HttpMethod::Get => reqwest::Method::GET,
             HttpMethod::Post => reqwest::Method::POST,
             HttpMethod::Put => reqwest::Method::PUT,
+            HttpMethod::Delete => reqwest::Method::DELETE,
         };
         let mut req = client.request(method, url);
         for (k, v) in &opts.headers {

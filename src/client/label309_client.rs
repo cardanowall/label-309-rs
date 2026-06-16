@@ -3,7 +3,11 @@
 //! The client targets any Label 309 gateway. The caller supplies the target
 //! directly, mirroring the reference SDKs:
 //!
-//! - `base_url` is required: it is used verbatim (one trailing slash stripped).
+//! - `base_url` is required: the FULL base including the gateway's version
+//!   segment (e.g. `https://host/api/vN`, or a proxied `https://host/prefix/api/vN`).
+//!   It is used verbatim (one trailing slash stripped) and the resource suffix
+//!   (`/records`, `/poe/quote`, …) is appended to it, so the version lives in the
+//!   configured base and a future gateway version is reached by configuring it.
 //!   The client never infers or defaults a host, so it is bound to no specific
 //!   deployment.
 //! - `api_key` is an optional opaque bearer. Any string is accepted as-is and
@@ -42,17 +46,23 @@ pub struct Label309ClientConfig {
     /// An opaque token: any string is accepted and never validated or parsed.
     /// Omit it for an anonymous, read-only client.
     pub api_key: Option<String>,
-    /// The gateway base URL. Required; used verbatim with one trailing slash
-    /// stripped.
+    /// The gateway base URL, including its version segment (e.g.
+    /// `https://host/api/vN`). Required; used verbatim with one trailing slash
+    /// stripped, then the resource suffix is appended.
     pub base_url: Option<String>,
 }
 
 /// Resolve the base URL from the config: `base_url` is required and non-empty.
+///
+/// Leading/trailing ASCII whitespace is trimmed first, so a whitespace-only
+/// base is rejected here and the surviving value matches the other SDKs
+/// byte-for-byte before [`strip_trailing_slash`] runs.
 fn resolve_base_url(config: &Label309ClientConfig) -> Result<String, InvalidClientConfigError> {
-    match &config.base_url {
-        Some(base_url) if !base_url.is_empty() => Ok(base_url.clone()),
+    match config.base_url.as_deref().map(str::trim) {
+        Some(base_url) if !base_url.is_empty() => Ok(base_url.to_string()),
         _ => Err(InvalidClientConfigError(
-            "Label309Client: base_url is required. Pass the gateway base URL \
+            "Label309Client: base_url is required. Pass the full gateway base URL \
+             including its version segment (e.g. https://host/api/vN) \
              (the api_key is an optional opaque bearer; omit it for read-only access)."
                 .to_string(),
         )),
@@ -125,7 +135,7 @@ impl Label309Client {
         PoeNamespace::new(self.namespace_config())
     }
 
-    /// The `records` namespace (record list + fetch + verify).
+    /// The `records` namespace (record list + fetch).
     #[must_use]
     pub fn records(&self) -> RecordsNamespace<'_> {
         RecordsNamespace::new(self.namespace_config())

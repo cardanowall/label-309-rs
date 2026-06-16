@@ -1,11 +1,14 @@
-//! The `client.poe.*` namespace: the mutating `/api/v1/poe/*` surface.
+//! The `client.poe.*` namespace: the mutating `/poe/*` surface.
+//!
+//! Paths below are relative to the configured `base_url`, which carries the
+//! gateway's version segment (e.g. `https://host/api/vN`).
 //!
 //! Low-level wrappers:
 //!
-//! - `POST /api/v1/poe/quote` — lock a USD price for a publish.
-//! - `POST /api/v1/poe/uploads` — multipart binary upload to a storage backend.
-//! - `POST /api/v1/poe/publish` — submit one finalised record.
-//! - `POST /api/v1/poe/publish-batch` — submit 1..50 finalised records.
+//! - `POST /poe/quote` — lock a USD price for a publish.
+//! - `POST /poe/uploads` — multipart binary upload to a storage backend.
+//! - `POST /poe/publish` — submit one finalised record.
+//! - `POST /poe/publish-batch` — submit 1..50 finalised records.
 //!
 //! Plus the high-level helpers ([`publish_content`](PoeNamespace::publish_content)
 //! and siblings) that compose hashing, sealing, Merkle commitment, optional
@@ -17,7 +20,7 @@ use crate::client::http::{
 use crate::client::publish::{
     publish_content, publish_merkle, publish_prehashed, publish_sealed, PublishHelperError,
 };
-use crate::client::resumable::{upload_resumable, ResumableUploadError};
+use crate::client::resumable::{abandon_session, upload_resumable, ResumableUploadError};
 use crate::client::transport::{MultipartField, RequestBody};
 use crate::client::types::{
     PublishBatchInput, PublishBatchResponse, PublishContentInput, PublishInput, PublishMerkleInput,
@@ -57,7 +60,7 @@ impl<'t> PoeNamespace<'t> {
             "recipient_count": input.recipient_count,
             "file_bytes_total": input.file_bytes_total,
         });
-        let url = format!("{}/api/v1/poe/quote", self.config.base_url);
+        let url = format!("{}/poe/quote", self.config.base_url);
         let headers = json_headers(self.config.api_key.as_deref(), None);
         let response = send(
             self.config.transport,
@@ -95,7 +98,7 @@ impl<'t> PoeNamespace<'t> {
                 value: bytes.clone(),
             });
         }
-        let url = format!("{}/api/v1/poe/uploads", self.config.base_url);
+        let url = format!("{}/poe/uploads", self.config.base_url);
         let headers = multipart_headers(
             self.config.api_key.as_deref(),
             input.idempotency_key.as_deref(),
@@ -146,6 +149,23 @@ impl<'t> PoeNamespace<'t> {
         upload_resumable(&self.config, input)
     }
 
+    /// Abandon a resumable-upload session (`DELETE /poe/uploads/sessions/{sid}`).
+    ///
+    /// Idempotent: a session that is already gone or expired (`404`/`410`) is
+    /// treated as successfully abandoned. Use this to discard a session a
+    /// cancelled or aborted upload left behind — [`upload_resumable`](Self::upload_resumable)
+    /// already attempts the abandon on its own cancel path, so this is for an
+    /// out-of-band discard or a retry of a
+    /// [`ResumableUploadError::AbandonFailed`](crate::client::ResumableUploadError::AbandonFailed).
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed [`ClientError`] on any non-2xx response other than
+    /// `404`/`410`.
+    pub fn abandon_upload_session(&self, session_id: &str) -> Result<(), ClientError> {
+        abandon_session(&self.config, session_id)
+    }
+
     /// Submit one finalised canonical-CBOR record.
     ///
     /// Returns 202 (`dedup_hit: false`) on freshly enqueued records, or 200
@@ -168,7 +188,7 @@ impl<'t> PoeNamespace<'t> {
         if let Some(sigs) = &input.signatures {
             body.insert("signatures".to_string(), signatures_to_json(sigs));
         }
-        let url = format!("{}/api/v1/poe/publish", self.config.base_url);
+        let url = format!("{}/poe/publish", self.config.base_url);
         let headers = json_headers(
             self.config.api_key.as_deref(),
             input.idempotency_key.as_deref(),
@@ -223,7 +243,7 @@ impl<'t> PoeNamespace<'t> {
             })
             .collect();
         let body = serde_json::json!({ "records": records });
-        let url = format!("{}/api/v1/poe/publish-batch", self.config.base_url);
+        let url = format!("{}/poe/publish-batch", self.config.base_url);
         let headers = json_headers(
             self.config.api_key.as_deref(),
             input.idempotency_key.as_deref(),

@@ -31,6 +31,7 @@
 #![forbid(unsafe_code)]
 
 pub mod cbor;
+pub mod certificate;
 #[cfg(feature = "client")]
 pub mod client;
 pub mod cose;

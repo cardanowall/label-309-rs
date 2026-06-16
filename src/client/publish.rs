@@ -211,7 +211,7 @@ fn post_publish(
         "quote_id": quote_id,
     });
     let headers = crate::client::http::json_headers(config.api_key.as_deref(), idempotency_key);
-    let url = format!("{}/api/v1/poe/publish", config.base_url);
+    let url = format!("{}/poe/publish", config.base_url);
     let response = crate::client::http::send(
         config.transport,
         &url,
@@ -255,6 +255,12 @@ fn upload_blob(
         chunk_bytes,
         resume_session_id: None,
         idempotency_key: idempotency_key.map(str::to_string),
+        // The publish helpers upload internally with no caller-facing progress /
+        // cancel surface; those ergonomics are exposed on the direct
+        // `upload_resumable` call instead.
+        on_progress: None,
+        cancel: None,
+        on_session_created: None,
     };
     match upload_resumable(config, &input) {
         Ok(result) => Ok(result.uri),
@@ -299,6 +305,15 @@ fn map_resumable_error(err: ResumableUploadError) -> PublishHelperError {
         ResumableUploadError::Decode(detail) | ResumableUploadError::Protocol(detail) => {
             PublishHelperError::Crypto(format!("upload protocol error: {detail}"))
         }
+        // The publish helpers never wire a cancel predicate, so cancellation
+        // cannot originate here; surface it as a protocol error if it somehow
+        // does rather than silently dropping it.
+        ResumableUploadError::Cancelled => {
+            PublishHelperError::Crypto("upload protocol error: unexpected cancellation".to_string())
+        }
+        ResumableUploadError::AbandonFailed { session_id, source } => PublishHelperError::Crypto(
+            format!("upload protocol error: failed to abandon session {session_id}: {source}"),
+        ),
     }
 }
 

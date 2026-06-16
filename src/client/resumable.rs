@@ -47,8 +47,8 @@ use crate::client::http::{
 use crate::client::transport::{MultipartField, RequestBody};
 use crate::client::types::{
     ResumableSource, ResumableUploadInput, ResumableUploadResult, UploadAttemptStatus, UploadEntry,
-    UploadError, UploadSessionChunkAck, UploadSessionCreated, UploadSessionDeduplicated,
-    UploadSessionStatus, UploadsResponse,
+    UploadError, UploadProgress, UploadSessionChunkAck, UploadSessionCreated,
+    UploadSessionDeduplicated, UploadSessionStatus, UploadsResponse,
 };
 use crate::verifier::fetch::HttpMethod;
 use sha2::{Digest, Sha256};
@@ -93,6 +93,12 @@ const ATTEMPT_POLL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs
 /// completes again. A bounded budget avoids an unbounded resend loop against a
 /// gateway that keeps reporting an incomplete upload despite resends.
 const COMPLETE_RETRY_ATTEMPTS: u32 = 2;
+
+/// The granularity at which the attempt-poll wait re-checks the cancel
+/// predicate. The full poll interval is slept in slices of this size so a cancel
+/// mid-wait is honoured promptly rather than after a whole interval, without
+/// busy-spinning.
+const CANCEL_POLL_SLICE: std::time::Duration = std::time::Duration::from_millis(50);
 
 /// The error a resumable upload returns.
 #[derive(Debug, thiserror::Error)]
@@ -139,6 +145,24 @@ pub enum ResumableUploadError {
     /// `complete` returned neither a URI nor an attempt to poll).
     #[error("the upload protocol reached an unexpected state: {0}")]
     Protocol(String),
+    /// The caller's `cancel` predicate requested cancellation. When a session had
+    /// already been created the helper attempted to abandon it before returning
+    /// this; a failure of that abandon surfaces as [`Self::AbandonFailed`]
+    /// instead, so a plain `Cancelled` means no session was left dangling (or no
+    /// session existed yet).
+    #[error("the upload was cancelled by the caller")]
+    Cancelled,
+    /// The caller cancelled, but the best-effort abandon of the live session
+    /// failed. The `session_id` is carried so the caller can retry the abandon
+    /// (`DELETE /poe/uploads/sessions/{session_id}`) rather than leak the
+    /// session.
+    #[error("the upload was cancelled but abandoning session {session_id} failed: {source}")]
+    AbandonFailed {
+        /// The id of the session that could not be abandoned.
+        session_id: String,
+        /// The underlying abandon failure.
+        source: Box<ClientError>,
+    },
 }
 
 /// Drive an upload, choosing the single-shot or chunked path by size.
@@ -167,13 +191,31 @@ pub fn upload_resumable(
     chunked(config, input)
 }
 
+/// Whether the caller's cancel predicate is currently requesting cancellation.
+fn is_cancelled(input: &ResumableUploadInput) -> bool {
+    input.cancel.as_ref().is_some_and(|c| c())
+}
+
+/// Fire the progress callback, if any, with the supplied snapshot.
+fn report_progress(input: &ResumableUploadInput, progress: UploadProgress) {
+    if let Some(cb) = &input.on_progress {
+        cb(progress);
+    }
+}
+
 /// The single-shot path: the same multipart `POST /uploads` the small-file
 /// callers already use, projected onto the resumable result.
 fn single_shot(
     config: &NamespaceConfig<'_>,
     input: &ResumableUploadInput,
 ) -> Result<ResumableUploadResult, ResumableUploadError> {
+    // The single-shot POST is one atomic request; honour a cancel requested
+    // before it is sent. (There is no session to abandon on this path.)
+    if is_cancelled(input) {
+        return Err(ResumableUploadError::Cancelled);
+    }
     let bytes = read_source(&input.source)?;
+    let total_bytes = bytes.len() as u64;
     let mut fields = vec![MultipartField {
         name: "target".to_string(),
         filename: None,
@@ -191,7 +233,7 @@ fn single_shot(
         ),
         value: bytes,
     });
-    let url = format!("{}/api/v1/poe/uploads", config.base_url);
+    let url = format!("{}/poe/uploads", config.base_url);
     let headers = crate::client::http::multipart_headers(
         config.api_key.as_deref(),
         input.idempotency_key.as_deref(),
@@ -210,14 +252,28 @@ fn single_shot(
     match entry {
         UploadEntry::Success {
             uri, sha256, bytes, ..
-        } => Ok(ResumableUploadResult {
-            uri,
-            sha256: Some(sha256),
-            bytes: Some(bytes),
-            charged_usd_micros: None,
-            deduplicated: false,
-            session_id: None,
-        }),
+        } => {
+            // The single-shot path is one request: report a single 100% progress
+            // tick on success so a progress sink converges the same way the
+            // chunked path does.
+            report_progress(
+                input,
+                UploadProgress {
+                    bytes_sent: total_bytes,
+                    total_bytes,
+                    chunk_index: 0,
+                    chunks_total: 1,
+                },
+            );
+            Ok(ResumableUploadResult {
+                uri,
+                sha256: Some(sha256),
+                bytes: Some(bytes),
+                charged_usd_micros: None,
+                deduplicated: false,
+                session_id: None,
+            })
+        }
         // Carry the per-file error verbatim so the publish helpers can re-surface
         // the original code + detail (not a flattened string).
         UploadEntry::Failure { error, .. } => Err(ResumableUploadError::UploadRejected(error)),
@@ -237,11 +293,18 @@ fn chunked(
     // no bytes).
     let session = match &input.resume_session_id {
         Some(sid) => {
+            // Honour a cancel before touching the session on resume.
+            if is_cancelled(input) {
+                return Err(ResumableUploadError::Cancelled);
+            }
             let status = get_status(config, sid)?;
             // A resumed session that already reached a terminal state needs no
-            // further chunks: return its recorded outcome directly.
-            if let Some(done) = terminal_from_status(config, &status)? {
-                return Ok(done);
+            // further chunks: return its recorded outcome directly. A cancel while
+            // bridging an assembling session to its attempt poll abandons it.
+            match terminal_from_status(config, input, &status) {
+                Ok(Some(done)) => return Ok(done),
+                Ok(None) => {}
+                Err(err) => return Err(abandon_on_cancel(config, input, sid, err)),
             }
             SessionGrid {
                 session_id: status.session_id,
@@ -257,6 +320,11 @@ fn chunked(
             }
         }
         None => {
+            // Honour a cancel requested before any session exists: there is
+            // nothing to abandon yet.
+            if is_cancelled(input) {
+                return Err(ResumableUploadError::Cancelled);
+            }
             let total_bytes = source_len(&input.source)?;
             let whole_sha256 = stream_sha256(&input.source)?;
             match create_session(config, input, &whole_sha256, total_bytes, chunk_request)? {
@@ -270,50 +338,140 @@ fn chunked(
                         session_id: None,
                     });
                 }
-                CreateOutcome::Created(created) => SessionGrid {
-                    session_id: created.session_id,
-                    chunk_bytes: created.chunk_bytes,
-                    chunk_count: created.chunk_count,
-                    // The declared total (the bytes that were hashed at create
-                    // time) is authoritative for the slice math: a file that grew
-                    // afterwards must not push extra bytes into the final chunk.
-                    total_bytes,
-                    // The digest just declared at create time; seeds the default
-                    // completion idempotency key.
-                    declared_sha256_hex: hex::encode(whole_sha256),
-                    // A fresh create reports the empty received set; everything is
-                    // missing.
-                    missing: (0..created.chunk_count)
-                        .filter(|i| !created.received.contains(i))
-                        .collect(),
-                },
+                CreateOutcome::Created(created) => {
+                    // Surface the session id the instant it exists — before any
+                    // chunk PUT — so a host can persist it and resume even if the
+                    // process dies before this helper returns.
+                    if let Some(cb) = &input.on_session_created {
+                        cb(&created.session_id);
+                    }
+                    SessionGrid {
+                        session_id: created.session_id,
+                        chunk_bytes: created.chunk_bytes,
+                        chunk_count: created.chunk_count,
+                        // The declared total (the bytes that were hashed at create
+                        // time) is authoritative for the slice math: a file that
+                        // grew afterwards must not push extra bytes into the final
+                        // chunk.
+                        total_bytes,
+                        // The digest just declared at create time; seeds the
+                        // default completion idempotency key.
+                        declared_sha256_hex: hex::encode(whole_sha256),
+                        // A fresh create reports the empty received set; everything
+                        // is missing.
+                        missing: (0..created.chunk_count)
+                            .filter(|i| !created.received.contains(i))
+                            .collect(),
+                    }
+                }
             }
         }
     };
 
+    // From here a session exists: any cancellation must abandon it before
+    // returning, so a cancelled chunked upload never leaks a half-written
+    // session. Cumulative progress is seeded from the chunks the server already
+    // holds (everything not in `missing`) so a resume's first tick reflects the
+    // true cumulative total; the first tick is only emitted once a chunk lands,
+    // not at the start.
+    let mut bytes_acked = acked_bytes(&session);
+
     // Send every outstanding chunk, honouring the server's authoritative
     // chunk_bytes for the slice math.
-    send_missing_chunks(config, &session, &input.source, &session.missing)?;
+    if let Err(err) =
+        send_missing_chunks(config, input, &session, &session.missing, &mut bytes_acked)
+    {
+        return Err(abandon_on_cancel(config, input, &session.session_id, err));
+    }
 
-    complete_session(
+    match complete_session(
         config,
+        input,
         &session,
-        &input.source,
         input.idempotency_key.as_deref(),
-    )
+        &mut bytes_acked,
+    ) {
+        Ok(result) => Ok(result),
+        Err(err) => Err(abandon_on_cancel(config, input, &session.session_id, err)),
+    }
+}
+
+/// The number of bytes the server already holds for `session` (every chunk not
+/// in the missing set), the seed for cumulative progress on a fresh upload or a
+/// resume.
+fn acked_bytes(session: &SessionGrid) -> u64 {
+    let received = session
+        .chunk_count
+        .saturating_sub(session.missing.len() as u32);
+    chunk_span_bytes(session, received)
+}
+
+/// The cumulative byte count after `chunks_done` whole chunks of `session`'s
+/// grid, clamped to the declared total so the final (short) chunk is counted
+/// exactly.
+fn chunk_span_bytes(session: &SessionGrid, chunks_done: u32) -> u64 {
+    (u64::from(chunks_done) * session.chunk_bytes).min(session.total_bytes)
+}
+
+/// On a [`ResumableUploadError::Cancelled`], abandon the live session
+/// (best-effort, `DELETE …/sessions/{sid}`; 404/410 are success) and convert to
+/// the terminal cancel error. Any other error passes through unchanged.
+fn abandon_on_cancel(
+    config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
+    session_id: &str,
+    err: ResumableUploadError,
+) -> ResumableUploadError {
+    if !matches!(err, ResumableUploadError::Cancelled) {
+        return err;
+    }
+    let _ = input; // the cancel predicate already fired; nothing more to read.
+    match abandon_session(config, session_id) {
+        Ok(()) => ResumableUploadError::Cancelled,
+        Err(source) => ResumableUploadError::AbandonFailed {
+            session_id: session_id.to_string(),
+            source: Box::new(source),
+        },
+    }
 }
 
 /// Send a set of outstanding chunk indices, bounding every read to the declared
 /// total so the final chunk is exactly the remainder.
+///
+/// Cancellation is checked at the top of the loop (before the next chunk is read
+/// or sent) and inside the per-chunk retry; `bytes_acked` accumulates the
+/// durably-sent bytes so a progress tick fires after each chunk lands.
 fn send_missing_chunks(
     config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
     session: &SessionGrid,
-    source: &ResumableSource,
     missing: &[u32],
+    bytes_acked: &mut u64,
 ) -> Result<(), ResumableUploadError> {
     for index in missing {
-        let chunk = read_chunk(source, *index, session.chunk_bytes, session.total_bytes)?;
-        put_chunk_with_retry(config, &session.session_id, *index, &chunk)?;
+        if is_cancelled(input) {
+            return Err(ResumableUploadError::Cancelled);
+        }
+        let chunk = read_chunk(
+            &input.source,
+            *index,
+            session.chunk_bytes,
+            session.total_bytes,
+        )?;
+        put_chunk_with_retry(config, input, &session.session_id, *index, &chunk)?;
+        // The chunk is durably acknowledged: advance cumulative progress to the
+        // end offset of this chunk (clamped to the declared total for the short
+        // final chunk) and report it.
+        *bytes_acked = chunk_span_bytes(session, index.saturating_add(1)).max(*bytes_acked);
+        report_progress(
+            input,
+            UploadProgress {
+                bytes_sent: *bytes_acked,
+                total_bytes: session.total_bytes,
+                chunk_index: *index,
+                chunks_total: session.chunk_count,
+            },
+        );
     }
     Ok(())
 }
@@ -343,7 +501,7 @@ enum CreateOutcome {
     Created(UploadSessionCreated),
 }
 
-/// `POST /api/v1/poe/uploads/sessions` — create a session or short-circuit.
+/// `POST /poe/uploads/sessions` — create a session or short-circuit.
 fn create_session(
     config: &NamespaceConfig<'_>,
     input: &ResumableUploadInput,
@@ -368,7 +526,7 @@ fn create_session(
             serde_json::Value::String(ct.clone()),
         );
     }
-    let url = format!("{}/api/v1/poe/uploads/sessions", config.base_url);
+    let url = format!("{}/poe/uploads/sessions", config.base_url);
     let headers = json_headers(config.api_key.as_deref(), None);
     let response = send_raw(
         config.transport,
@@ -399,13 +557,13 @@ fn create_session(
     Ok(CreateOutcome::Created(created))
 }
 
-/// `GET /api/v1/poe/uploads/sessions/{sid}` — the resume contract.
+/// `GET /poe/uploads/sessions/{sid}` — the resume contract.
 fn get_status(
     config: &NamespaceConfig<'_>,
     session_id: &str,
 ) -> Result<UploadSessionStatus, ResumableUploadError> {
     let url = format!(
-        "{}/api/v1/poe/uploads/sessions/{}",
+        "{}/poe/uploads/sessions/{}",
         config.base_url,
         encode_path_segment(session_id)
     );
@@ -420,7 +578,46 @@ fn get_status(
     parse(&response.body)
 }
 
-/// `PUT /api/v1/poe/uploads/sessions/{sid}/chunks/{index}` with per-chunk retry.
+/// `DELETE /poe/uploads/sessions/{sid}` — abandon a resumable-upload session.
+///
+/// Idempotent: a `404`/`410` (the session is already gone or expired) is treated
+/// as success, since the caller's goal — "this session no longer exists" — is
+/// already met. The gateway returns `204 No Content` on a fresh delete. Any other
+/// non-2xx is a typed [`ClientError`].
+///
+/// Exposed publicly (via [`PoeNamespace::abandon_upload_session`](crate::client::PoeNamespace::abandon_upload_session))
+/// so a host that cancels an upload can discard the server-side session cleanly,
+/// and so a [`ResumableUploadError::AbandonFailed`] can be retried.
+///
+/// # Errors
+///
+/// Returns a typed [`ClientError`] on any non-2xx response other than
+/// `404`/`410`.
+pub fn abandon_session(config: &NamespaceConfig<'_>, session_id: &str) -> Result<(), ClientError> {
+    let url = format!(
+        "{}/poe/uploads/sessions/{}",
+        config.base_url,
+        encode_path_segment(session_id)
+    );
+    let headers = json_headers(config.api_key.as_deref(), None);
+    // `send_raw`: a gone/expired session is a 404/410 the caller treats as success,
+    // so the raw status must be inspected rather than collapsed into an error.
+    let response = send_raw(
+        config.transport,
+        &url,
+        HttpMethod::Delete,
+        &headers,
+        &RequestBody::None,
+    )?;
+    // A gone/expired session is already in the desired end state.
+    if response.status == 404 || response.status == 410 {
+        return Ok(());
+    }
+    into_http_error(response)?;
+    Ok(())
+}
+
+/// `PUT /poe/uploads/sessions/{sid}/chunks/{index}` with per-chunk retry.
 ///
 /// A re-`PUT` of the same bytes is an idempotent `200` on the server, so a
 /// transient failure is always safe to retry. A digest conflict (`409`) means
@@ -428,12 +625,13 @@ fn get_status(
 /// surfaces as a terminal error.
 fn put_chunk_with_retry(
     config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
     session_id: &str,
     index: u32,
     chunk: &[u8],
 ) -> Result<UploadSessionChunkAck, ResumableUploadError> {
     let url = format!(
-        "{}/api/v1/poe/uploads/sessions/{}/chunks/{}",
+        "{}/poe/uploads/sessions/{}/chunks/{}",
         config.base_url,
         encode_path_segment(session_id),
         index
@@ -442,6 +640,11 @@ fn put_chunk_with_retry(
 
     let mut last_err: Option<ResumableUploadError> = None;
     for _ in 0..CHUNK_RETRY_ATTEMPTS {
+        // Cancellation is honoured before each attempt, so a retry never starts
+        // (and a long retry sequence cannot ignore) a cancel between attempts.
+        if is_cancelled(input) {
+            return Err(ResumableUploadError::Cancelled);
+        }
         let mut headers = json_headers(config.api_key.as_deref(), None);
         // The chunk body is raw octet-stream, not JSON; replace the JSON
         // content-type with the digest and let the transport set the binary
@@ -474,7 +677,7 @@ fn put_chunk_with_retry(
     }))
 }
 
-/// `POST /api/v1/poe/uploads/sessions/{sid}/complete` — finalise the session.
+/// `POST /poe/uploads/sessions/{sid}/complete` — finalise the session.
 ///
 /// On `409 incomplete-upload` (a chunk that was acknowledged client-side but did
 /// not durably persist on the server) the helper re-reads the session status,
@@ -484,12 +687,13 @@ fn put_chunk_with_retry(
 /// `accepted` it polls the attempt endpoint to the terminal outcome.
 fn complete_session(
     config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
     session: &SessionGrid,
-    source: &ResumableSource,
     idempotency_key: Option<&str>,
+    bytes_acked: &mut u64,
 ) -> Result<ResumableUploadResult, ResumableUploadError> {
     let url = format!(
-        "{}/api/v1/poe/uploads/sessions/{}/complete",
+        "{}/poe/uploads/sessions/{}/complete",
         config.base_url,
         encode_path_segment(&session.session_id)
     );
@@ -502,6 +706,11 @@ fn complete_session(
     let headers = json_headers(config.api_key.as_deref(), Some(effective_key));
 
     for _ in 0..=COMPLETE_RETRY_ATTEMPTS {
+        // `complete` (and its 409-driven resend) is a cancellable phase: honour a
+        // cancel before issuing the request.
+        if is_cancelled(input) {
+            return Err(ResumableUploadError::Cancelled);
+        }
         let response = send_raw(
             config.transport,
             &url,
@@ -511,7 +720,7 @@ fn complete_session(
         )?;
 
         if (200..300).contains(&response.status) {
-            return complete_body_to_result(config, &session.session_id, &response.body);
+            return complete_body_to_result(config, input, &session.session_id, &response.body);
         }
 
         let err: ResumableUploadError = into_http_error(response).unwrap_err().into();
@@ -531,7 +740,7 @@ fn complete_session(
         }
         // Re-send only the still-missing indices, bounded by the declared total
         // exactly as the first pass was.
-        send_missing_chunks(config, session, source, &status.missing)?;
+        send_missing_chunks(config, input, session, &status.missing, bytes_acked)?;
     }
 
     // The grid is known and we re-sent every reported gap, yet the gateway kept
@@ -557,6 +766,7 @@ fn is_incomplete_upload_error(err: &ResumableUploadError) -> bool {
 /// outcome.
 fn complete_body_to_result(
     config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
     session_id: &str,
     body: &[u8],
 ) -> Result<ResumableUploadResult, ResumableUploadError> {
@@ -580,14 +790,14 @@ fn complete_body_to_result(
         });
     }
     if let Some(attempt_id) = value.get("attempt_id").and_then(serde_json::Value::as_str) {
-        return poll_attempt(config, session_id, attempt_id);
+        return poll_attempt(config, input, session_id, attempt_id);
     }
     Err(ResumableUploadError::Protocol(
         "complete returned neither a uri nor an attempt to poll".into(),
     ))
 }
 
-/// Poll `GET /api/v1/poe/uploads/attempts/{attempt_id}` to the terminal outcome.
+/// Poll `GET /poe/uploads/attempts/{attempt_id}` to the terminal outcome.
 ///
 /// A `committed` attempt yields the URI + charge; a `released` attempt is a
 /// terminal failure. A still-`reserved` attempt is the only in-flight state: the
@@ -599,17 +809,23 @@ fn complete_body_to_result(
 /// budget is spent does the helper surface a timeout.
 fn poll_attempt(
     config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
     session_id: &str,
     attempt_id: &str,
 ) -> Result<ResumableUploadResult, ResumableUploadError> {
     let url = format!(
-        "{}/api/v1/poe/uploads/attempts/{}",
+        "{}/poe/uploads/attempts/{}",
         config.base_url,
         encode_path_segment(attempt_id)
     );
     let headers = json_headers(config.api_key.as_deref(), None);
     let deadline = std::time::Instant::now() + ATTEMPT_POLL_TIMEOUT;
     loop {
+        // Honour a cancel before each poll, so a long-reserved attempt does not
+        // keep an upload alive after the caller asked to stop.
+        if is_cancelled(input) {
+            return Err(ResumableUploadError::Cancelled);
+        }
         let response = send(
             config.transport,
             &url,
@@ -649,7 +865,34 @@ fn poll_attempt(
                 "upload attempt {attempt_id} did not reach a terminal state in time (session {session_id})"
             )));
         }
-        std::thread::sleep(ATTEMPT_POLL_INTERVAL);
+        // Pace between polls, but keep the wait interruptible: a cancel mid-wait
+        // is honoured within one slice rather than after a full poll interval.
+        if !interruptible_sleep(ATTEMPT_POLL_INTERVAL, input) {
+            return Err(ResumableUploadError::Cancelled);
+        }
+    }
+}
+
+/// Sleep for `total`, polling the caller's cancel predicate every
+/// [`CANCEL_POLL_SLICE`]. Returns `false` the moment cancellation is requested
+/// (the caller turns that into [`ResumableUploadError::Cancelled`]), else `true`
+/// once the full duration has elapsed.
+fn interruptible_sleep(total: std::time::Duration, input: &ResumableUploadInput) -> bool {
+    // No cancel predicate: a plain sleep is correct and avoids needless wakeups.
+    if input.cancel.is_none() {
+        std::thread::sleep(total);
+        return true;
+    }
+    let deadline = std::time::Instant::now() + total;
+    loop {
+        if is_cancelled(input) {
+            return false;
+        }
+        let now = std::time::Instant::now();
+        if now >= deadline {
+            return true;
+        }
+        std::thread::sleep(CANCEL_POLL_SLICE.min(deadline - now));
     }
 }
 
@@ -657,6 +900,7 @@ fn poll_attempt(
 /// result; `None` when the session is still open and chunks must be sent.
 fn terminal_from_status(
     config: &NamespaceConfig<'_>,
+    input: &ResumableUploadInput,
     status: &UploadSessionStatus,
 ) -> Result<Option<ResumableUploadResult>, ResumableUploadError> {
     match status.state.as_str() {
@@ -683,7 +927,7 @@ fn terminal_from_status(
             // A session reserved its attempt; bridge to it for the terminal
             // outcome rather than re-sending chunks.
             if let Some(attempt_id) = &status.attempt_id {
-                return poll_attempt(config, &status.session_id, attempt_id).map(Some);
+                return poll_attempt(config, input, &status.session_id, attempt_id).map(Some);
             }
             Ok(None)
         }

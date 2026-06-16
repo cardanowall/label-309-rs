@@ -1,4 +1,7 @@
-//! Request and response shapes for the gateway `/api/v1/*` surface.
+//! Request and response shapes for the gateway data-plane surface.
+//!
+//! The path comments below are relative to the configured `base_url`, which
+//! carries the gateway's version segment (e.g. `https://host/api/vN`).
 //!
 //! Wire fields stay snake_case so JSON round-trips without translation; the SDK
 //! helper structs use Rust idiom. Money crosses the wire as decimal strings
@@ -38,14 +41,119 @@ pub enum SealedKemChoice {
     Mlkem768X25519,
 }
 
-/// The lifecycle status of a published PoE.
-pub type PoeStatus = String;
+/// The lifecycle status of a published PoE, as the publish / publish-batch /
+/// publish-merkle responses report it.
+///
+/// The gateway projects its internal record lifecycle onto a small wire
+/// vocabulary; this enum names every value it currently emits plus the adjacent
+/// engine-state names, and round-trips any future value through
+/// [`PoeStatus::Other`] so a gateway that adds a status string never breaks an
+/// older client. It is publish-specific: the record-read projection
+/// ([`RecordResource::status`]) keeps its own raw string, since the indexer and
+/// the publish pipeline report status independently.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PoeStatus {
+    /// The transaction is being built and submitted.
+    Submitting,
+    /// The transaction has been submitted to the network.
+    Submitted,
+    /// The transaction is on chain but below the confirmation threshold.
+    Confirming,
+    /// The transaction crossed the confirmation threshold.
+    Confirmed,
+    /// The publish failed terminally (engine `permanent_failure`).
+    PermanentFailure,
+    /// The publish failed (the gateway's terminal-failure wire string).
+    Failed,
+    /// A status string this SDK build does not have a named variant for, carried
+    /// verbatim so it round-trips. Forward-compatibility for new gateway values.
+    Other(String),
+}
+
+impl PoeStatus {
+    /// The on-wire status string.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        match self {
+            PoeStatus::Submitting => "submitting",
+            PoeStatus::Submitted => "submitted",
+            PoeStatus::Confirming => "confirming",
+            PoeStatus::Confirmed => "confirmed",
+            PoeStatus::PermanentFailure => "permanent_failure",
+            PoeStatus::Failed => "failed",
+            PoeStatus::Other(s) => s,
+        }
+    }
+}
+
+impl std::fmt::Display for PoeStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// The known wire status strings, kept separate so `serde` matches them exactly
+/// (`snake_case`) and routes anything else to [`PoeStatusDe::Other`]. A
+/// `#[serde(other)]` arm only accepts a unit variant and so cannot retain the
+/// unknown string; the untagged catch-all below preserves it for round-tripping.
+#[derive(Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum KnownPoeStatus {
+    Submitting,
+    Submitted,
+    Confirming,
+    Confirmed,
+    PermanentFailure,
+    Failed,
+}
+
+/// The deserialize shadow: try the known strings first, else keep the raw value.
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum PoeStatusDe {
+    Known(KnownPoeStatus),
+    Other(String),
+}
+
+impl From<KnownPoeStatus> for PoeStatus {
+    fn from(k: KnownPoeStatus) -> Self {
+        match k {
+            KnownPoeStatus::Submitting => PoeStatus::Submitting,
+            KnownPoeStatus::Submitted => PoeStatus::Submitted,
+            KnownPoeStatus::Confirming => PoeStatus::Confirming,
+            KnownPoeStatus::Confirmed => PoeStatus::Confirmed,
+            KnownPoeStatus::PermanentFailure => PoeStatus::PermanentFailure,
+            KnownPoeStatus::Failed => PoeStatus::Failed,
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for PoeStatus {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(match PoeStatusDe::deserialize(deserializer)? {
+            PoeStatusDe::Known(known) => known.into(),
+            PoeStatusDe::Other(raw) => PoeStatus::Other(raw),
+        })
+    }
+}
+
+impl serde::Serialize for PoeStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
 
 /// The conformance profile a published record satisfies.
 pub type ConformanceProfile = String;
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/poe/quote
+// POST /poe/quote
 // ---------------------------------------------------------------------------
 
 /// Input to `client.poe.quote(...)`: the byte counts the server prices against.
@@ -59,13 +167,30 @@ pub struct QuoteInput {
     pub file_bytes_total: u64,
 }
 
-/// An opaque price lock returned by `POST /api/v1/poe/quote`.
+/// The per-component cost breakdown a quote may carry, each value a decimal
+/// string of USD micro-cents.
 ///
-/// It is a sealed price token, not a pricing breakdown: pass `quote_id` to
-/// `/publish` and surface `amount` / `currency` / `expires_at` to the user. The
-/// gateway's pricing internals (FX, margins, per-component costs) are not
-/// exposed.
+/// Present only on a gateway that exposes its pricing components (a dashboard
+/// surface); a gateway that returns only the opaque price omits it, which is why
+/// the field on [`QuoteResponse`] is optional.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct QuoteBreakdown {
+    /// The Cardano network (transaction fee) component, USD micro-cents.
+    pub network_usd_micros: String,
+    /// The off-chain storage component, USD micro-cents.
+    pub storage_usd_micros: String,
+    /// The operator service-margin component, USD micro-cents.
+    pub service_usd_micros: String,
+}
+
+/// A price lock returned by `POST /poe/quote`.
+///
+/// The first four fields are the always-present opaque price token: pass
+/// `quote_id` to `/publish` and surface `amount` / `currency` / `expires_at` to
+/// the user. The remaining fields are an OPTIONAL pricing breakdown a gateway may
+/// expose for a dashboard; a gateway that does not is parsed unchanged (every
+/// added field is `Option` / `#[serde(default)]`).
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct QuoteResponse {
     /// Opaque id of the persisted price lock; pass to `/publish`.
     pub quote_id: String,
@@ -76,10 +201,31 @@ pub struct QuoteResponse {
     pub currency: String,
     /// ISO 8601 expiry timestamp after which the gateway rejects the quote.
     pub expires_at: String,
+    /// The total price in USD micro-cents, as a decimal string. Present only on a
+    /// gateway that exposes the breakdown.
+    #[serde(default)]
+    pub usd_micros: Option<String>,
+    /// The per-component cost breakdown. Present only on a gateway that exposes
+    /// it.
+    #[serde(default)]
+    pub breakdown: Option<QuoteBreakdown>,
+    /// The operator margin as a fraction (a JSON number). Present only on a
+    /// gateway that exposes the breakdown.
+    #[serde(default)]
+    pub margin_pct: Option<f64>,
+    /// How the margin was attributed (`"account-override"` or
+    /// `"operator-default"`). Present only on a gateway that exposes the
+    /// breakdown.
+    #[serde(default)]
+    pub margin_source: Option<String>,
+    /// The age in seconds of the FX snapshot the quote was priced from. Present
+    /// only on a gateway that exposes the breakdown.
+    #[serde(default)]
+    pub fx_age_seconds: Option<u64>,
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/poe/uploads
+// POST /poe/uploads
 // ---------------------------------------------------------------------------
 
 /// Input to `client.poe.uploads(...)`: a storage target and 1..32 file blobs.
@@ -106,6 +252,54 @@ pub enum ResumableSource {
     Bytes(Vec<u8>),
 }
 
+impl Default for ResumableSource {
+    /// An empty in-memory blob, so a [`ResumableUploadInput`] can be
+    /// `..Default::default()`-constructed and have its `source` set explicitly.
+    fn default() -> Self {
+        ResumableSource::Bytes(Vec::new())
+    }
+}
+
+/// Progress of a resumable upload, reported to
+/// [`ResumableUploadInput::on_progress`] after each chunk lands.
+///
+/// On the single-shot path it fires exactly once on success, at 100%
+/// (`bytes_sent == total_bytes`, `chunk_index == 0`, `chunks_total == 1`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UploadProgress {
+    /// Cumulative bytes durably acknowledged by the gateway so far.
+    pub bytes_sent: u64,
+    /// The declared whole-file size in bytes.
+    pub total_bytes: u64,
+    /// The zero-based index of the chunk that just completed.
+    pub chunk_index: u32,
+    /// The total number of chunks in the grid.
+    pub chunks_total: u32,
+}
+
+/// A progress callback: invoked after each chunk is durably acknowledged.
+///
+/// A closure (not an async type) so the blocking SDK adds no runtime dependency;
+/// a host bridges its own progress sink to it. `Send + Sync` so it can be shared
+/// across the (single-threaded) upload without constraining where the input is
+/// held.
+pub type UploadProgressCallback = std::sync::Arc<dyn Fn(UploadProgress) + Send + Sync>;
+
+/// A cooperative-cancel predicate: polled before each cancellable step. Returns
+/// `true` to request cancellation.
+///
+/// A closure rather than a `tokio`/async cancellation token so the blocking SDK
+/// stays runtime-free; the desktop bridges its `CancellationToken` to it.
+pub type UploadCancelCallback = std::sync::Arc<dyn Fn() -> bool + Send + Sync>;
+
+/// A session-created callback: invoked the instant a chunked-upload session is
+/// created, before any chunk is sent, with the new `session_id`.
+///
+/// Lets a host persist the session id immediately so a crash after the session
+/// exists — but before [`upload_resumable`](crate::client::PoeNamespace::upload_resumable)
+/// returns — can still be resumed.
+pub type UploadSessionCreatedCallback = std::sync::Arc<dyn Fn(&str) + Send + Sync>;
+
 /// Input to [`upload_resumable`](crate::client::PoeNamespace::upload_resumable).
 ///
 /// The helper is threshold-gated: a source at or below `threshold_bytes` rides
@@ -115,7 +309,7 @@ pub enum ResumableSource {
 /// cap a CDN or proxy commonly imposes; the server's `max_chunk_bytes` from the
 /// create response always clamps the effective chunk size down further when it is
 /// tighter.
-#[derive(Debug, Clone)]
+#[derive(Clone, Default)]
 pub struct ResumableUploadInput {
     /// The storage backend (`arweave`).
     pub target: String,
@@ -137,6 +331,39 @@ pub struct ResumableUploadInput {
     /// Optional idempotency key, carried on the single-shot upload and the
     /// session `complete`.
     pub idempotency_key: Option<String>,
+    /// Optional progress sink, called after each durably-acknowledged chunk (and
+    /// once at 100% on the single-shot path).
+    pub on_progress: Option<UploadProgressCallback>,
+    /// Optional cooperative-cancel predicate, polled before each cancellable
+    /// step. On cancel the helper attempts to abandon the session, then returns
+    /// [`ResumableUploadError::Cancelled`](crate::client::ResumableUploadError::Cancelled).
+    pub cancel: Option<UploadCancelCallback>,
+    /// Optional session-created callback, fired the instant a chunked-upload
+    /// session is created (before any chunk), with the new `session_id`.
+    pub on_session_created: Option<UploadSessionCreatedCallback>,
+}
+
+impl std::fmt::Debug for ResumableUploadInput {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ResumableUploadInput")
+            .field("target", &self.target)
+            .field("source", &self.source)
+            .field("content_type", &self.content_type)
+            .field("threshold_bytes", &self.threshold_bytes)
+            .field("chunk_bytes", &self.chunk_bytes)
+            .field("resume_session_id", &self.resume_session_id)
+            .field("idempotency_key", &self.idempotency_key)
+            .field(
+                "on_progress",
+                &self.on_progress.as_ref().map(|_| "<callback>"),
+            )
+            .field("cancel", &self.cancel.as_ref().map(|_| "<callback>"))
+            .field(
+                "on_session_created",
+                &self.on_session_created.as_ref().map(|_| "<callback>"),
+            )
+            .finish()
+    }
 }
 
 /// A single upload outcome entry.
@@ -200,7 +427,7 @@ pub struct UploadsResponse {
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/poe/uploads/sessions — resumable / chunked upload
+// POST /poe/uploads/sessions — resumable / chunked upload
 // ---------------------------------------------------------------------------
 
 /// The `201 Created` body of a resumable-upload session create.
@@ -241,7 +468,7 @@ pub struct UploadSessionDeduplicated {
     pub bytes: u64,
 }
 
-/// The resume contract: `GET /api/v1/poe/uploads/sessions/{sid}`.
+/// The resume contract: `GET /poe/uploads/sessions/{sid}`.
 ///
 /// `missing` is the set of chunk indices the server has not yet received; a
 /// reconnecting client re-`PUT`s only those.
@@ -318,7 +545,7 @@ pub struct ResumableUploadResult {
     pub session_id: Option<String>,
 }
 
-/// The terminal-poll body: `GET /api/v1/poe/uploads/attempts/{attempt_id}`.
+/// The terminal-poll body: `GET /poe/uploads/attempts/{attempt_id}`.
 ///
 /// `state` is `reserved` (still in flight), `committed` (success, with `uri` +
 /// `charged_usd_micros`), or `released` (failure, with `reason`).
@@ -346,7 +573,7 @@ pub struct UploadAttemptStatus {
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/poe/publish
+// POST /poe/publish
 // ---------------------------------------------------------------------------
 
 /// A path-2 CIP-30 wallet signature sidecar for the `/publish` `signatures`
@@ -413,7 +640,7 @@ pub struct PublishResponse {
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/poe/publish-batch
+// POST /poe/publish-batch
 // ---------------------------------------------------------------------------
 
 /// A single entry in a publish-batch request.
@@ -504,7 +731,7 @@ pub struct PublishBatchResponse {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/v1/records/{tx_hash}
+// GET /records/{tx_hash}
 // ---------------------------------------------------------------------------
 
 /// A single record resource projection.
@@ -533,7 +760,7 @@ pub struct RecordResource {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/v1/account/balance
+// GET /account/balance
 // ---------------------------------------------------------------------------
 
 /// The caller's current prepaid USD balance.
@@ -548,28 +775,7 @@ pub struct AccountBalance {
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/records/{tx_hash}/verify
-// ---------------------------------------------------------------------------
-
-/// Request body for the hosted verify endpoint (`client.records.verify(...)`).
-///
-/// The endpoint is a PUBLIC verifier — structural validation plus
-/// record-level signature verification over public chain data. It accepts no
-/// decryption credentials: a body carrying any is rejected with 400
-/// validation-failed, and sealed (enc-bearing) items report as unverifiable
-/// without decryption. Recipient verification (sealed-envelope decrypt +
-/// plaintext-hash recheck) runs locally — use the `verifier` module's
-/// `decryption` input, which never leaves the process.
-#[derive(Debug, Clone, Default)]
-pub struct PoeVerifyInput {
-    /// The master content-fetch switch (item URIs and Merkle leaves lists
-    /// alike). The server defaults it to `true`; `Some(false)` skips content
-    /// re-fetching — affected claims then report `not_checked`.
-    pub fetch_content: Option<bool>,
-}
-
-// ---------------------------------------------------------------------------
-// GET /api/v1/records — paginated record list (client.records.list)
+// GET /records — paginated record list (client.records.list)
 // ---------------------------------------------------------------------------
 
 /// Input to `client.records.list(...)`.
@@ -615,6 +821,65 @@ pub struct RecordsListResponse {
     /// back to `None` for an empty page or rows without a block height.
     #[serde(default)]
     pub tip_block_height: Option<u64>,
+}
+
+// ---------------------------------------------------------------------------
+// GET /records/count — count of matching records (client.records.count)
+// ---------------------------------------------------------------------------
+
+/// Input to `client.records.count(...)`.
+///
+/// The gateway requires the count to be scoped to a publisher: a bare block /
+/// time window can span the whole chain and a `scheme` / `sealed` predicate only
+/// partitions it, so `signer` is **non-optional** (the gateway returns 422
+/// without it). The remaining filters mirror
+/// [`RecordsListInput`](RecordsListInput) — they narrow the count but do not
+/// bound it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RecordsCountInput {
+    /// The record-level Ed25519 signer to scope the count to (64 lowercase-hex
+    /// characters). Required — the gateway 422s a count without it.
+    pub signer: String,
+    /// Restrict to one record scheme (`0` core, `1` sealed, …).
+    pub scheme: Option<u8>,
+    /// When `Some(true)`, restrict to sealed records addressed to the
+    /// authenticated caller.
+    pub sealed: Option<bool>,
+    /// The inclusive lower block-height bound.
+    pub from_block: Option<u64>,
+    /// The inclusive upper block-height bound.
+    pub to_block: Option<u64>,
+    /// The inclusive lower block-time bound (ISO 8601).
+    pub from_time: Option<String>,
+    /// The inclusive upper block-time bound (ISO 8601).
+    pub to_time: Option<String>,
+}
+
+impl RecordsCountInput {
+    /// Construct a count input scoped to `signer`, every optional filter unset.
+    #[must_use]
+    pub fn new(signer: impl Into<String>) -> Self {
+        Self {
+            signer: signer.into(),
+            scheme: None,
+            sealed: None,
+            from_block: None,
+            to_block: None,
+            from_time: None,
+            to_time: None,
+        }
+    }
+}
+
+/// The response to `client.records.count(...)`.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct RecordsCountResponse {
+    /// Always `"count"`.
+    pub object: String,
+    /// The number of records matching the filter.
+    pub count: u64,
+    /// The canonical URL of this count resource.
+    pub url: String,
 }
 
 // ---------------------------------------------------------------------------

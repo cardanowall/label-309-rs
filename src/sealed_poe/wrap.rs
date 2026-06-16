@@ -402,7 +402,7 @@ pub fn ecies_sealed_poe_wrap_secure(
         if rng_error.is_some() {
             return;
         }
-        if let Err(e) = getrandom::getrandom(buf) {
+        if let Err(e) = getrandom::fill(buf) {
             rng_error = Some(EciesSealedPoeError::new(
                 EciesSealedPoeErrorCode::RngUnavailable,
                 format!("operating-system CSPRNG is unavailable: {e}"),
@@ -447,6 +447,47 @@ pub fn ecies_sealed_poe_wrap_with_rng(
     args: WrapArgs<'_>,
     rng: RandomSource<'_>,
 ) -> Result<SealedPoeOutput, EciesSealedPoeError> {
+    let plaintext = args.plaintext;
+    let WrapEnvelope {
+        envelope,
+        mut payload_key,
+    } = wrap_envelope_with_rng(&args, rng)?;
+    let ciphertext = stream_seal(&payload_key, plaintext);
+    payload_key.zeroize();
+    Ok(SealedPoeOutput {
+        envelope,
+        ciphertext,
+    })
+}
+
+/// The sealed envelope plus the derived content `payload_key`, produced before
+/// any plaintext is streamed.
+///
+/// The envelope (slots + `slots_mac`) and the `payload_key` are a pure function
+/// of the CEK, nonce, recipients, and the item's `hashes` — never of the
+/// plaintext bytes. Factoring their construction here lets the buffered
+/// [`ecies_sealed_poe_wrap_with_rng`] and the streaming seal share one code
+/// path: the streaming seal resolves the envelope up front, then drives a
+/// [`StreamSealer`](super::stream::StreamSealer) over the `payload_key` instead
+/// of buffering the whole plaintext.
+///
+/// The caller MUST zeroize `payload_key` once the content layer has consumed it.
+pub(crate) struct WrapEnvelope {
+    /// The sealed envelope (the on-chain header material).
+    pub(crate) envelope: SealedEnvelope,
+    /// The derived content key: `slots_payload_key(cek, nonce)`.
+    pub(crate) payload_key: Vec<u8>,
+}
+
+/// Build the sealed envelope and the content `payload_key` from the wrap args,
+/// drawing any absent secret from `rng`. Everything in
+/// [`ecies_sealed_poe_wrap_with_rng`] up to (but not including) the content
+/// STREAM seal lives here, so the buffered and streaming wrap share one
+/// validated path.
+pub(crate) fn wrap_envelope_with_rng(
+    args: &WrapArgs<'_>,
+    rng: RandomSource<'_>,
+) -> Result<WrapEnvelope, EciesSealedPoeError> {
     let kem = args.kem.unwrap_or(SealedKem::X25519);
     let n = args.recipient_public_keys.len();
 
@@ -629,13 +670,11 @@ pub fn ecies_sealed_poe_wrap_with_rng(
     // directly, so the wrap layer and the content layer never key the same
     // primitive on the same bytes. The STREAM chunks carry no per-chunk AAD:
     // the header is bound transitively through the CEK commitment.
-    let mut payload_key = slots_payload_key(cek, nonce);
-    let ciphertext = stream_seal(&payload_key, args.plaintext);
+    let payload_key = slots_payload_key(cek, nonce);
 
-    payload_key.zeroize();
     owned_cek.zeroize();
 
-    Ok(SealedPoeOutput {
+    Ok(WrapEnvelope {
         envelope: SealedEnvelope {
             scheme: 1,
             aead: AEAD_CHACHA20_POLY1305_STREAM64K.to_string(),
@@ -644,7 +683,7 @@ pub fn ecies_sealed_poe_wrap_with_rng(
             slots,
             slots_mac: slots_mac.to_vec(),
         },
-        ciphertext,
+        payload_key,
     })
 }
 

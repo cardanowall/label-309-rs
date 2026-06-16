@@ -54,6 +54,18 @@ const LEAF_PREFIX: u8 = 0x00;
 /// Internal-node domain-separation prefix: `SHA-256(0x01 || left || right)`.
 const NODE_PREFIX: u8 = 0x01;
 
+/// Upper bound of the safe `tree_size` domain (`2^32 - 1`).
+///
+/// The inclusion-proof fold tracks the leaf index and the subtree's last index
+/// by right-shifting them one bit per level. That arithmetic is only exact while
+/// both values stay within 32 bits, so the algorithm's safe domain is
+/// `1 <= tree_size <= 2^32 - 1` (with `0 <= index < tree_size`). A `tree_size`
+/// at or above `2^32` would let a forged proof verify against the wrong subtree
+/// shape, so the whole out-of-range domain is rejected up front rather than
+/// folded. The on-chain commitment caps `leaf_count` at the same `2^32 - 1`, so
+/// no legitimate tree is excluded.
+const MAX_TREE_SIZE: usize = 0xffff_ffff;
+
 // ---------------------------------------------------------------------------
 // Tree primitives
 // ---------------------------------------------------------------------------
@@ -77,6 +89,31 @@ pub enum MerkleError {
         /// The number of leaves in the tree.
         tree_size: usize,
     },
+
+    /// The `tree_size` was outside the safe `[1, 2^32 - 1]` fold domain. A tree
+    /// at or above `2^32` leaves would truncate inside the verify fold's 32-bit
+    /// shift arithmetic, so it is refused rather than folded.
+    #[error("tree_size {tree_size} out of range [1, {MAX_TREE_SIZE}]")]
+    TreeSizeOutOfRange {
+        /// The offending tree size.
+        tree_size: usize,
+    },
+}
+
+/// Reject an out-of-range `(index, tree_size)` pair as a structural error.
+///
+/// The parity twins in the TypeScript and Python SDKs share this guard so a
+/// forged oversized `tree_size` is refused identically across every
+/// implementation: `tree_size` must be in `[1, 2^32 - 1]` and `index` must be
+/// in `[0, tree_size)`.
+fn validate_tree_range(index: usize, tree_size: usize) -> Result<(), MerkleError> {
+    if !(1..=MAX_TREE_SIZE).contains(&tree_size) {
+        return Err(MerkleError::TreeSizeOutOfRange { tree_size });
+    }
+    if index >= tree_size {
+        return Err(MerkleError::IndexOutOfRange { index, tree_size });
+    }
+    Ok(())
 }
 
 /// Compute the canonical Merkle root per RFC 9162 §2.1.1 (SHA-256).
@@ -103,7 +140,8 @@ pub fn merkle_root(leaves: &[[u8; DIGEST_LENGTH]]) -> Result<[u8; DIGEST_LENGTH]
 ///
 /// # Errors
 ///
-/// Returns [`MerkleError::EmptyTree`] if `leaves` is empty, or
+/// Returns [`MerkleError::EmptyTree`] if `leaves` is empty,
+/// [`MerkleError::TreeSizeOutOfRange`] if the leaf count exceeds `2^32 - 1`, or
 /// [`MerkleError::IndexOutOfRange`] if `index >= leaves.len()`.
 pub fn merkle_inclusion_proof(
     leaves: &[[u8; DIGEST_LENGTH]],
@@ -112,12 +150,7 @@ pub fn merkle_inclusion_proof(
     if leaves.is_empty() {
         return Err(MerkleError::EmptyTree);
     }
-    if index >= leaves.len() {
-        return Err(MerkleError::IndexOutOfRange {
-            index,
-            tree_size: leaves.len(),
-        });
-    }
+    validate_tree_range(index, leaves.len())?;
     Ok(audit_path(leaves, index))
 }
 
@@ -146,7 +179,12 @@ pub fn verify_inclusion(
     if leaf.len() != DIGEST_LENGTH || root.len() != DIGEST_LENGTH {
         return false;
     }
-    if tree_size < 1 || index >= tree_size {
+    // Out-of-range `(index, tree_size)` is a structural error, never a forged
+    // "verifies" verdict: a `tree_size` at or above `2^32` truncates inside the
+    // fold's 32-bit shift arithmetic. This predicate keeps its `bool` return, so
+    // it collapses the whole out-of-range domain to `false`; the certificate
+    // verify layer pre-validates the same bound and surfaces an explicit error.
+    if validate_tree_range(index, tree_size).is_err() {
         return false;
     }
 
@@ -620,6 +658,41 @@ mod tests {
             MerkleLeavesListError::new(MerkleLeavesListErrorCode::RootMismatch, "boom".to_string());
         assert_eq!(err.to_string(), "MERKLE_ROOT_MISMATCH: boom");
         assert_eq!(err.code_str(), "MERKLE_ROOT_MISMATCH");
+    }
+
+    #[test]
+    fn inclusion_proof_rejects_index_out_of_range() {
+        let leaves = [[0xa1u8; DIGEST_LENGTH], [0xa2u8; DIGEST_LENGTH]];
+        let err = merkle_inclusion_proof(&leaves, 2).expect_err("index == tree_size must reject");
+        assert_eq!(
+            err,
+            MerkleError::IndexOutOfRange {
+                index: 2,
+                tree_size: 2
+            }
+        );
+    }
+
+    #[test]
+    fn verify_rejects_out_of_range_tree_size_as_false() {
+        // A forged `tree_size` at or above 2^32 is past the safe fold domain: it
+        // must collapse to `false`, never a (potentially forged) `true`. The
+        // index is held in range so only the tree_size bound is exercised.
+        let leaf = [0x11u8; DIGEST_LENGTH];
+        let root = hash_leaf(&leaf);
+        assert!(!verify_inclusion(&leaf, 0, MAX_TREE_SIZE + 1, &[], &root));
+        // tree_size == 0 is below the domain and is likewise rejected.
+        assert!(!verify_inclusion(&leaf, 0, 0, &[], &root));
+        // The matching guard rejects the same oversized tree_size from the proof
+        // builder with a typed error rather than a silent path.
+        let oversized = validate_tree_range(0, MAX_TREE_SIZE + 1)
+            .expect_err("oversized tree_size must be a structural error");
+        assert_eq!(
+            oversized,
+            MerkleError::TreeSizeOutOfRange {
+                tree_size: MAX_TREE_SIZE + 1
+            }
+        );
     }
 
     #[test]

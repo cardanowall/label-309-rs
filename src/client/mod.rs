@@ -13,7 +13,7 @@
 //! - [`PoeNamespace`] — quote, multipart uploads, publish, publish-batch, and
 //!   the high-level [`publish_content`](PoeNamespace::publish_content) /
 //!   `publish_prehashed` / `publish_sealed` / `publish_merkle` helpers.
-//! - [`RecordsNamespace`] — record list, fetch, and verify.
+//! - [`RecordsNamespace`] — record list and fetch.
 //! - [`AccountNamespace`] — account balance read.
 //! - The RFC 7807 / RFC 9457 [`ProblemDetails`] parser and the full typed
 //!   [`Label309HttpError`] catalogue, with an unknown-code fallback to
@@ -52,7 +52,7 @@ pub use publish::{
 };
 pub use records::RecordsNamespace;
 pub use resumable::{
-    upload_resumable, ResumableUploadError, DEFAULT_RESUMABLE_CHUNK_BYTES,
+    abandon_session, upload_resumable, ResumableUploadError, DEFAULT_RESUMABLE_CHUNK_BYTES,
     DEFAULT_RESUMABLE_THRESHOLD_BYTES,
 };
 pub use transport::{
@@ -60,13 +60,14 @@ pub use transport::{
     ResponseHeaders,
 };
 pub use types::{
-    AccountBalance, ConformanceProfile, MerkleLeaf, PoeItemResponse, PoeStatus, PoeVerifyInput,
-    PublishBatchEntry, PublishBatchFailureEntry, PublishBatchFailureError, PublishBatchInput,
-    PublishBatchResponse, PublishBatchResultEntry, PublishBatchSuccessEntry, PublishContentInput,
-    PublishInput, PublishMerkleInput, PublishMerkleResponse, PublishPrehashedInput,
-    PublishResponse, PublishSealedInput, QuoteInput, QuoteResponse, RecordResource,
-    RecordSignature, RecordsListInput, RecordsListResponse, ResumableSource, ResumableUploadInput,
-    ResumableUploadResult, SealedKemChoice, SupportedHashAlg, UploadAttemptStatus, UploadEntry,
-    UploadError, UploadSessionChunkAck, UploadSessionCreated, UploadSessionDeduplicated,
-    UploadSessionStatus, UploadsInput, UploadsResponse,
+    AccountBalance, ConformanceProfile, MerkleLeaf, PoeItemResponse, PoeStatus, PublishBatchEntry,
+    PublishBatchFailureEntry, PublishBatchFailureError, PublishBatchInput, PublishBatchResponse,
+    PublishBatchResultEntry, PublishBatchSuccessEntry, PublishContentInput, PublishInput,
+    PublishMerkleInput, PublishMerkleResponse, PublishPrehashedInput, PublishResponse,
+    PublishSealedInput, QuoteBreakdown, QuoteInput, QuoteResponse, RecordResource, RecordSignature,
+    RecordsCountInput, RecordsCountResponse, RecordsListInput, RecordsListResponse,
+    ResumableSource, ResumableUploadInput, ResumableUploadResult, SealedKemChoice,
+    SupportedHashAlg, UploadAttemptStatus, UploadEntry, UploadError, UploadProgress,
+    UploadSessionChunkAck, UploadSessionCreated, UploadSessionDeduplicated, UploadSessionStatus,
+    UploadsInput, UploadsResponse,
 };

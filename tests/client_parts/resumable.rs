@@ -45,6 +45,9 @@ fn resumable_input(source: Vec<u8>) -> ResumableUploadInput {
         chunk_bytes: None,
         resume_session_id: None,
         idempotency_key: None,
+        on_progress: None,
+        cancel: None,
+        on_session_created: None,
     }
 }
 
@@ -66,7 +69,7 @@ fn small_source_takes_the_single_shot_path() {
         }]
     });
     let transport = Box::new(MockTransport::single(StubResponse::json(200, upload_body)));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content.clone());
     input.threshold_bytes = Some(content.len() as u64); // <= threshold -> single-shot
@@ -137,7 +140,7 @@ fn large_source_runs_the_session_flow_and_assembles_in_chunks() {
         chunk_ack(2, vec![0, 1, 2], true),
         complete,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content.clone());
     input.threshold_bytes = Some(5);
@@ -233,7 +236,7 @@ fn resume_sends_only_the_missing_chunks() {
     );
 
     let transport = Box::new(MockTransport::new(vec![status, chunk_ack, complete]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content.clone());
     input.chunk_bytes = Some(100);
@@ -282,7 +285,7 @@ fn create_dedup_short_circuit_uploads_no_bytes() {
         }),
     );
     let transport = Box::new(MockTransport::single(dedup));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content);
     input.threshold_bytes = Some(5);
@@ -356,7 +359,7 @@ fn complete_accepted_then_polls_attempt_to_committed() {
     let transport = Box::new(MockTransport::new(vec![
         create, ack0, ack1, accepted, reserved, committed,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content);
     input.threshold_bytes = Some(5);
@@ -392,7 +395,7 @@ fn create_funding_rejection_surfaces_typed_error() {
         "required_usd_micros": 500000,
     }));
     let transport = Box::new(MockTransport::single(StubResponse::json(402, problem)));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content);
     input.threshold_bytes = Some(5);
@@ -455,7 +458,7 @@ fn server_chunk_bytes_overrides_the_client_request() {
         ack(3, true),
         complete,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content.clone());
     input.threshold_bytes = Some(5);
@@ -502,7 +505,7 @@ fn default_threshold_drives_path_selection_below_the_cdn_cap() {
         }),
     );
     let transport = Box::new(MockTransport::new(vec![single, create]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     // Default threshold (~48 MiB): a 2-byte source is well below it -> single-shot.
     let input = resumable_input(b"hi".to_vec());
@@ -598,7 +601,7 @@ fn complete_409_incomplete_resumes_the_missing_chunk_then_succeeds() {
         resend_ack,
         complete_ok,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content.clone());
     input.threshold_bytes = Some(5);
@@ -709,7 +712,7 @@ fn poll_attempt_paces_between_polls_and_does_not_reject_a_long_reserved_attempt(
         reserved(),
         committed,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content);
     input.threshold_bytes = Some(5);
@@ -775,7 +778,7 @@ fn complete_default_idempotency_key_matches_the_resumable_sha256_scheme() {
         chunk_ack(2, true),
         complete,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content.clone());
     input.threshold_bytes = Some(5);
@@ -835,7 +838,7 @@ fn complete_caller_supplied_idempotency_key_overrides_the_default() {
         chunk_ack(2, true),
         complete,
     ]));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content);
     input.threshold_bytes = Some(5);
@@ -870,7 +873,7 @@ fn create_402_storage_credit_surfaces_funding_error() {
         "detail": "the drawable storage credit is below the safety floor",
     }));
     let transport = Box::new(MockTransport::single(StubResponse::json(402, problem)));
-    let (client, ptr) = client_with("https://gw.example.com", Some(&bearer_key()), transport);
+    let (client, ptr) = client_with("https://gw.example.com/api/v1",Some(&bearer_key()), transport);
 
     let mut input = resumable_input(content);
     input.threshold_bytes = Some(5);
@@ -885,4 +888,242 @@ fn create_402_storage_credit_surfaces_funding_error() {
         other => panic!("expected InsufficientFunds for a 402 funding code, got {other:?}"),
     }
     assert_eq!(mock(ptr).call_count(), 1, "rejected before any chunk");
+}
+
+// ---------------------------------------------------------------------------
+// Progress reporting
+// ---------------------------------------------------------------------------
+
+#[test]
+fn chunked_upload_reports_progress_after_each_chunk() {
+    // A 250-byte source over a 100-byte chunk grid: progress fires once per
+    // acknowledged chunk with the cumulative bytes and the chunk index, ending at
+    // 100%. The byte totals are the assertion (a UI binds to them), not a string.
+    let content: Vec<u8> = (0u8..250).collect();
+    let whole_hex = sha256_hex(&content);
+
+    let create = StubResponse::json(
+        201,
+        serde_json::json!({
+            "session_id": "01956b41-7c00-7000-8000-0000000aa000",
+            "chunk_bytes": 100, "chunk_count": 3, "received": [],
+            "expires_at": "2026-06-09T00:00:00Z", "max_chunk_bytes": 67108864,
+        }),
+    );
+    let ack = |idx: u32, received: Vec<u32>, complete: bool| {
+        let remaining = 3u32 - received.len() as u32;
+        StubResponse::json(200, serde_json::json!({
+            "index": idx, "received": received, "remaining": remaining, "complete": complete,
+        }))
+    };
+    let complete = StubResponse::json(200, serde_json::json!({
+        "ok": true, "uri": "ar://progress-tx", "sha256": whole_hex, "bytes": 250, "charged_usd_micros": 1,
+    }));
+    let transport = Box::new(MockTransport::new(vec![
+        create, ack(0, vec![0], false), ack(1, vec![0,1], false), ack(2, vec![0,1,2], true), complete,
+    ]));
+    let (client, _ptr) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+
+    let ticks = std::sync::Arc::new(std::sync::Mutex::new(Vec::<(u64, u64, u32, u32)>::new()));
+    let sink = ticks.clone();
+    let mut input = resumable_input(content);
+    input.threshold_bytes = Some(5);
+    input.chunk_bytes = Some(100);
+    input.on_progress = Some(std::sync::Arc::new(move |p: cardanowall::client::UploadProgress| {
+        sink.lock().unwrap().push((p.bytes_sent, p.total_bytes, p.chunk_index, p.chunks_total));
+    }));
+
+    let result = client.poe().upload_resumable(&input).unwrap();
+    assert_eq!(result.uri, "ar://progress-tx");
+
+    let ticks = ticks.lock().unwrap().clone();
+    // The three per-chunk ticks: cumulative 100/200/250, indices 0/1/2, total 3.
+    assert_eq!(
+        ticks,
+        vec![(100, 250, 0, 3), (200, 250, 1, 3), (250, 250, 2, 3)],
+        "progress reports cumulative bytes and chunk index per chunk, ending at 100%"
+    );
+}
+
+#[test]
+fn single_shot_reports_one_full_progress_tick() {
+    let content = b"a small blob".to_vec();
+    let body = serde_json::json!({
+        "uploads": [{ "idx": 0, "ok": true, "uri": "ar://ss", "sha256": sha256_hex(&content), "bytes": content.len() }]
+    });
+    let transport = Box::new(MockTransport::single(StubResponse::json(200, body)));
+    let (client, _ptr) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+
+    let ticks = std::sync::Arc::new(std::sync::Mutex::new(Vec::<cardanowall::client::UploadProgress>::new()));
+    let sink = ticks.clone();
+    let mut input = resumable_input(content.clone());
+    input.threshold_bytes = Some(content.len() as u64); // single-shot
+    input.on_progress = Some(std::sync::Arc::new(move |p| sink.lock().unwrap().push(p)));
+
+    client.poe().upload_resumable(&input).unwrap();
+    let ticks = ticks.lock().unwrap();
+    assert_eq!(ticks.len(), 1, "single-shot reports exactly one tick");
+    assert_eq!(ticks[0].bytes_sent, content.len() as u64);
+    assert_eq!(ticks[0].total_bytes, content.len() as u64);
+    assert_eq!(ticks[0].chunks_total, 1);
+}
+
+// ---------------------------------------------------------------------------
+// on_session_created fires before any chunk
+// ---------------------------------------------------------------------------
+
+#[test]
+fn on_session_created_fires_with_the_id_before_any_chunk() {
+    let content: Vec<u8> = (0u8..250).collect();
+    let whole_hex = sha256_hex(&content);
+    let sid = "01956b41-7c00-7000-8000-0000000bb000";
+
+    let create = StubResponse::json(201, serde_json::json!({
+        "session_id": sid, "chunk_bytes": 100, "chunk_count": 3, "received": [],
+        "expires_at": "2026-06-09T00:00:00Z", "max_chunk_bytes": 67108864,
+    }));
+    let ack = |idx: u32, complete: bool| StubResponse::json(200, serde_json::json!({
+        "index": idx, "received": [idx], "remaining": 0, "complete": complete,
+    }));
+    let complete = StubResponse::json(200, serde_json::json!({
+        "ok": true, "uri": "ar://sc", "sha256": whole_hex, "bytes": 250, "charged_usd_micros": 1,
+    }));
+    let transport = Box::new(MockTransport::new(vec![
+        create, ack(0, false), ack(1, false), ack(2, true), complete,
+    ]));
+    let (client, _ptr) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+
+    let seen = std::sync::Arc::new(std::sync::Mutex::new(Vec::<String>::new()));
+    let sink = seen.clone();
+    let mut input = resumable_input(content);
+    input.threshold_bytes = Some(5);
+    input.chunk_bytes = Some(100);
+    input.on_session_created = Some(std::sync::Arc::new(move |id: &str| sink.lock().unwrap().push(id.to_string())));
+
+    client.poe().upload_resumable(&input).unwrap();
+    let seen = seen.lock().unwrap();
+    assert_eq!(seen.as_slice(), &[sid.to_string()], "the session id is surfaced exactly once, at creation");
+}
+
+// ---------------------------------------------------------------------------
+// Cancellation -> abandon
+// ---------------------------------------------------------------------------
+
+#[test]
+fn cancel_before_first_chunk_abandons_the_session_and_returns_cancelled() {
+    // A cancel predicate that trips after the session is created (it is checked at
+    // the send-loop top, before the first chunk read): the helper must abandon the
+    // session (DELETE) and return Cancelled, sending NO chunk PUT.
+    let content: Vec<u8> = (0u8..250).collect();
+    let sid = "01956b41-7c00-7000-8000-0000000cc000";
+    let create = StubResponse::json(201, serde_json::json!({
+        "session_id": sid, "chunk_bytes": 100, "chunk_count": 3, "received": [],
+        "expires_at": "2026-06-09T00:00:00Z", "max_chunk_bytes": 67108864,
+    }));
+    // The abandon DELETE returns 204.
+    let abandon = StubResponse::json(204, serde_json::json!({}));
+    let transport = Box::new(MockTransport::new(vec![create, abandon]));
+    let (client, ptr) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+
+    // Cancel only AFTER the session exists: the create call is allowed, the first
+    // send-loop cancel check trips.
+    let armed = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let flag = armed.clone();
+    let mut input = resumable_input(content);
+    input.threshold_bytes = Some(5);
+    input.chunk_bytes = Some(100);
+    input.on_session_created = Some(std::sync::Arc::new(move |_id: &str| {
+        flag.store(true, std::sync::atomic::Ordering::SeqCst);
+    }));
+    let cancel_flag = armed.clone();
+    input.cancel = Some(std::sync::Arc::new(move || cancel_flag.load(std::sync::atomic::Ordering::SeqCst)));
+
+    let err = client.poe().upload_resumable(&input).unwrap_err();
+    assert!(matches!(err, ResumableUploadError::Cancelled), "expected Cancelled, got {err:?}");
+
+    // create + abandon DELETE, no chunk PUT.
+    assert_eq!(mock(ptr).call_count(), 2);
+    let del = mock(ptr).nth(1);
+    assert_eq!(del.method, HttpMethod::Delete);
+    assert!(del.url.ends_with(&format!("/poe/uploads/sessions/{sid}")), "url was {}", del.url);
+}
+
+#[test]
+fn cancel_with_failing_abandon_surfaces_abandon_failed_with_the_session_id() {
+    // On cancel the helper attempts the abandon; if the DELETE itself fails (here
+    // a 500), the error carries the session id so the caller can retry the
+    // abandon rather than leak the session.
+    let content: Vec<u8> = (0u8..250).collect();
+    let sid = "01956b41-7c00-7000-8000-0000000dd000";
+    let create = StubResponse::json(201, serde_json::json!({
+        "session_id": sid, "chunk_bytes": 100, "chunk_count": 3, "received": [],
+        "expires_at": "2026-06-09T00:00:00Z", "max_chunk_bytes": 67108864,
+    }));
+    let abandon_500 = StubResponse::json(500, problem_body(serde_json::json!({
+        "status": 500, "code": "internal-error", "detail": "could not delete the session",
+    })));
+    let transport = Box::new(MockTransport::new(vec![create, abandon_500]));
+    let (client, ptr) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+
+    let armed = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let flag = armed.clone();
+    let mut input = resumable_input(content);
+    input.threshold_bytes = Some(5);
+    input.chunk_bytes = Some(100);
+    input.on_session_created = Some(std::sync::Arc::new(move |_id: &str| {
+        flag.store(true, std::sync::atomic::Ordering::SeqCst);
+    }));
+    let cancel_flag = armed.clone();
+    input.cancel = Some(std::sync::Arc::new(move || cancel_flag.load(std::sync::atomic::Ordering::SeqCst)));
+
+    let err = client.poe().upload_resumable(&input).unwrap_err();
+    match err {
+        ResumableUploadError::AbandonFailed { session_id, .. } => {
+            assert_eq!(session_id, sid, "the abandon failure carries the session id");
+        }
+        other => panic!("expected AbandonFailed, got {other:?}"),
+    }
+    assert_eq!(mock(ptr).call_count(), 2, "create + the failed abandon DELETE");
+}
+
+// ---------------------------------------------------------------------------
+// abandon_upload_session primitive
+// ---------------------------------------------------------------------------
+
+#[test]
+fn abandon_upload_session_deletes_and_treats_gone_as_success() {
+    let sid = "01956b41-7c00-7000-8000-0000000ee000";
+
+    // 204 success.
+    let transport = Box::new(MockTransport::single(StubResponse::json(204, serde_json::json!({}))));
+    let (client, ptr) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+    client.poe().abandon_upload_session(sid).unwrap();
+    let req = mock(ptr).first();
+    assert_eq!(req.method, HttpMethod::Delete);
+    assert!(req.url.ends_with(&format!("/poe/uploads/sessions/{sid}")));
+
+    // 404 (already gone) is also success — idempotent.
+    let transport = Box::new(MockTransport::single(StubResponse::json(404, problem_body(
+        serde_json::json!({ "status": 404, "code": "not-found", "detail": "no such session" }),
+    ))));
+    let (client, _) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+    client.poe().abandon_upload_session(sid).expect("a gone session is already abandoned");
+
+    // 410 (expired) is also success.
+    let transport = Box::new(MockTransport::single(StubResponse::json(410, problem_body(
+        serde_json::json!({ "status": 410, "code": "gone", "detail": "the session expired" }),
+    ))));
+    let (client, _) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+    client.poe().abandon_upload_session(sid).expect("an expired session is already abandoned");
+}
+
+#[test]
+fn abandon_upload_session_surfaces_a_real_error() {
+    let sid = "01956b41-7c00-7000-8000-0000000ff000";
+    let transport = Box::new(MockTransport::single(StubResponse::json(500, problem_body(
+        serde_json::json!({ "status": 500, "code": "internal-error", "detail": "boom" }),
+    ))));
+    let (client, _) = client_with("https://gw.example.com/api/v1", Some(&bearer_key()), transport);
+    let err = client.poe().abandon_upload_session(sid).unwrap_err();
+    assert_eq!(http_err(err).http_status(), 500);
 }

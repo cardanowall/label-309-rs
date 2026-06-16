@@ -1,6 +1,9 @@
 //! The `client.account.*` namespace: the account read surface.
 //!
-//! - `GET /api/v1/account/balance` → [`balance`](AccountNamespace::balance)
+//! The path below is relative to the configured `base_url`, which carries the
+//! gateway's version segment (e.g. `https://host/api/vN`):
+//!
+//! - `GET /account/balance` → [`balance`](AccountNamespace::balance)
 //!
 //! Auth is required (Bearer with the `account:read` scope, or a session cookie
 //! when the gateway is browser-fronted). The configured opaque bearer key is
@@ -43,7 +46,7 @@ impl<'t> AccountNamespace<'t> {
     /// when the Bearer key lacks the `account:read` scope, plus other typed
     /// errors on any non-2xx response.
     pub fn balance(&self) -> Result<AccountBalance, ClientError> {
-        let url = format!("{}/api/v1/account/balance", self.config.base_url);
+        let url = format!("{}/account/balance", self.config.base_url);
         let headers = json_headers(self.config.api_key.as_deref(), None);
         let response = send(
             self.config.transport,

@@ -151,6 +151,23 @@ pub enum EciesSealedPoeErrorCode {
     /// host runtimes expose an infallible CSPRNG; it is specific to the Rust
     /// secure-by-default wrap, which reads the OS RNG directly.
     RngUnavailable,
+    /// A read from the plaintext source or a write to the ciphertext sink (or
+    /// the reverse, on unwrap) failed while a streaming seal / unwrap was
+    /// driving the content STREAM over [`std::io::Read`] / [`std::io::Write`].
+    ///
+    /// Specific to the Rust streaming APIs (`ecies_sealed_poe_seal_stream` /
+    /// `ecies_sealed_poe_unwrap_stream`), which thread real I/O: the TypeScript
+    /// and Python streaming surfaces report a source/sink failure through their
+    /// host iteration protocols instead.
+    IoError,
+    /// A streaming seal / unwrap stopped because the caller's `cancel` closure
+    /// returned `true`. A cooperative cancellation, checked once per chunk — not
+    /// a corruption or an input error.
+    ///
+    /// Specific to the Rust streaming APIs, whose cancellation primitive is a
+    /// closure; the TypeScript surface uses an `AbortSignal` and the Python
+    /// surface a cancel callable.
+    Cancelled,
 }
 
 impl EciesSealedPoeErrorCode {
@@ -188,6 +205,8 @@ impl EciesSealedPoeErrorCode {
             Self::PassphraseInputTooLong => "PASSPHRASE_INPUT_TOO_LONG",
             Self::KdfDerivationFailed => "KDF_DERIVATION_FAILED",
             Self::RngUnavailable => "RNG_UNAVAILABLE",
+            Self::IoError => "IO_ERROR",
+            Self::Cancelled => "CANCELLED",
         }
     }
 }
