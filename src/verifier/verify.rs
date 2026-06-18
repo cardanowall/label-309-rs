@@ -160,8 +160,13 @@ fn assemble_report(
 /// one yields a provider-unavailable report rather than reaching the network.
 #[must_use]
 pub fn verify_tx(input: &VerifyTxInput<'_>) -> VerifyReport {
+    // The default transport carries the caller's deny list so its redirect-policy
+    // closure re-applies the same list the initial-URL guard uses to every
+    // gateway-redirect target it follows.
     #[cfg(feature = "client")]
-    let default_transport = crate::verifier::fetch::ReqwestTransport::new();
+    let default_transport = crate::verifier::fetch::ReqwestTransport::with_deny_hosts(
+        input.deny_hosts.clone().unwrap_or_default(),
+    );
 
     #[cfg(feature = "client")]
     let transport: &dyn crate::verifier::fetch::FetchTransport =
@@ -346,7 +351,9 @@ pub fn verify_record_bytes(
         return Err(ZeroConfirmationDepthError);
     }
     #[cfg(feature = "client")]
-    let default_transport = crate::verifier::fetch::ReqwestTransport::new();
+    let default_transport = crate::verifier::fetch::ReqwestTransport::with_deny_hosts(
+        input.deny_hosts.clone().unwrap_or_default(),
+    );
 
     #[cfg(feature = "client")]
     let transport: &dyn crate::verifier::fetch::FetchTransport =

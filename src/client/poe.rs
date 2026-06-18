@@ -156,7 +156,7 @@ impl<'t> PoeNamespace<'t> {
     /// cancelled or aborted upload left behind — [`upload_resumable`](Self::upload_resumable)
     /// already attempts the abandon on its own cancel path, so this is for an
     /// out-of-band discard or a retry of a
-    /// [`ResumableUploadError::AbandonFailed`](crate::client::ResumableUploadError::AbandonFailed).
+    /// [`ResumableUploadError::AbandonFailed`].
     ///
     /// # Errors
     ///

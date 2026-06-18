@@ -25,6 +25,7 @@ use cardanowall::verifier::fetch::{
 };
 use cardanowall::verifier::{
     verify_report_to_dict, verify_tx, ContentCheck, Decryption, Profile, Verdict, VerifyTxInput,
+    ARWEAVE_GATEWAY_DEFAULTS,
 };
 
 use common::sdk_ts_fixtures;
@@ -227,7 +228,10 @@ impl MockTransport {
             for (ar_tx_id, hex_str) in map {
                 if let Some(hex) = hex_str.as_str() {
                     if let Ok(bytes) = hex::decode(hex) {
-                        arweave.insert(format!("https://arweave.net/{ar_tx_id}"), bytes);
+                        // Key by the bare content address. The bytes are served
+                        // for whatever default gateway host the verifier reaches
+                        // first, matched by `/{ar_tx_id}` URL suffix below.
+                        arweave.insert(ar_tx_id.clone(), bytes);
                     }
                 }
             }
@@ -291,8 +295,15 @@ impl FetchTransport for MockTransport {
             if let Some(b) = &self.bf_tx_body {
                 return Self::ok(b);
             }
-        } else if let Some(bytes) = self.arweave.get(url) {
-            return Self::ok(bytes);
+        } else {
+            // Captured Arweave content is keyed by its bare content address and
+            // served for whatever default gateway host the verifier reaches
+            // first, matched by the `/{ar_tx_id}` URL suffix.
+            for (ar_tx_id, bytes) in &self.arweave {
+                if url.ends_with(&format!("/{ar_tx_id}")) {
+                    return Self::ok(bytes);
+                }
+            }
         }
         self.misses.lock().unwrap().push(url.to_string());
         Err(OutboundError::Transport {
@@ -356,6 +367,13 @@ fn corpus_replay_matches_golden_reports() {
         } else {
             input.cardano_gateway_chain = Some(vec![KOIOS_URL.to_string()]);
         }
+        // Pin the Arweave chain to the single gateway the corpus stub serves, so
+        // the replayed audits match the byte-identical sdk-ts goldens regardless
+        // of the default gateway ROTATION (whose membership/order is asserted
+        // independently by `arweave_gateway_defaults_is_the_production_rotation`).
+        // The mock serves captured content by bare address, so the verifier's
+        // first gateway is the one that lands in the audit trail.
+        input.arweave_gateway_chain = Some(vec!["https://arweave.net".to_string()]);
         if !decryption.is_empty() {
             input.decryption = Some(decryption);
         }
@@ -391,6 +409,27 @@ fn corpus_replay_matches_golden_reports() {
     }
 
     assert!(replayed >= 100, "only replayed {replayed} corpus records");
+}
+
+// ---------------------------------------------------------------------------
+// Default Arweave gateway rotation
+// ---------------------------------------------------------------------------
+
+/// The baked-in Arweave gateway rotation: tried in order when a caller supplies
+/// no `arweave_gateway_chain`. The corpus replay pins its own single-gateway
+/// chain precisely so it does NOT depend on this default; this is the one test
+/// that owns the production rotation's exact membership and order, so changing
+/// it must be a conscious edit here, never an accidental golden-fixture churn.
+#[test]
+fn arweave_gateway_defaults_is_the_production_rotation() {
+    assert_eq!(
+        ARWEAVE_GATEWAY_DEFAULTS,
+        [
+            "https://turbo-gateway.com",
+            "https://arweave.net",
+            "https://permagate.io",
+        ]
+    );
 }
 
 // ---------------------------------------------------------------------------

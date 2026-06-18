@@ -9,6 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > release. Pre-1.0 versions do not carry the stability guarantees of
 > [Semantic Versioning](https://semver.org/).
 
+## [0.7.1] - 2026-06-18
+
+### Fixed
+
+- Arweave content retrieval now fetches through the `turbo-gateway.com` fast-finality gateway and follows the gateway's same-domain sandbox-subdomain redirects. The redirect follow is SSRF-safe: it only targets the same registrable domain, re-checks the deny-host list on every hop, requires `https`, and caps the chain at three hops. The dead default gateways `ar-io.net` and `g8way.io` are removed.
+
 ## [0.7.0] - 2026-06-16
 
 ### Added

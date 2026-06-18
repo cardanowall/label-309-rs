@@ -46,9 +46,9 @@ use crate::verifier::types::{ContentCheck, VerifierIssue};
 /// and one that does not is a deployment that declines IPFS
 /// (`URI_TARGET_FORBIDDEN` at fetch time).
 pub const ARWEAVE_GATEWAY_DEFAULTS: [&str; 3] = [
+    "https://turbo-gateway.com",
     "https://arweave.net",
-    "https://ar-io.net",
-    "https://g8way.io",
+    "https://permagate.io",
 ];
 
 /// Gateway chains and fetch policy shared by every content consumer of a run.

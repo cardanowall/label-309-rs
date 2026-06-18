@@ -412,6 +412,76 @@ fn is_allowed_protocol(url: &str) -> bool {
     )
 }
 
+/// The maximum number of redirect hops the gateway fetch will follow.
+#[cfg(feature = "client")]
+const GATEWAY_REDIRECT_MAX_HOPS: usize = 3;
+
+/// Decide whether a gateway-fetch redirect may be followed.
+///
+/// `origin` is the original gateway URL we dialled (the first entry of the
+/// redirect chain); `target` is the URL the `Location` header points at;
+/// `hop_count` is the redirect-chain length so far (the number of entries in
+/// `previous()`: the original request counts as one, so the first 3xx arrives
+/// with `hop_count == 1`). `caller_deny_hosts` is the deny list the caller
+/// configured on the verifier — the SAME list the initial-URL guard checked —
+/// re-applied here so a redirect can never pivot the fetch onto a host the
+/// caller forbade behind the wrapper's back. Returns `true` only when EVERY
+/// guard holds:
+///
+/// 1. the target is an absolute `https` URL;
+/// 2. the target host equals the origin gateway host, OR is a subdomain of it
+///    (`host == gw_host || host.ends_with(&format!(".{gw_host}"))`) — Arweave
+///    gateways 302 to a `{base32}.{gw}` content-address sandbox of the SAME
+///    registrable domain, so same-domain hops are required to reach the bytes
+///    while cross-domain hops (e.g. a 302 → `169.254.169.254`) stay blocked to
+///    prevent an SSRF pivot;
+/// 3. the target host is NOT on the canonical deny list NOR on the
+///    caller-supplied deny list (both re-applied here so a sandbox host that
+///    resolves to loopback/metadata, or a host the caller named, is refused);
+/// 4. following would not exceed [`GATEWAY_REDIRECT_MAX_HOPS`] FOLLOWED hops —
+///    exactly 3 redirects are followed and the 4th is refused.
+///
+/// A missing/unparseable origin or target host fails closed.
+#[cfg(feature = "client")]
+#[must_use]
+pub fn gateway_redirect_allowed(
+    origin: Option<&str>,
+    target: &str,
+    hop_count: usize,
+    caller_deny_hosts: &[String],
+) -> bool {
+    // `hop_count` counts the original request, so the Nth 3xx arrives with
+    // `hop_count == N`. Following it yields N redirects total; refuse once N
+    // would exceed the cap, so exactly GATEWAY_REDIRECT_MAX_HOPS redirects are
+    // followed and the next is stopped.
+    if hop_count > GATEWAY_REDIRECT_MAX_HOPS {
+        return false;
+    }
+    let Some(gw_host) = origin.and_then(parse_hostname) else {
+        return false;
+    };
+    let gw_host = canonicalise_host(&gw_host);
+
+    if parse_protocol(target).as_deref() != Some("https:") {
+        return false;
+    }
+    let Some(target_host) = parse_hostname(target) else {
+        return false;
+    };
+    let target_host = canonicalise_host(&target_host);
+
+    let same_domain = target_host == gw_host || target_host.ends_with(&format!(".{gw_host}"));
+    if !same_domain {
+        return false;
+    }
+
+    // The redirect target must clear BOTH the canonical loopback/metadata deny
+    // list AND the caller's own deny list — the same list the wrapper applied to
+    // the original url, re-applied to the new target.
+    !matches_deny_list(&target_host, &DENY_HOSTS_DEFAULT)
+        && !matches_deny_list(&target_host, caller_deny_hosts)
+}
+
 // ---------------------------------------------------------------------------
 // Injected clock + jitter (determinism)
 // ---------------------------------------------------------------------------
@@ -697,18 +767,40 @@ impl Resolve for PinnedResolver {
 /// IP and refuses every other name — the DNS-rebinding mitigation for the webhook
 /// path. The generic gateway path leaves `pinned` unset and uses the system
 /// resolver.
+///
+/// `deny_hosts` is the caller's configured deny list. reqwest builds its redirect
+/// policy at client-construction time, before any per-request options are
+/// visible, so the deny list the wrapper applies to the original URL is captured
+/// here and re-applied to each redirect target the gateway path chooses to
+/// follow.
 #[cfg(feature = "client")]
 #[derive(Default)]
 pub struct ReqwestTransport {
     pinned: Option<(String, std::net::IpAddr)>,
+    deny_hosts: Vec<String>,
 }
 
 #[cfg(feature = "client")]
 impl ReqwestTransport {
-    /// A transport using the system DNS resolver.
+    /// A transport using the system DNS resolver and no caller deny list.
+    ///
+    /// The canonical loopback/metadata deny list is always re-applied to redirect
+    /// targets regardless; this constructor carries no caller-specific entries.
+    /// Use [`ReqwestTransport::with_deny_hosts`] to thread the verifier's
+    /// configured deny list into the redirect re-check.
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// A transport using the system DNS resolver with the caller's deny list,
+    /// re-applied to every gateway-redirect target the client follows.
+    #[must_use]
+    pub fn with_deny_hosts(deny_hosts: Vec<String>) -> Self {
+        Self {
+            pinned: None,
+            deny_hosts,
+        }
     }
 
     /// A transport that pins `hostname` to `addr` for the TCP connection.
@@ -720,17 +812,54 @@ impl ReqwestTransport {
     pub fn pinned(hostname: impl Into<String>, addr: std::net::IpAddr) -> Self {
         Self {
             pinned: Some((hostname.into(), addr)),
+            deny_hosts: Vec::new(),
         }
     }
 
+    /// The redirect policy for this transport.
+    ///
+    /// The pinned (webhook) path NEVER follows a redirect: its SSRF guard
+    /// validated only the original URL, and the connection is pinned to one IP,
+    /// so any `Location` hop is refused and a 3xx surfaces as a non-200 status.
+    ///
+    /// The unpinned (gateway) path follows a redirect ONLY when it stays on the
+    /// same registrable domain. Arweave gateways 302 `{gw}/{txid}` →
+    /// `{base32}.{gw}/{txid}` — a content-addressed sandbox subdomain of the SAME
+    /// gateway domain — so following same-domain redirects is REQUIRED to fetch
+    /// the bytes at all. Cross-domain redirects stay blocked: a hostile gateway
+    /// returning `302 Location: http://169.254.169.254/…` (or any registrable
+    /// domain other than the one we dialled) would otherwise pivot the fetch into
+    /// the internal network behind the verifier's back. The per-hop decision is
+    /// the pure [`gateway_redirect_allowed`]; the chain is capped at 3 hops.
+    #[cfg(feature = "client")]
+    fn redirect_policy(&self) -> reqwest::redirect::Policy {
+        if self.pinned.is_some() {
+            return reqwest::redirect::Policy::none();
+        }
+        // reqwest's redirect closure is built once, here, with no view of the
+        // per-request options — so the caller's deny list is captured into the
+        // closure and re-applied to every redirect target alongside the canonical
+        // loopback/metadata list.
+        let deny_hosts = self.deny_hosts.clone();
+        reqwest::redirect::Policy::custom(move |attempt| {
+            // The first entry of `previous()` is the original gateway URL we
+            // dialled; same-domain is measured against ITS host, so a chain of
+            // sandbox hops can never widen the allowed domain set. The chain
+            // length is the hop count (origin first), so it doubles as the cap.
+            let origin = attempt.previous().first().map(reqwest::Url::as_str);
+            let target = attempt.url().as_str();
+            if gateway_redirect_allowed(origin, target, attempt.previous().len(), &deny_hosts) {
+                attempt.follow()
+            } else {
+                attempt.stop()
+            }
+        })
+    }
+
     fn build_client(&self) -> Result<reqwest::blocking::Client, OutboundError> {
-        // Never follow redirects. The SSRF guard validates only the original URL;
-        // a hostile gateway returning `302 Location: http://169.254.169.254/…`
-        // would otherwise pivot the fetch into the internal network behind the
-        // verifier's back. A 3xx surfaces as a non-200 status instead.
         let mut builder = reqwest::blocking::Client::builder()
             .timeout(Duration::from_millis(DEFAULT_TIMEOUT_MS))
-            .redirect(reqwest::redirect::Policy::none());
+            .redirect(self.redirect_policy());
         if let Some((host, addr)) = &self.pinned {
             builder = builder
                 .dns_resolver(Arc::new(PinnedResolver {
@@ -2040,5 +2169,174 @@ mod tests {
         assert_eq!(err.url, "https://x.example/y");
         assert_eq!(err.hostname, "x.example");
         assert_eq!(err.resolved_ip.as_deref(), Some("10.0.0.1"));
+    }
+
+    // ---- gateway redirect policy (pure decision) ----
+
+    #[cfg(feature = "client")]
+    mod gateway_redirect {
+        use super::super::gateway_redirect_allowed;
+
+        const GW: &str = "https://arweave.net/abc";
+
+        /// No caller-supplied deny list (the canonical loopback/metadata list is
+        /// always applied internally regardless).
+        const NO_CALLER_DENY: &[String] = &[];
+
+        #[test]
+        fn same_host_followed() {
+            // The exact gateway host (no subdomain) is allowed.
+            assert!(gateway_redirect_allowed(
+                Some(GW),
+                "https://arweave.net/abc/",
+                1,
+                NO_CALLER_DENY
+            ));
+        }
+
+        #[test]
+        fn sandbox_subdomain_followed() {
+            // The base32 content-address sandbox of the SAME registrable domain —
+            // the redirect Arweave actually issues — is allowed.
+            assert!(gateway_redirect_allowed(
+                Some(GW),
+                "https://7n4d3l2k.arweave.net/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+        }
+
+        #[test]
+        fn cross_domain_blocked() {
+            // A different registrable domain is refused even over https.
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "https://evil.example/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+            // A look-alike whose ONLY similarity is a substring (not a dotted
+            // suffix) must not pass the subdomain test.
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "https://arweave.net.evil.example/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "https://notarweave.net/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+        }
+
+        #[test]
+        fn non_https_target_blocked() {
+            // Same host but http:// — refused (and so is the loopback pivot below).
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "http://arweave.net/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+        }
+
+        #[test]
+        fn deny_listed_target_blocked() {
+            // A redirect to a loopback / cloud-metadata target is refused: it is
+            // cross-domain here, and even a same-domain host resolving to such an
+            // address is caught by the re-applied default deny-host check.
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "https://169.254.169.254/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+            assert!(!gateway_redirect_allowed(
+                Some("https://127.0.0.1/abc"),
+                "https://127.0.0.1/abc/",
+                1,
+                NO_CALLER_DENY
+            ));
+            assert!(!gateway_redirect_allowed(
+                Some("https://localhost/abc"),
+                "https://localhost/abc/",
+                1,
+                NO_CALLER_DENY
+            ));
+        }
+
+        #[test]
+        fn caller_deny_listed_same_domain_target_refused() {
+            // A same-domain, https, non-default-denied redirect target that the
+            // CALLER named on its own deny list must still be refused — the redirect
+            // re-check applies the caller list, not just the canonical default.
+            let caller_deny = vec!["blocked.arweave.net".to_string()];
+            // Without the caller list this same-domain sandbox subdomain would be
+            // followed (it clears the default list and the same-domain rule).
+            assert!(gateway_redirect_allowed(
+                Some(GW),
+                "https://blocked.arweave.net/abc",
+                1,
+                NO_CALLER_DENY
+            ));
+            // With the caller deny list it is refused.
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "https://blocked.arweave.net/abc",
+                1,
+                &caller_deny
+            ));
+            // A wildcard caller entry refuses every subdomain hop.
+            let wildcard = vec!["*.arweave.net".to_string()];
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "https://7n4d3l2k.arweave.net/abc",
+                1,
+                &wildcard
+            ));
+            // A caller-denied host the redirect does NOT target is irrelevant: an
+            // otherwise-valid same-domain hop is still followed.
+            let unrelated = vec!["other.example".to_string()];
+            assert!(gateway_redirect_allowed(
+                Some(GW),
+                "https://arweave.net/abc/",
+                1,
+                &unrelated
+            ));
+        }
+
+        #[test]
+        fn hop_cap_enforced() {
+            // `hop_count` counts the original request, so the Nth 3xx arrives with
+            // `hop_count == N`. Exactly 3 redirects are followed and the 4th is
+            // refused, matching the TS/PY twins.
+            let same = "https://arweave.net/abc";
+            assert!(gateway_redirect_allowed(Some(GW), same, 1, NO_CALLER_DENY));
+            assert!(gateway_redirect_allowed(Some(GW), same, 2, NO_CALLER_DENY));
+            // The 3rd redirect is the last one followed.
+            assert!(gateway_redirect_allowed(Some(GW), same, 3, NO_CALLER_DENY));
+            // The 4th is refused.
+            assert!(!gateway_redirect_allowed(Some(GW), same, 4, NO_CALLER_DENY));
+            assert!(!gateway_redirect_allowed(Some(GW), same, 5, NO_CALLER_DENY));
+        }
+
+        #[test]
+        fn missing_or_unparseable_fails_closed() {
+            assert!(!gateway_redirect_allowed(None, GW, 0, NO_CALLER_DENY));
+            assert!(!gateway_redirect_allowed(
+                Some("not a url"),
+                GW,
+                0,
+                NO_CALLER_DENY
+            ));
+            assert!(!gateway_redirect_allowed(
+                Some(GW),
+                "not a url",
+                0,
+                NO_CALLER_DENY
+            ));
+        }
     }
 }

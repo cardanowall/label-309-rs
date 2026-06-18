@@ -833,7 +833,7 @@ pub struct RecordsListResponse {
 /// time window can span the whole chain and a `scheme` / `sealed` predicate only
 /// partitions it, so `signer` is **non-optional** (the gateway returns 422
 /// without it). The remaining filters mirror
-/// [`RecordsListInput`](RecordsListInput) — they narrow the count but do not
+/// [`RecordsListInput`] — they narrow the count but do not
 /// bound it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RecordsCountInput {

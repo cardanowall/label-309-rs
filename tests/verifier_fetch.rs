@@ -443,9 +443,20 @@ mod real_socket {
     }
 
     // ===========================================================================
-    // SSRF: redirects must NOT be followed. The deny-host / SSRF guard validates
-    // only the original URL, so an un-rechecked `Location` hop could pivot the
-    // fetch into the internal network. A 3xx must surface as a non-200 status.
+    // Gateway redirect policy over a real socket.
+    //
+    // The gateway fetch follows a 3xx ONLY when the `Location` target is an
+    // https URL on the SAME registrable domain as the gateway we dialled —
+    // Arweave 302s `{gw}/{txid}` to a `{base32}.{gw}` content-address sandbox, so
+    // following same-domain hops is required to reach the bytes. A cross-domain
+    // hop (e.g. a 302 → an internal/loopback host) is NEVER followed: it would
+    // otherwise pivot the fetch into the internal network. The same-domain
+    // https-follow decision is pinned exhaustively by the pure unit tests in the
+    // `gateway_redirect` module; over a plain-HTTP loopback socket we can drive
+    // the refuse paths, which is where the SSRF risk lives.
+    //
+    // The webhook (pinned) path keeps its refuse-all-redirects behavior; that is
+    // covered by `pinned_transport_refuses_unexpected_host`.
     // ===========================================================================
 
     /// Build a minimal HTTP/1.1 3xx redirect response pointing at `location`.
@@ -457,7 +468,7 @@ mod real_socket {
     }
 
     #[test]
-    fn redirect_is_not_followed_to_internal_host() {
+    fn gateway_redirect_to_internal_host_is_not_followed() {
         use cardanowall::verifier::fetch::FetchTransport;
 
         // The "internal" target: a loopback server that, if ever reached, returns a
@@ -476,7 +487,8 @@ mod real_socket {
             }
         });
 
-        // The hostile gateway redirects to the internal server.
+        // The hostile gateway redirects to the internal server (cross-domain,
+        // loopback, non-https — refused on every count).
         let location = format!("http://127.0.0.1:{}/metadata", internal_addr.port());
         let gateway_addr = spawn_once(move |_req| http_redirect("302 Found", &location));
 
@@ -497,6 +509,72 @@ mod real_socket {
         assert!(
             !internal_reached.load(Ordering::SeqCst),
             "the redirect target must never be contacted"
+        );
+    }
+
+    #[test]
+    fn gateway_redirect_to_metadata_ip_is_not_followed() {
+        use cardanowall::verifier::fetch::FetchTransport;
+
+        // A 302 straight at the cloud-metadata IP. The target is cross-domain,
+        // non-https, AND deny-listed — the 302 must surface untouched and the
+        // metadata endpoint must never be dialled (the loopback proxy that would
+        // otherwise prove a contact is the absence of any new connection error).
+        let gateway_addr = spawn_once(move |_req| {
+            http_redirect("302 Found", "http://169.254.169.254/latest/meta-data/")
+        });
+        let transport = ReqwestTransport::new();
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Arweave);
+        opts.max_bytes = Some(1024);
+        let result = transport
+            .fetch(&http_url(gateway_addr, "/redirect"), &opts)
+            .unwrap();
+        assert_eq!(result.status, 302, "the 3xx must surface, not be followed");
+    }
+
+    #[test]
+    fn webhook_pinned_path_refuses_same_host_redirect() {
+        use cardanowall::verifier::fetch::FetchTransport;
+
+        // The pinned (webhook) transport NEVER follows a redirect, even to the
+        // same host: its SSRF guard validated only the original URL. The 302 must
+        // surface and the redirect target must never be contacted.
+        let target_reached = Arc::new(AtomicBool::new(false));
+        let target_clone = Arc::clone(&target_reached);
+        let target = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let target_addr = target.local_addr().unwrap();
+        thread::spawn(move || {
+            if let Ok((mut stream, _)) = target.accept() {
+                target_clone.store(true, Ordering::SeqCst);
+                let mut buf = [0u8; 4096];
+                let _ = stream.read(&mut buf);
+                let _ = stream.write_all(&http_200(b"FOLLOWED", None));
+                let _ = stream.flush();
+            }
+        });
+
+        let host = "webhook-target.invalid";
+        let location = format!("http://{host}:{}/next", target_addr.port());
+        let gateway = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let gateway_addr = gateway.local_addr().unwrap();
+        thread::spawn(move || {
+            if let Ok((mut stream, _)) = gateway.accept() {
+                let mut buf = [0u8; 4096];
+                let _ = stream.read(&mut buf);
+                let _ = stream.write_all(&http_redirect("302 Found", &location));
+                let _ = stream.flush();
+            }
+        });
+
+        let pinned = ReqwestTransport::pinned(host, IpAddr::V4(Ipv4Addr::LOCALHOST));
+        let url = format!("http://{host}:{}/hook", gateway_addr.port());
+        let mut opts = FetchOutboundOptions::new(HttpMethod::Get, HttpPurpose::Webhook);
+        opts.max_bytes = Some(1024);
+        let result = pinned.fetch(&url, &opts).unwrap();
+        assert_eq!(result.status, 302, "pinned path must surface the 302");
+        assert!(
+            !target_reached.load(Ordering::SeqCst),
+            "the pinned path must not follow any redirect"
         );
     }
 }

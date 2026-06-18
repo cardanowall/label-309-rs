@@ -1,8 +1,8 @@
 //! Streaming sealed-PoE seal and unwrap over [`Read`]/[`Write`].
 //!
 //! These are bounded-memory wrappers around the public
-//! [`StreamSealer`](super::stream::StreamSealer) /
-//! [`StreamOpener`](super::stream::StreamOpener) chunk machines and the buffered
+//! [`StreamSealer`] /
+//! [`StreamOpener`] chunk machines and the buffered
 //! wrap/unwrap envelope logic. They exist so a host (the desktop, a CLI) can seal
 //! or open a multi-GiB sealed PoE without ever holding the whole plaintext or the
 //! whole ciphertext in memory — peak memory is one 64 KiB plaintext chunk plus
@@ -169,7 +169,7 @@ pub fn ecies_sealed_poe_seal_stream<R: Read, W: Write>(
 /// `rng` carries the whole confidentiality guarantee and MUST be a CSPRNG unless
 /// every secret is supplied via the [`StreamSealArgs`] overrides with
 /// `skip_shuffle` set, in which case it is never consulted. See
-/// [`RandomSource`](super::wrap::RandomSource).
+/// [`RandomSource`].
 ///
 /// # Errors
 ///
