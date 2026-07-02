@@ -276,7 +276,7 @@ pub enum OutboundError {
         limit_bytes: u64,
     },
     /// The `webhook` purpose was sent through the generic wrapper.
-    #[error("webhook purpose must be sent via fetch_webhook, not fetch_outbound (url={url})")]
+    #[error("webhook purpose rejected: user-supplied URLs must go through assert_webhook_url_safe plus a pinned connection, not the generic fetch_outbound (url={url})")]
     WebhookPurposeRejected {
         /// The rejected URL.
         url: String,
@@ -438,7 +438,7 @@ const GATEWAY_REDIRECT_MAX_HOPS: usize = 3;
 /// 3. the target host is NOT on the canonical deny list NOR on the
 ///    caller-supplied deny list (both re-applied here so a sandbox host that
 ///    resolves to loopback/metadata, or a host the caller named, is refused);
-/// 4. following would not exceed [`GATEWAY_REDIRECT_MAX_HOPS`] FOLLOWED hops —
+/// 4. following would not exceed `GATEWAY_REDIRECT_MAX_HOPS` FOLLOWED hops —
 ///    exactly 3 redirects are followed and the 4th is refused.
 ///
 /// A missing/unparseable origin or target host fails closed.
@@ -1093,11 +1093,23 @@ impl ResolveHost for SystemResolver {
 }
 
 /// Options for [`assert_webhook_url_safe`].
+///
+/// The two loosenings are independent axes: `allow_http_scheme` relaxes only the
+/// HTTPS requirement and `allow_private_for_tests` relaxes only the blocked-IP
+/// range check. Neither implies the other, so a deployment that must deliver to
+/// a plain-HTTP endpoint keeps the full loopback / private / link-local /
+/// metadata range block.
 #[derive(Default)]
 pub struct AssertWebhookUrlSafeOptions<'a> {
-    /// Loosen the guard so it accepts `http://` and private/loopback IPs. NEVER
-    /// enable in production; tests use it to exercise the pinned-connection path
-    /// against a local listener.
+    /// Accept `http://` targets in addition to `https://` (self-host / dev
+    /// deployments delivering to internal plain-HTTP endpoints). Loosens ONLY
+    /// the scheme requirement: every resolved address is still checked against
+    /// the blocked ranges.
+    pub allow_http_scheme: bool,
+    /// Accept targets that resolve into blocked ranges (loopback, private,
+    /// link-local, metadata). NEVER enable in production; tests use it to
+    /// exercise the pinned-connection path against a local listener. Loosens
+    /// ONLY the range check: `http://` still requires `allow_http_scheme`.
     pub allow_private_for_tests: bool,
     /// Injectable resolver. Defaults to [`SystemResolver`] when `None`.
     pub resolve_host: Option<&'a dyn ResolveHost>,
@@ -1126,13 +1138,14 @@ fn looks_like_ip_literal(host: &str) -> bool {
 /// constructor does this) so a DNS-rebind between check time and use time cannot
 /// redirect the request to a private address. The guard is HTTPS-only by
 /// default; resolves A + AAAA; rejects the whole check if ANY resolved address
-/// is in a blocked range.
+/// is in a blocked range. The two opt-outs are independent:
+/// `allow_http_scheme` permits `http://` without loosening the range block,
+/// and `allow_private_for_tests` permits blocked ranges without loosening the
+/// scheme requirement.
 pub fn assert_webhook_url_safe(
     url: &str,
     opts: &AssertWebhookUrlSafeOptions<'_>,
 ) -> Result<AssertWebhookUrlSafeResult, WebhookUrlUnsafeError> {
-    let allow_private = opts.allow_private_for_tests;
-
     let parsed = url::Url::parse(url).map_err(|_| WebhookUrlUnsafeError {
         reason: WebhookUrlUnsafeReason::InvalidUrl,
         url: url.to_string(),
@@ -1141,7 +1154,7 @@ pub fn assert_webhook_url_safe(
     })?;
 
     let scheme = parsed.scheme();
-    if scheme != "https" && !(allow_private && scheme == "http") {
+    if scheme != "https" && !(opts.allow_http_scheme && scheme == "http") {
         return Err(WebhookUrlUnsafeError {
             reason: WebhookUrlUnsafeReason::UnsupportedProtocol,
             url: url.to_string(),
@@ -1196,7 +1209,7 @@ pub fn assert_webhook_url_safe(
     // and 127.0.0.1 must be rejected. An attacker who can add a private IP to a
     // multi-A record gets no wiggle room.
     for rec in &records {
-        if !allow_private && is_blocked_ip(rec.address) {
+        if !opts.allow_private_for_tests && is_blocked_ip(rec.address) {
             return Err(WebhookUrlUnsafeError {
                 reason: WebhookUrlUnsafeReason::BlockedIpRange,
                 url: url.to_string(),
@@ -2024,8 +2037,8 @@ mod tests {
 
     fn with_resolver<'a>(r: &'a dyn ResolveHost) -> AssertWebhookUrlSafeOptions<'a> {
         AssertWebhookUrlSafeOptions {
-            allow_private_for_tests: false,
             resolve_host: Some(r),
+            ..Default::default()
         }
     }
 
@@ -2150,12 +2163,55 @@ mod tests {
     }
 
     #[test]
-    fn webhook_allow_private_for_tests_permits_http_loopback() {
+    fn webhook_both_loosenings_permit_http_loopback() {
+        // A local plain-HTTP test listener needs both axes opened explicitly.
         let opts = AssertWebhookUrlSafeOptions {
+            allow_http_scheme: true,
             allow_private_for_tests: true,
             resolve_host: None,
         };
         let r = assert_webhook_url_safe("http://127.0.0.1:3000/hook", &opts).unwrap();
+        assert_eq!(r.resolved_ip, ip("127.0.0.1"));
+    }
+
+    #[test]
+    fn webhook_http_scheme_optin_keeps_the_range_block() {
+        // The scheme opt-in alone must not loosen the IP range check: a
+        // plain-HTTP target in a blocked range is still refused…
+        let opts = AssertWebhookUrlSafeOptions {
+            allow_http_scheme: true,
+            ..Default::default()
+        };
+        for url in [
+            "http://127.0.0.1/hook",
+            "http://10.0.0.1/hook",
+            "http://169.254.169.254/latest/meta-data",
+            "http://[::1]/hook",
+        ] {
+            let err = assert_webhook_url_safe(url, &opts).unwrap_err();
+            assert_eq!(
+                err.reason,
+                WebhookUrlUnsafeReason::BlockedIpRange,
+                "{url} must stay range-blocked under the scheme opt-in"
+            );
+        }
+        // …while the same opt-in accepts plain HTTP to a public address.
+        let r = assert_webhook_url_safe("http://8.8.8.8/hook", &opts).unwrap();
+        assert_eq!(r.resolved_ip, ip("8.8.8.8"));
+    }
+
+    #[test]
+    fn webhook_private_optin_keeps_the_https_requirement() {
+        // The range opt-in alone must not loosen the scheme: http:// is still
+        // refused…
+        let opts = AssertWebhookUrlSafeOptions {
+            allow_private_for_tests: true,
+            ..Default::default()
+        };
+        let err = assert_webhook_url_safe("http://127.0.0.1:3000/hook", &opts).unwrap_err();
+        assert_eq!(err.reason, WebhookUrlUnsafeReason::UnsupportedProtocol);
+        // …while HTTPS into a blocked range is exactly what the seam opens.
+        let r = assert_webhook_url_safe("https://127.0.0.1/hook", &opts).unwrap();
         assert_eq!(r.resolved_ip, ip("127.0.0.1"));
     }
 

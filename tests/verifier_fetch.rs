@@ -92,7 +92,7 @@ fn deny_host_full_matrix() {
 
 // ===========================================================================
 // SSRF IP classification matrix — one representative IP per blocked range,
-// plus public controls (ports ssrf-guard.test.ts isBlockedIp cases).
+// plus public control IPs that must stay unblocked.
 // ===========================================================================
 
 /// One sample IP per IPv4 range, kept aligned with `BLOCKED_IPV4_RANGES`.
@@ -180,7 +180,7 @@ fn public_ips_are_not_blocked() {
 }
 
 // ===========================================================================
-// SSRF end-to-end via stub resolver (ports the assertWebhookUrlSafe DNS cases).
+// SSRF end-to-end: assert_webhook_url_safe driven through a stub resolver.
 // ===========================================================================
 
 struct StubResolver(Vec<ResolvedRecord>);
@@ -200,8 +200,8 @@ fn rec(s: &str) -> ResolvedRecord {
 
 fn with_resolver(r: &dyn ResolveHost) -> AssertWebhookUrlSafeOptions<'_> {
     AssertWebhookUrlSafeOptions {
-        allow_private_for_tests: false,
         resolve_host: Some(r),
+        ..Default::default()
     }
 }
 

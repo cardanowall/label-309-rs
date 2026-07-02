@@ -9,6 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > release. Pre-1.0 versions do not carry the stability guarantees of
 > [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-07-02
+
+### Breaking
+
+- `AssertWebhookUrlSafeOptions` now carries two independent loosening axes instead of one. `allow_http_scheme` permits `http://` targets and nothing else; resolved addresses are still range-checked against the blocked-IP list. `allow_private_for_tests` relaxes only the loopback/private/link-local/metadata IP blocklist; `https` is still required. Previously the single opt-in silently disabled the entire blocklist as soon as a caller needed plain HTTP. Migration: if you set the old flag to reach a local listener in tests, set `allow_private_for_tests: true`; if you set it to reach a plain-HTTP endpoint, set `allow_http_scheme: true`.
+
+### Changed
+
+- The `OutboundError::WebhookPurposeRejected` message now points at `assert_webhook_url_safe` plus a pinned connection instead of a `fetch_webhook` function that does not exist in this crate.
+
 ## [0.7.1] - 2026-06-18
 
 ### Fixed
